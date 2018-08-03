@@ -1,0 +1,11 @@
+title: Home
+icon: 📖
+sections:
+  chapters:
+    headline: Chapters
+    type: pages
+    status: all
+    item:
+      info: "{{ page.title }}"
+    templates:
+      - chapter

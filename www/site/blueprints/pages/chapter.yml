@@ -1,0 +1,19 @@
+title: Chapter
+columns:
+  - 3/4: content
+  - 1/4: subpages
+sections:
+  content:
+    type: fields
+    fields:
+      text:
+        label: Text
+        type: textarea
+  subpages:
+    headline: Subpages
+    type: pages
+    status: all
+    item:
+      info: "{{ page.title }}"
+    templates:
+      - subpage

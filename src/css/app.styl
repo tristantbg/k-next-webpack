@@ -1,0 +1,45 @@
+@import 'nib'
+@import '../../node_modules/jeet/jeet.styl'
+@import '_mixins.styl'
+
+// Media queries
+$xl = 1600px
+$lg = 1260px
+$md = 1023px
+$sm = 767px
+
+// Colors
+$primary ?= #fff
+$secondary ?= #000
+$accent ?= #ff0000
+
+// Metrics
+$space = 1rem
+$padding = 1rem
+$kinetic = cubic-bezier(0.77, 0, 0.175, 1)
+
+//font size
+$normal = 1rem
+$medium = 1.2rem
+
+// CSS Reset
+global-reset()
+
+.dev{outline:1px solid #912eff}
+.dev > * {outline:1px solid #5497ff}
+.dev > * > * {outline:1px solid #51feff}
+.dev > * > * > * {outline:1px solid #ff0000}
+.dev > * > * > * * {outline:1px solid #00ff00}
+
+// @import 'font.css'
+// @import 'components/_utils'
+@import 'components/_animations'
+@import 'fonts/fonts'
+// @import 'plyr/scss/plyr'
+@import 'components/_main'
+@import 'components/_outdated'
+@import 'components/_loader'
+@import 'components/_header'
+@import 'components/_pages'
+@import 'pages/index'
+// @import 'components/_project-slider'

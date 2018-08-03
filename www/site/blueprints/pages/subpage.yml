@@ -1,0 +1,28 @@
+title: Subpage
+columns:
+  - 3/4: content
+  - 1/4: card, additional
+sections:
+  content:
+    type: fields
+    fields:
+      text:
+        label: Text
+        type: textarea
+  card:
+    type: files
+    headline: Card
+    max: 1
+    layout: cards
+    item:
+      info: "{{ file.dimensions }}"
+  additional:
+    type: fields
+    fields:
+      captions:
+        label: Captions
+        type: structure
+        fields:
+          text:
+            label: Text
+            type: textarea

@@ -1,0 +1,74 @@
+// ==========================================================================
+// Plyr variables
+// https://github.com/selz/plyr
+// https://robots.thoughtbot.com/sass-default
+// ==========================================================================
+
+// Settings
+$plyr-border-box:                       true !default;
+$plyr-touch-action:                     true !default;
+$plyr-sr-only-important:                true !default;
+$plyr-padding:                          2rem;
+
+// Colors
+$plyr-color-main:                       var(--plasma-color) !default;
+
+// Font sizes
+$plyr-font-family:                      'BABE', Avenir, 'Avenir Next', 'Helvetica Neue', 'Segoe UI', Helvetica, Arial, sans-serif !default;
+$plyr-font-size-small:                  1.5rem !default;
+$plyr-font-size-base:                   1.5rem !default;
+
+// Captions
+$plyr-captions-bg:                      transparentize(#000, .3) !default;
+$plyr-captions-color:                   #fff !default;
+$plyr-font-size-captions-base:          $plyr-font-size-base !default;
+$plyr-font-size-captions-medium:        ceil($plyr-font-size-base * 1.5) !default;
+$plyr-font-size-captions-large:         ($plyr-font-size-base * 2) !default;
+
+// Controls
+$plyr-control-icon-size:                5px !default;
+$plyr-control-spacing:                  5px !default;
+$plyr-control-padding:                  ($plyr-control-spacing * .7) !default;
+$plyr-video-controls-bg:                #000 !default;
+$plyr-video-control-color:              $plyr-color-main !default;
+$plyr-video-control-color-hover:        $plyr-color-main !default;
+$plyr-video-control-bg-hover:           transparent !default;
+$plyr-audio-controls-bg:                rgb(255,255,255) !default;
+$plyr-audio-controls-border:            1px solid #dbe3e8 !default;
+$plyr-audio-control-color:              #565D64 !default;
+$plyr-audio-control-color-hover:        rgb(255,255,255) !default;
+$plyr-audio-control-bg-hover:           transparent;
+
+// Tooltips
+$plyr-tooltip-bg:                       transparent !default;
+$plyr-tooltip-color:                    $plyr-color-main !default;
+$plyr-tooltip-padding:                  ($plyr-control-spacing / 2) !default;
+$plyr-tooltip-arrow-size:               4px !default;
+$plyr-tooltip-radius:                   3px !default;
+
+// Progress
+$plyr-progress-loading-size:            5px !default;
+$plyr-progress-loading-bg:              transparentize(#000, .85) !default;
+$plyr-video-progress-bg:                $plyr-color-main !default;
+$plyr-video-progress-buffered-bg:       $plyr-video-progress-bg !default;
+$plyr-audio-progress-bg:                transparentize(#000, .33) !default;
+$plyr-audio-progress-buffered-bg:       $plyr-audio-progress-bg !default;
+
+// Range sliders
+$plyr-range-track-height:               1px !default;
+$plyr-range-thumb-height:               2rem !default;
+$plyr-range-thumb-width:                1px !default;
+$plyr-range-thumb-bg:                   $plyr-color-main !default;
+$plyr-range-thumb-border:               0px solid transparent !default;
+$plyr-range-thumb-shadow:               none;
+$plyr-range-thumb-active-border-color:  $plyr-video-progress-bg !default;
+$plyr-range-thumb-active-bg:            $plyr-video-control-bg-hover !default;
+$plyr-range-thumb-active-scale:         1 !default;
+$plyr-video-range-track-bg:             $plyr-video-progress-buffered-bg !default;
+$plyr-audio-range-track-bg:             $plyr-audio-progress-buffered-bg !default;
+$plyr-range-selected-bg:                $plyr-color-main !default;
+
+// Breakpoints
+$plyr-bp-screen-sm:                     480px !default;
+$plyr-bp-screen-md:                     768px !default;
+$plyr-bp-screen-lg:                     1024px !default;

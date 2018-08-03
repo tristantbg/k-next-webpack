@@ -1,0 +1,102 @@
+#page-content[page-type=project]
+	.slider
+		height 100vh
+		hideselect()
+		.flickity-slider
+			transform none !important
+		.slide
+			height 100%
+			width 100%
+			display inline-flex
+			justify-content center
+			left 0 !important
+			visibility hidden
+			.content
+				height 100%
+				display flex
+				justify-content center
+				align-items center
+				padding $padding
+				img
+					width 100%
+					height 100%
+					object-fit contain
+			.content.video
+				width 100%
+				.plyr--ready
+					width 100%
+					height 100%
+				video
+					width 100%
+					height 100%
+					object-fit contain
+		.slide.is-selected
+			visibility visible
+			z-index 1
+		.flickity-prev-next-button
+			cursor none !important
+			top 0
+			height 100%
+			width 50%
+			margin-top 0
+			background transparent
+			padding 0
+			transform(none)
+			border none
+			border-radius 0
+			z-index 10
+			+below($md)
+				display none
+			svg
+				display none
+			&.previous
+				left 0
+			&.next
+				right 0
+			&[disabled]
+				display none
+		#mouse-nav
+			align()
+			position fixed
+			top 0
+			left 0
+			color $secondary
+			z-index 300
+			white-space nowrap
+			cursor none
+			pointer-events none
+			display none
+			&::before
+				align()
+				pointer-events none
+		&[data-media="video"]:not(.nav-hover)
+			#mouse-nav
+				&::before
+					content 'Play'
+			&.pause
+				#mouse-nav::before
+					content 'Pause'
+			&.loading
+				#mouse-nav::before
+					content 'Loading'
+		&[data-media="video"]
+			.flickity-prev-next-button
+				width 15%
+			.plyr__controls
+				cursor auto
+				+below($md)
+					display none
+			.plyr--stopped
+				.plyr__controls
+					opacity 0
+		&[data-media="image"], &.nav-hover
+			&.left
+				#mouse-nav::before
+					content 'Prev'
+			&.right
+				#mouse-nav::before
+					content 'Next'
+		&:hover
+			#mouse-nav
+				+above($md)
+					display block

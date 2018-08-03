@@ -1,0 +1,52 @@
+[page-content=project]
+	#description
+		//
+
+#project-medias
+	span(1)
+
+	.portrait
+		span(1/2)
+		float none
+
+	.landscape
+		span(1)
+		float none
+
+	.project-image
+		margin-top ($space * 2)
+
+	.project-image:first-child
+		margin-top 0
+
+	.caption
+		margin-top $space
+
+
+#project-description
+	span(3/4)
+	margin-top ($space * 5)
+	margin-bottom $space
+
+#right-nav
+	position fixed
+	padding $space
+	right 0
+	top 0
+
+#audio-control
+	display inline
+	padding-right $space
+
+audio
+	display none
+
+
+
+.play
+	visibility hidden
+
+.play a&:after
+	visibilty visible
+	content 'Play'
+
