@@ -1,7 +1,13 @@
+const stylusLoder = require('stylus-loader');
+const nib = require('nib');
+const rupture = require('rupture');
 const webpack = require('webpack');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-const ModernizrWebpackPlugin = require('modernizr-webpack-plugin')
+const jeet = require('jeet');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require('path');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const ModernizrWebpackPlugin = require('modernizr-webpack-plugin');
 
 const modernizrConfig = {
   filename: 'vendor/modernizr-bundle.js',
@@ -41,23 +47,23 @@ const modernizrConfig = {
   }
 }
 
-//Get path so every environment works
-const projectPath = path.resolve(__dirname);
+const extract = new MiniCssExtractPlugin({
+  filename: "index.css",
+  chunkFilename: "index.chunk.css"
+});
 
-//Define all the global config
-const config = {
-  entry: {
-    final: projectPath + '/src/js/app.js'
-  },
-  output: {
-    path: projectPath + '/www/assets/js/build/',
-    filename: 'app.min.js'
+module.exports = {
+  devServer: {
+    compress: true,
   },
   plugins: [
-    new UglifyJsPlugin({
-      uglifyOptions: {
-        output: {
-          comments: false
+    extract,
+    new webpack.LoaderOptionsPlugin({
+      test: /\.styl$/,
+      stylus: {
+        default: {
+          use: [jeet(), rupture(), nib()],
+          import: ['~nib/lib/nib/index.styl']
         }
       }
     }),
@@ -67,20 +73,41 @@ const config = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env']
-          }
-        }
+        exclude: /node_modules/,
+        use: { loader: "babel-loader" }
+      },
+      {
+        test: /\.styl(us)?$/,
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'stylus-loader']
+      },
+      {
+        test: /\.(woff|eot|ttf)$/,
+        use: { loader: "url-loader" }
+      },
+      {
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        use: [
+          'url-loader?limit=10000',
+          'img-loader'
+        ]
       }
     ]
   },
-  resolve: {
-    extensions: ['.js'],
-    modules: [path.join(__dirname, '/node_modules')]
+  entry: './index.js',
+  output: {
+    path: path.resolve(__dirname, "www/assets/build"),
+    publicPath: "/assets/",
+    filename: "bundle.js"
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new UglifyJsPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: true
+      }),
+      new OptimizeCSSAssetsPlugin({})
+    ]
   }
 };
-
-module.exports = config;

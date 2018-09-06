@@ -55,10 +55,15 @@
   <link rel="shortcut icon" href="<?= url('assets/images/favicon.ico') ?>">
   <link rel="icon" href="<?= url('assets/images/favicon.ico') ?>" type="image/x-icon">
 
-  <?php
-  echo css('assets/css/build/build.min.css');
-  echo js('assets/js/build/vendor/modernizr-bundle.js');
-  ?>
+  <?php if($kirby->option('environnement') == 'dev'): ?>
+    <link rel="stylesheet" media="all" href="http://localhost:8080/assets/index.css" />
+    <script src="http://localhost:8080/assets/vendor/modernizr-bundle.js"></script>
+  <?php else: ?>
+    <?php
+    echo css('assets/build/index.css');
+    echo js('assets/build/vendor/modernizr-bundle.js');
+    ?>
+  <?php endif ?>
 
   <?php if(!$site->customcss()->empty()): ?>
     <style type="text/css">
