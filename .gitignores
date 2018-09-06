@@ -1,9 +1,6 @@
 .DS_Store
 
 www/media
-www/content/*
-!www/content/site.txt
-!www/content/error
 www/assets/build
 www/site/accounts
 www/site/cache
