@@ -5,7 +5,7 @@
   "scripts": {
     "prebuild": "rm -rf www/assets/build",
     "build": "webpack --config ./webpack.config.js --progress",
-    "prestart": "rm -rf www/assets/build",
+    "prestart": "rm -rf www/assets/build && npm run build",
     "dev": "webpack --mode development",
     "start": "webpack-dev-server --mode development",
     "start-fix": "webpack --config ./webpack.config.js --watch --watch-poll -d --progress"
