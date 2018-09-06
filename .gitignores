@@ -1,6 +1,6 @@
 .DS_Store
 
-/media
-/site/accounts
-/site/cache
-/site/sessions
+www/media
+www/site/accounts
+www/site/cache
+www/site/sessions
