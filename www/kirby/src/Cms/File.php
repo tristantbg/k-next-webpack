@@ -3,6 +3,7 @@
 namespace Kirby\Cms;
 
 use Kirby\Data\Data;
+use Kirby\Exception\Exception;
 use Kirby\Image\Image;
 use Kirby\Toolkit\Str;
 use Throwable;
@@ -19,11 +20,10 @@ use Throwable;
  * @link      http://getkirby.com
  * @copyright Bastian Allgeier
  */
-class File extends Model
+class File extends ModelWithContent
 {
     use FileActions;
-
-    use HasContent;
+    use HasMethods;
     use HasSiblings;
     use HasThumbs;
 
@@ -44,6 +44,13 @@ class File extends Model
     protected $blueprint;
 
     /**
+     * Cache for the content file root
+     *
+     * @var string
+     */
+    protected $contentFile;
+
+    /**
      * @var string
      */
     protected $id;
@@ -52,6 +59,13 @@ class File extends Model
      * @var string
      */
     protected $filename;
+
+    /**
+     * All registered file methods
+     *
+     * @var array
+     */
+    public static $methods = [];
 
     /**
      * The parent object
@@ -94,10 +108,17 @@ class File extends Model
             return $this->$method;
         }
 
+        // asset method proxy
         if (method_exists($this->asset(), $method)) {
             return $this->asset()->$method(...$arguments);
         }
 
+        // file methods
+        if ($this->hasMethod($method)) {
+            return $this->callMethod($method, $arguments);
+        }
+
+        // content fields
         return $this->content()->get($method, $arguments);
     }
 
@@ -142,6 +163,17 @@ class File extends Model
     }
 
     /**
+     * Returns the url to api endpoint
+     *
+     * @param bool $relative
+     * @return string
+     */
+    public function apiUrl(bool $relative = false): string
+    {
+        return $this->parent()->apiUrl($relative) . '/files/' . $this->filename();
+    }
+
+    /**
      * Returns the Asset object
      *
      * @return Image
@@ -156,7 +188,7 @@ class File extends Model
      */
     public function blueprint(): FileBlueprint
     {
-        if (is_a($this->blueprint, FileBlueprint::class) === true) {
+        if (is_a($this->blueprint, 'Kirby\Cms\FileBlueprint') === true) {
             return $this->blueprint;
         }
 
@@ -170,7 +202,7 @@ class File extends Model
      */
     public function collection(): Files
     {
-        if (is_a($this->collection, Files::class) === true) {
+        if (is_a($this->collection, 'Kirby\Cms\Files') === true) {
             return $this->collection;
         }
 
@@ -178,33 +210,40 @@ class File extends Model
     }
 
     /**
-     * Returns the content object
+     * Absolute path to the meta text file
      *
-     * @return Content
+     * @param string $languageCode
+     * @return string
      */
-    public function content(): Content
+    public function contentFile(string $languageCode = null): string
     {
-        if (is_a($this->content, Content::class) === true) {
-            return $this->content;
+        if ($languageCode !== null) {
+            return $this->root() . '.' . $languageCode . '.' . $this->kirby()->contentExtension();
         }
 
-        try {
-            $data = Data::read($this->contentFile());
-        } catch (Throwable $e) {
-            $data = [];
+        // use the cached version
+        if ($this->contentFile !== null) {
+            return $this->contentFile;
         }
 
-        return $this->setContent($data)->content();
+        // create from template
+        return $this->contentFile = $this->root() . '.' . $this->kirby()->contentExtension();
     }
 
     /**
-     * Absolute path to the meta text file
+     * Store the template in addition to the
+     * other content.
      *
-     * @return string
+     * @return array
      */
-    public function contentFile(): string
+    public function contentFileData(): array
     {
-        return $this->root() . '.txt';
+        $content = $this->content()->toArray();
+
+        // store main information in the content file
+        $content['template'] = $this->template();
+
+        return $content;
     }
 
     /**
@@ -232,22 +271,6 @@ class File extends Model
                     return '[' . $this->filename() . '](' . $this->url() . ')';
                 }
         }
-    }
-
-    /**
-     * Returns all content validation errors
-     *
-     * @return array
-     */
-    public function errors(): array
-    {
-        $errors = [];
-
-        foreach ($this->blueprint()->sections() as $section) {
-            $errors = array_merge($errors, $section->errors());
-        }
-
-        return $errors;
     }
 
     /**
@@ -291,7 +314,7 @@ class File extends Model
             return $this->id;
         }
 
-        if (is_a($this->parent(), Page::class) === true) {
+        if (is_a($this->parent(), 'Kirby\Cms\Page') === true) {
             return $this->id = $this->parent()->id() . '/' . $this->filename();
         }
 
@@ -360,7 +383,63 @@ class File extends Model
      */
     public function page()
     {
-        return is_a($this->parent(), Page::class) === true ? $this->parent() : null;
+        return is_a($this->parent(), 'Kirby\Cms\Page') === true ? $this->parent() : null;
+    }
+
+    /**
+     * Panel icon definition
+     *
+     * @return array
+     */
+    public function panelIcon(): array
+    {
+        return [
+            'type' => 'file',
+            'back' => 'black'
+        ];
+    }
+
+    /**
+     * Panel image definition
+     *
+     * @param string|array|false $settings
+     * @param array $thumbSettings
+     * @return array
+     */
+    public function panelImage($settings = null, array $thumbSettings = null): ?array
+    {
+        $defaults = [
+            'ratio' => '3/2',
+            'back'  => 'pattern',
+            'cover' => false
+        ];
+
+        // switch the image off
+        if ($settings === false) {
+            return null;
+        }
+
+        if (is_string($settings) === true) {
+            $settings = [
+                'query' => $settings
+            ];
+        }
+
+        $image = $this->query($settings['query'] ?? null, 'Kirby\Cms\File');
+
+        if ($image === null && $this->type() === 'image') {
+            $image = $this;
+        }
+
+        if ($image) {
+            $settings['url'] = $image->thumb($thumbSettings)->url(true) . '?t=' . $image->modified();
+
+            unset($settings['query']);
+
+            return array_merge($defaults, $settings);
+        }
+
+        return null;
     }
 
     /**
@@ -386,13 +465,27 @@ class File extends Model
     }
 
     /**
+     * Returns the parent id if a parent exists
+     *
+     * @return string|null
+     */
+    public function parentId(): ?string
+    {
+        if ($parent = $this->parent()) {
+            return $parent->id();
+        }
+
+        return null;
+    }
+
+    /**
      * Returns a collection of all parent pages
      *
      * @return Pages
      */
     public function parents(): Pages
     {
-        if (is_a($this->parent(), Page::class) === true) {
+        if (is_a($this->parent(), 'Kirby\Cms\Page') === true) {
             return $this->parent()->parents()->prepend($this->parent()->id(), $this->parent());
         }
 
@@ -402,11 +495,37 @@ class File extends Model
     /**
      * Returns the permissions object for this file
      *
-     * @return FileBlueprintOptions
+     * @return FilePermissions
      */
-    public function permissions(): FileBlueprintOptions
+    public function permissions()
     {
-        return $this->blueprint()->options();
+        return new FilePermissions($this);
+    }
+
+    /**
+     * Creates a string query, starting from the model
+     *
+     * @param string|null $query
+     * @param string|null $expect
+     * @return mixed
+     */
+    public function query(string $query = null, string $expect = null)
+    {
+        if ($query === null) {
+            return null;
+        }
+
+        $result = Str::query($query, [
+            'kirby' => $this->kirby(),
+            'site'  => $this->site(),
+            'file'  => $this
+        ]);
+
+        if ($expect !== null && is_a($result, $expect) !== true) {
+            return null;
+        }
+
+        return $result;
     }
 
     /**
@@ -428,6 +547,22 @@ class File extends Model
     protected function rules()
     {
         return new FileRules();
+    }
+
+    /**
+     * Sets the Blueprint object
+     *
+     * @param array|null $blueprint
+     * @return self
+     */
+    protected function setBlueprint(array $blueprint = null): self
+    {
+        if ($blueprint !== null) {
+            $blueprint['model'] = $this;
+            $this->blueprint = new FileBlueprint($blueprint);
+        }
+
+        return $this;
     }
 
     /**
@@ -483,7 +618,7 @@ class File extends Model
      */
     public function site(): Site
     {
-        return is_a($this->parent(), Site::class) === true ? $this->parent() : $this->kirby()->site();
+        return is_a($this->parent(), 'Kirby\Cms\Site') === true ? $this->parent() : $this->kirby()->site();
     }
 
     /**
@@ -534,6 +669,6 @@ class File extends Model
      */
     public function url(): string
     {
-        return $this->url ?? $this->url = $this->kirby()->component('file::url')($this->kirby(), $this);
+        return $this->url ?? $this->url = $this->kirby()->component('file::url')($this->kirby(), $this, []);
     }
 }

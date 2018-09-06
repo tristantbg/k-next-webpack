@@ -1,6 +1,7 @@
 <?php
 
 use Kirby\Form\Form;
+use Kirby\Cms\Blueprint;
 
 return [
     'props' => [
@@ -30,12 +31,7 @@ return [
             return $value;
         },
         'fields' => function () {
-            $form = new Form([
-                'fields' => $this->props['fields'],
-                'model'  => $this->data['model'] ?? null
-            ]);
-
-            return $form->fields()->toArray();
+            return $this->form()->fields()->toArray();
         }
     ],
     'methods' => [
@@ -45,6 +41,15 @@ return [
                 'values' => $values,
                 'model'  => $this->data['model'] ?? null
             ], $this->data));
+        },
+        'toString' => function () {
+            $strings = [];
+
+            foreach ($this->value() as $row) {
+                $strings[] = $this->form($row)->strings();
+            }
+
+            return Yaml::encode($strings);
         }
     ],
     'validations' => [

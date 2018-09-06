@@ -3,10 +3,13 @@
 namespace Kirby\Cms;
 
 use Exception;
+use Kirby\Exception\NotFoundException;
 use Kirby\Form\Field;
 use Kirby\Session\Session;
 use Kirby\Toolkit\Dir;
+use Kirby\Toolkit\I18n;
 use Kirby\Toolkit\Str;
+use Throwable;
 
 trait AppUsers
 {
@@ -18,7 +21,7 @@ trait AppUsers
         $user        = $this->users()->find($id);
 
         if ($user->validatePassword($password) === true) {
-            $this->loadTranslation($user->language());
+            I18n::$locale = $user->language();
             return $user;
         }
 
@@ -29,8 +32,7 @@ trait AppUsers
     {
         if ($user = $this->users()->find($username)) {
             // Init the user language
-            $this->loadTranslation($user->language());
-
+            I18n::$locale = $user->language();
             return $user;
         }
 
@@ -45,7 +47,7 @@ trait AppUsers
         }
 
         // try session in header or cookie
-        if (is_a($session, Session::class) === false) {
+        if (is_a($session, 'Kirby\Session\Session') === false) {
             $session = $this->session(['detect' => true]);
         }
 
@@ -56,8 +58,7 @@ trait AppUsers
         }
 
         if ($user = $this->users()->find($id)) {
-            // Init the user language
-            $this->loadTranslation($user->language());
+            I18n::$locale = $user->language();
 
             // in case the session needs to be updated, do it now
             // for better performance
@@ -67,6 +68,36 @@ trait AppUsers
         }
 
         return null;
+    }
+
+    /**
+     * Become any existing user
+     *
+     * @param string|null $who
+     * @return self
+     */
+    public function impersonate(string $who = null)
+    {
+        if ($who === null) {
+            $this->user = null;
+            return $this;
+        }
+
+        if ($who === 'kirby') {
+            $this->user = new User([
+                'email' => 'kirby@getkirby.com',
+                'role'  => 'admin'
+            ]);
+
+            return $this;
+        }
+
+        if ($user = $this->users()->find($who)) {
+            $this->user = $user;
+            return $this;
+        }
+
+        throw new NotFoundException('The user "' . $who . '" cannot be found');
     }
 
     /**
@@ -112,8 +143,8 @@ trait AppUsers
             return $this->users()->find($id);
         }
 
-        if (is_a($this->user, User::class) === true) {
-            $this->loadTranslation($this->user->language());
+        if (is_a($this->user, 'Kirby\Cms\User') === true) {
+            I18n::$locale = $this->user->language();
             return $this->user;
         }
 
@@ -122,9 +153,10 @@ trait AppUsers
         }
 
         try {
+            $basicAuth     = $this->options['api']['basicAuth'] ?? false;
             $authorization = $this->request()->headers()['Authorization'] ?? '';
 
-            if (Str::startsWith($authorization, 'Basic ') === true) {
+            if ($basicAuth === true && Str::startsWith($authorization, 'Basic ') === true) {
                 return $this->user = $this->currentUserFromBasicAuth($authorization);
             } else {
                 return $this->user = $this->currentUserFromSession($session);
@@ -141,7 +173,7 @@ trait AppUsers
      */
     public function users(): Users
     {
-        if (is_a($this->users, Users::class) === true) {
+        if (is_a($this->users, 'Kirby\Cms\Users') === true) {
             return $this->users;
         }
 

@@ -3,7 +3,10 @@
 namespace Kirby\Cms;
 
 use Closure;
+use Kirby\Exception\Exception;
 use Kirby\Exception\InvalidArgumentException;
+use Kirby\Exception\PermissionException;
+use Kirby\Image\Image;
 use Kirby\Toolkit\F;
 
 trait AvatarActions
@@ -25,6 +28,10 @@ trait AvatarActions
      */
     protected function commit(string $action, $arguments = [], Closure $callback)
     {
+        if ($this->user()->isKirby() === true) {
+            throw new PermissionException('The Kirby user cannot be changed');
+        }
+
         $old = $this->hardcopy();
 
         $this->kirby()->trigger('avatar.' . $action . ':before', ...$arguments);
@@ -49,7 +56,7 @@ trait AvatarActions
 
         // create the basic avatar and a test upload object
         $avatar = new static($props);
-        $upload = new Upload($props['source']);
+        $upload = new Image($props['source']);
 
         // validate the uploaded mime type
         if ($upload->mime() !== 'image/jpeg') {
@@ -122,7 +129,7 @@ trait AvatarActions
      */
     public function replace(string $source): self
     {
-        $upload = new Upload($source);
+        $upload = new Image($source);
 
         // validate the uploaded mime type
         if ($upload->mime() !== 'image/jpeg') {

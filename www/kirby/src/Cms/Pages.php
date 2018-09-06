@@ -29,18 +29,18 @@ class Pages extends Collection
 {
 
     /**
-     * Only accepts Page objects
-     *
-     * @var string
-     */
-    protected static $accept = Page::class;
-
-    /**
      * Cache for the index
      *
      * @var null|Pages
      */
     protected $index = null;
+
+    /**
+     * All registered pages methods
+     *
+     * @var array
+     */
+    public static $methods = [];
 
     /**
      * Returns all audio files of all children
@@ -91,21 +91,39 @@ class Pages extends Collection
     }
 
     /**
+     * Fetch all drafts for all pages in the collection
+     *
+     * @return Pages
+     */
+    public function drafts()
+    {
+        $drafts = new Pages([], $this->parent);
+
+        foreach ($this->data as $pageKey => $page) {
+            foreach ($page->drafts() as $draftKey => $draft) {
+                $drafts->data[$draftKey] = $draft;
+            }
+        }
+
+        return $drafts;
+    }
+
+    /**
      * Creates a pages collection from an array of props
      *
      * @param array $pages
      * @param Model $parent
      * @param array $inject
-     * @param string $class
+     * @param bool $draft
      * @return Pages
      */
-    public static function factory(array $pages, Model $model = null, string $class = Page::class)
+    public static function factory(array $pages, Model $model = null, bool $draft = false)
     {
         $model    = $model ?? App::instance()->site();
         $children = new static([], $model);
         $kirby    = $model->kirby();
 
-        if (is_a($model, Page::class) === true) {
+        if (is_a($model, 'Kirby\Cms\Page') === true) {
             $parent = $model;
             $site   = $model->site();
         } else {
@@ -118,8 +136,9 @@ class Pages extends Collection
             $props['kirby']      = $kirby;
             $props['parent']     = $parent;
             $props['site']       = $site;
+            $props['isDraft']    = $draft;
 
-            $page = $class::factory($props);
+            $page = Page::factory($props);
 
             $children->data[$page->id()] = $page;
         }
@@ -155,11 +174,16 @@ class Pages extends Collection
      */
     public function findById($id)
     {
-        $page = $this->get($id);
+        $page      = $this->get($id);
+        $multiLang = App::instance()->multilang();
+
+        if ($multiLang === true) {
+            $page = $this->findBy('slug', $id);
+        }
 
         if (!$page) {
-            $start = is_a($this->parent, Page::class) === true ? $this->parent->id() : '';
-            $page  = $this->findByIdRecursive($id, $start);
+            $start = is_a($this->parent, 'Kirby\Cms\Page') === true ? $this->parent->id() : '';
+            $page  = $this->findByIdRecursive($id, $start, $multiLang);
         }
 
         return $page;
@@ -172,7 +196,7 @@ class Pages extends Collection
      * @param string $startAt
      * @return mixed
      */
-    public function findByIdRecursive($id, $startAt = null)
+    public function findByIdRecursive($id, $startAt = null, bool $multiLang = false)
     {
         $path       = explode('/', $id);
         $collection = $this;
@@ -182,6 +206,10 @@ class Pages extends Collection
         foreach ($path as $key) {
             $query = ltrim($query . '/' . $key, '/');
             $item  = $collection->get($query) ?? null;
+
+            if ($item === null && $multiLang === true) {
+                $item = $collection->findBy('slug', $key);
+            }
 
             if ($item === null) {
                 return null;
@@ -205,6 +233,17 @@ class Pages extends Collection
     }
 
     /**
+     * Alias for Pages::findById
+     *
+     * @param string $id
+     * @return Page|null
+     */
+    public function findByUri(string $id)
+    {
+        return $this->findById($id);
+    }
+
+    /**
      * Custom getter that is able to find
      * extension pages
      *
@@ -213,6 +252,10 @@ class Pages extends Collection
      */
     public function get($key, $default = null)
     {
+        if ($key === null) {
+            return null;
+        }
+
         if ($item = parent::get($key)) {
             return $item;
         }
@@ -238,7 +281,7 @@ class Pages extends Collection
      */
     public function index(): Pages
     {
-        if (is_a($this->index, Pages::class) === true) {
+        if (is_a($this->index, 'Kirby\Cms\Pages') === true) {
             return $this->index;
         }
 
@@ -318,7 +361,7 @@ class Pages extends Collection
         }
 
         // append a single page
-        if (is_a($args[0], Page::class) === true) {
+        if (is_a($args[0], 'Kirby\Cms\Page') === true) {
             $collection = clone $this;
             return $collection->set($args[0]->id(), $args[0]);
         }
@@ -339,19 +382,35 @@ class Pages extends Collection
         return $this;
     }
 
+    /*
+     * Returns all listed and unlisted pages in the collection
+     *
+     * @return self
+     */
+    public function published(): self
+    {
+        return $this->filterBy('isDraft', '==', false);
+    }
+
     /**
      * Filter all pages by the given template
      *
      * @param null|string|array $template
      * @return self
      */
-    public function template($template): self
+    public function template($templates): self
     {
-        if (empty($template) === true) {
+        if (empty($templates) === true) {
             return $this;
         }
 
-        return $this->filterBy('template', is_array($template) ? 'in' : '==', $template);
+        if (is_array($templates) === false) {
+            $templates = [$templates];
+        }
+
+        return $this->filter(function ($page) use ($templates) {
+            return in_array($page->intendedTemplate()->name(), $templates);
+        });
     }
 
     /**

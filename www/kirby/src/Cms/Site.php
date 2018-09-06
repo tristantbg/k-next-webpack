@@ -2,6 +2,7 @@
 
 namespace Kirby\Cms;
 
+use Kirby\Exception\Exception;
 use Kirby\Exception\InvalidArgumentException;
 use Kirby\Exception\LogicException;
 use Kirby\Toolkit\Str;
@@ -16,13 +17,12 @@ use Kirby\Toolkit\Str;
  * @link      http://getkirby.com
  * @copyright Bastian Allgeier
  */
-class Site extends Model
+class Site extends ModelWithContent
 {
     use SiteActions;
-
     use HasChildren;
-    use HasContent;
     use HasFiles;
+    use HasMethods;
 
     /**
      * The SiteBlueprint object
@@ -30,6 +30,13 @@ class Site extends Model
      * @var SiteBlueprint
      */
     protected $blueprint;
+
+    /**
+     * Cache for the content file
+     *
+     * @var string
+     */
+    protected $contentFile;
 
     /**
      * The error page object
@@ -90,6 +97,30 @@ class Site extends Model
     protected $url;
 
     /**
+     * Modified getter to also return fields
+     * from the content
+     *
+     * @param string $method
+     * @param array $arguments
+     * @return mixed
+     */
+    public function __call(string $method, array $arguments = [])
+    {
+        // public property access
+        if (isset($this->$method) === true) {
+            return $this->$method;
+        }
+
+        // site methods
+        if ($this->hasMethod($method)) {
+            return $this->callMethod($method, $arguments);
+        }
+
+        // return site content otherwise
+        return $this->content()->get($method, $arguments);
+    }
+
+    /**
      * Creates a new Site object
      *
      * @param array $props
@@ -114,13 +145,28 @@ class Site extends Model
     }
 
     /**
+     * Returns the url to the api endpoint
+     *
+     * @param bool $relative
+     * @return string
+     */
+    public function apiUrl(bool $relative = false): string
+    {
+        if ($relative === true) {
+            return 'site';
+        } else {
+            return $this->kirby()->url('api') . '/site';
+        }
+    }
+
+    /**
      * Returns the blueprint object
      *
      * @return SiteBlueprint
      */
     public function blueprint(): SiteBlueprint
     {
-        if (is_a($this->blueprint, SiteBlueprint::class) === true) {
+        if (is_a($this->blueprint, 'Kirby\Cms\SiteBlueprint') === true) {
             return $this->blueprint;
         }
 
@@ -128,14 +174,50 @@ class Site extends Model
     }
 
     /**
+     * Returns an array with all blueprints that are available
+     * as subpages of the site
+     *
+     * @params string $inSection
+     * @return array
+     */
+    public function blueprints(string $inSection = null): array
+    {
+        $blueprints = [];
+        $blueprint  = $this->blueprint();
+        $sections   = $inSection !== null ? [$blueprint->section($inSection)] : $blueprint->sections();
+
+        foreach ($sections as $section) {
+            if ($section === null || $section->type() !== 'pages') {
+                continue;
+            }
+
+            foreach ($section->blueprints() as $blueprint) {
+                $blueprints[$blueprint['name']] = $blueprint;
+            }
+        }
+
+        return array_values($blueprints);
+    }
+
+    /**
      * Returns the absolute path to the site's
      * content text file
      *
+     * @param string $languageCode
      * @return string
      */
-    public function contentFile(): string
+    public function contentFile(string $languageCode = null): string
     {
-        return $this->root() . '/site.txt';
+        if ($languageCode !== null) {
+            return $this->root() . '/site.' . $languageCode . '.' . $this->kirby()->contentExtension();
+        }
+
+        // use the cached version
+        if ($this->contentFile !== null) {
+            return $this->contentFile;
+        }
+
+        return $this->contentFile = $this->root() . '/site.' . $this->kirby()->contentExtension();
     }
 
     /**
@@ -145,7 +227,7 @@ class Site extends Model
      */
     public function errorPage()
     {
-        if (is_a($this->errorPage, Page::class) === true) {
+        if (is_a($this->errorPage, 'Kirby\Cms\Page') === true) {
             return $this->errorPage;
         }
 
@@ -160,22 +242,6 @@ class Site extends Model
     public function errorPageId(): string
     {
         return $this->errorPageId ?? 'error';
-    }
-
-    /**
-     * Returns all content validation errors
-     *
-     * @return array
-     */
-    public function errors(): array
-    {
-        $errors = [];
-
-        foreach ($this->blueprint()->sections() as $section) {
-            $errors = array_merge($errors, $section->errors());
-        }
-
-        return $errors;
     }
 
     /**
@@ -195,7 +261,7 @@ class Site extends Model
      */
     public function homePage()
     {
-        if (is_a($this->homePage, Page::class) === true) {
+        if (is_a($this->homePage, 'Kirby\Cms\Page') === true) {
             return $this->homePage;
         }
 
@@ -220,7 +286,18 @@ class Site extends Model
      */
     public function inventory(): array
     {
-        return $this->inventory ?? $this->inventory = Dir::inventory($this->root());
+        if ($this->inventory !== null) {
+            return $this->inventory;
+        }
+
+        $kirby = $this->kirby();
+
+        return $this->inventory = Dir::inventory(
+            $this->root(),
+            $kirby->contentExtension(),
+            $kirby->contentIgnore(),
+            $kirby->multilang()
+        );
     }
 
     /**
@@ -261,7 +338,7 @@ class Site extends Model
             return $this->find($path);
         }
 
-        if (is_a($this->page, Page::class) === true) {
+        if (is_a($this->page, 'Kirby\Cms\Page') === true) {
             return $this->page;
         }
 
@@ -282,21 +359,51 @@ class Site extends Model
      * Returns the url to the editing view
      * in the panel
      *
+     * @param bool $relative
      * @return string
      */
-    public function panelUrl(): string
+    public function panelUrl(bool $relative = false): string
     {
-        return $this->kirby()->url('panel') . '/pages';
+        if ($relative === true) {
+            return '/site';
+        } else {
+            return $this->kirby()->url('panel') . '/site';
+        }
     }
 
     /**
      * Returns the permissions object for this site
      *
-     * @return SiteBlueprintOptions
+     * @return SitePermissions
      */
-    public function permissions(): SiteBlueprintOptions
+    public function permissions()
     {
-        return $this->blueprint()->options();
+        return new SitePermissions($this);
+    }
+
+    /**
+     * Creates a string query, starting from the model
+     *
+     * @param string|null $query
+     * @param string|null $expect
+     * @return mixed
+     */
+    public function query(string $query = null, string $expect = null)
+    {
+        if ($query === null) {
+            return null;
+        }
+
+        $result = Str::query($query, [
+            'kirby' => $this->kirby(),
+            'site'  => $this,
+        ]);
+
+        if ($expect !== null && is_a($result, $expect) !== true) {
+            return null;
+        }
+
+        return $result;
     }
 
     /**
@@ -324,12 +431,16 @@ class Site extends Model
     /**
      * Sets the Blueprint object
      *
-     * @param SiteBlueprint|null $blueprint
+     * @param array|null $blueprint
      * @return self
      */
-    protected function setBlueprint(SiteBlueprint $blueprint = null): self
+    protected function setBlueprint(array $blueprint = null): self
     {
-        $this->blueprint = $blueprint;
+        if ($blueprint !== null) {
+            $blueprint['model'] = $this;
+            $this->blueprint = new SiteBlueprint($blueprint);
+        }
+
         return $this;
     }
 
@@ -341,7 +452,7 @@ class Site extends Model
      */
     public function setErrorPage(Page $errorPage = null): self
     {
-        if (is_a($this->errorPage, Page::class) === true) {
+        if (is_a($this->errorPage, 'Kirby\Cms\Page') === true) {
             throw new LogicException('The error page has already been set');
         }
 
@@ -372,7 +483,7 @@ class Site extends Model
      */
     public function setHomePage(Page $homePage = null): self
     {
-        if (is_a($this->homePage, Page::class) === true) {
+        if (is_a($this->homePage, 'Kirby\Cms\Page') === true) {
             throw new LogicException('The home page has already been set');
         }
 
@@ -428,7 +539,10 @@ class Site extends Model
     public function toArray(): array
     {
         return [
+            'children'  => $this->children()->keys(),
+            'content'   => $this->content()->toArray(),
             'errorPage' => $this->errorPage() ? $this->errorPage()->id(): false,
+            'files'     => $this->files()->keys(),
             'homePage'  => $this->homePage() ? $this->homePage()->id(): false,
             'page'      => $this->page() ? $this->page()->id(): false,
             'title'     => $this->title()->value(),
@@ -457,11 +571,26 @@ class Site extends Model
     /**
      * Returns the Url
      *
+     * @param string|null $language
      * @return string
      */
-    public function url()
+    public function url($language = null): string
     {
+        if ($language !== null || $this->kirby()->multilang() === true) {
+            return $this->urlForLanguage($language);
+        }
+
         return $this->url ?? $this->kirby()->url();
+    }
+
+    /**
+     * Returns the translated url
+     *
+     * @return string
+     */
+    public function urlForLanguage(string $language = null, array $options = null): string
+    {
+        return $this->kirby()->language($language)->url();
     }
 
     /**
@@ -480,7 +609,7 @@ class Site extends Model
         }
 
         // handle invalid pages
-        if (is_a($page, Page::class) === false) {
+        if (is_a($page, 'Kirby\Cms\Page') === false) {
             throw new InvalidArgumentException('Invalid page object');
         }
 

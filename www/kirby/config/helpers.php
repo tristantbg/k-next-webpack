@@ -2,8 +2,9 @@
 
 use Kirby\Cms\App;
 use Kirby\Cms\Html;
-use Kirby\Cms\Redirect;
+use Kirby\Cms\Response;
 use Kirby\Cms\Url;
+use Kirby\Exception\Exception;
 use Kirby\Http\Server;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\I18n;
@@ -27,32 +28,78 @@ function attr(array $attr = null, $before = null, $after = null)
 }
 
 /**
+ * Returns the result of a collection by name
+ *
+ * @param string $name
+ * @return Collection|null
+ */
+function collection(string $name)
+{
+    return App::instance()->collection($name);
+}
+
+/**
+ * Checks / returns a CSRF token
+ *
+ * @param string $check Pass a token here to compare it to the one in the session
+ * @return string|boolean Either the token or a boolean check result
+ */
+function csrf(string $check = null)
+{
+    $session = App::instance()->session();
+
+    // check explicitly if there have been no arguments at all;
+    // checking for null introduces a security issue because null could come
+    // from user input or bugs in the calling code!
+    if (func_num_args() === 0) {
+        // no arguments, generate/return a token
+
+        $token = $session->get('csrf');
+        if (is_string($token) !== true) {
+            $token = bin2hex(random_bytes(32));
+            $session->set('csrf', $token);
+        }
+
+        return $token;
+    } else {
+        // argument has been passed, check the token
+        return $check === $session->get('csrf');
+    }
+}
+
+/**
  * Creates one or multiple CSS link tags
  *
  * @param string|array $url Relative or absolute URLs, an array of URLs or `@auto` for automatic template css loading
- * @param string|array $attr Pass an array of attributes for the link tag or a media attribute string
+ * @param string|array $options Pass an array of attributes for the link tag or a media attribute string
  * @return string|null
  */
-function css($url, $attr = null)
+function css($url, $options = null)
 {
     if (is_array($url) === true) {
-        $links = array_map(function ($url) use ($attr) {
-            return css($url, $attr);
+        $links = array_map(function ($url) use ($options) {
+            return css($url, $options);
         }, $url);
 
         return implode(PHP_EOL, $links);
     }
 
-    $attr = is_array($attr) ? attr($attr, ' ') : attr(['media' => $attr], ' ');
-    $tag  = '<link rel="stylesheet" href="%s"' . $attr . '>';
+    $href = $url === '@auto' ? Url::toTemplateAsset('css/templates', 'css') : Url::to($url);
 
-    if ($url === '@auto') {
-        if ($assetUrl = Url::toTemplateAsset('css/templates', 'css')) {
-            return sprintf($tag, $assetUrl);
-        }
-    } else {
-        return sprintf($tag, Url::to($url));
+    $attr = [
+        'href' => $href,
+        'rel'  => 'stylesheet'
+    ];
+
+    if (is_string($options) === true) {
+        $attr['media'] = $options;
     }
+
+    if (is_array($options) === true) {
+        $attr = array_merge($options, $attr);
+    }
+
+    return '<link ' . attr($attr) . '>';
 }
 
 /**
@@ -125,7 +172,7 @@ function gist(string $url, string $file = null): string
  * @param integer $code
  * @return void
  */
-function go(string $url = null, int $code = 301)
+function go(string $url = null, int $code = 302)
 {
     die(Response::redirect($url, $code));
 }
@@ -171,7 +218,7 @@ function image(string $path = null)
     $uri      = dirname($path);
     $filename = basename($path);
 
-    if ($uri == '.') {
+    if ($uri === '.') {
         $uri = null;
     }
 
@@ -185,31 +232,107 @@ function image(string $path = null)
 }
 
 /**
+ * Runs a number of validators on a set of data and checks if the data is invalid
+ *
+ * @param array $data
+ * @param array $rules
+ * @param array $messages
+ * @return false|array
+ */
+function invalid(array $data = [], array $rules = [], array $messages = [])
+{
+  $errors = [];
+
+  foreach ($rules as $field => $validations) {
+
+    $validationIndex = -1;
+
+    // See: http://php.net/manual/en/types.comparisons.php
+    // only false for: null, undefined variable, '', []
+    $filled  = isset($data[$field]) && $data[$field] !== '' && $data[$field] !== [];
+    $message = $messages[$field] ?? $field;
+
+    // True if there is an error message for each validation method.
+    $messageArray = is_array($message);
+
+    foreach ($validations as $method => $options) {
+
+            if (is_numeric($method) === true) {
+                $method = $options;
+            }
+
+            $validationIndex++;
+
+            if ($method === 'required') {
+
+                if ($filled) {
+                    // Field is required and filled.
+                    continue;
+                }
+
+            } elseif ($filled) {
+
+                if (is_array($options) === false) {
+                    $options = [$options];
+                }
+
+                array_unshift($options, $data[$field] ?? null);
+
+                if (V::$method(...$options) === true) {
+                    // Field is filled and passes validation method.
+                    continue;
+                }
+
+            } else {
+                // If a field is not required and not filled, no validation should be done.
+                continue;
+            }
+
+            // If no continue was called we have a failed validation.
+            if ($messageArray) {
+                $errors[$field][] = $message[$validationIndex] ?? $field;
+            } else {
+                $errors[$field] = $message;
+            }
+
+        }
+
+    }
+
+    return $errors;
+}
+
+/**
  * Creates a script tag to load a javascript file
  *
  * @param string|array $src
- * @param string|array $async
+ * @param string|array $options
  * @return void
  */
-function js($src, $async = null)
+function js($url, $options = null)
 {
-    if (is_array($src) === true) {
-        $scripts = array_map(function ($src) use ($async) {
-            return js($src, $async);
-        }, $src);
+    if (is_array($url) === true) {
+        $scripts = array_map(function ($url) use ($options) {
+            return js($url, $options);
+        }, $url);
 
         return implode(PHP_EOL, $scripts);
     }
 
-    $tag = '<script src="%s"' . attr(['async' => $async], ' ') . '></script>';
+    $src  = $url === '@auto' ? Url::toTemplateAsset('js/templates', 'js') : Url::to($url);
+    $attr = [
+        'src' => $src,
+    ];
 
-    if ($src === '@auto') {
-        if ($assetUrl = Url::toTemplateAsset('js/templates', 'js')) {
-            return sprintf($tag, $assetUrl);
-        }
-    } else {
-        return sprintf($tag, Url::to($src));
+    if (is_bool($options) === true) {
+        $attr['async'] = $options;
     }
+
+    if (is_array($options) === true) {
+        $attr = array_merge($options, $attr);
+    }
+
+    return '<script ' . attr($attr) . '></script>';
 }
 
 /**
@@ -323,6 +446,10 @@ function option(string $key, $default = null)
  */
 function page(...$id)
 {
+    if (empty($id) === true) {
+        return App::instance()->site()->page();
+    }
+
     return App::instance()->site()->find(...$id);
 }
 
@@ -335,6 +462,28 @@ function page(...$id)
 function pages(...$id)
 {
     return App::instance()->site()->find(...$id);
+}
+
+/**
+ * Returns a single param from the URL
+ *
+ * @param string $key
+ * @param string $fallback
+ * @return string|null
+ */
+function param(string $key, string $fallback = null): ?string
+{
+    return App::instance()->request()->url()->params()->$key ?? $fallback;
+}
+
+/**
+ * Returns all params from the current Url
+ *
+ * @return array
+ */
+function params(): array
+{
+    return App::instance()->request()->url()->params()->toArray();
 }
 
 /**
@@ -415,17 +564,11 @@ function snippet(string $name, $data = [], bool $return = false)
 
     $snippet = App::instance()->snippet($name, $data);
 
-    if ($snippet->exists() === false) {
-        $output = null;
-    } else {
-        $output = $snippet->render();
-    }
-
     if ($return === true) {
-        return $output;
+        return $snippet;
     }
 
-    echo $output;
+    echo $snippet;
 }
 
 /**
@@ -499,22 +642,24 @@ function twitter(string $username, string $text = null, string $title = null, st
  * Shortcut for url()
  *
  * @param string $path
+ * @param array|null $options
  * @return string
  */
-function u(string $path = null): string
+function u(string $path = null, $options = null): string
 {
-    return Url::to($path);
+    return Url::to($path, $options);
 }
 
 /**
  * Builds an absolute URL for a given path
  *
  * @param string $path
+ * @param array $options
  * @return string
  */
-function url(string $path = null): string
+function url(string $path = null, $options = null): string
 {
-    return Url::to($path);
+    return Url::to($path, $options);
 }
 
 /**

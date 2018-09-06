@@ -36,6 +36,16 @@ class Obj extends stdClass
     }
 
     /**
+     * Improved var_dump() output
+     *
+     * @return array
+     */
+    public function __debuginfo(): array
+    {
+        return $this->toArray();
+    }
+
+    /**
      * Magic property getter
      *
      * @param string $property
@@ -44,6 +54,18 @@ class Obj extends stdClass
     public function __get(string $property)
     {
         return null;
+    }
+
+    /**
+     * Property Getter
+     *
+     * @param string $property
+     * @param mixed $fallback
+     * @return mixed
+     */
+    public function get(string $property, $fallback = null)
+    {
+        return $this->$property ?? $fallback;
     }
 
     /**
@@ -74,15 +96,5 @@ class Obj extends stdClass
     public function toJson(...$arguments): string
     {
         return json_encode($this->toArray(), ...$arguments);
-    }
-
-    /**
-     * Improved var_dump() output
-     *
-     * @return array
-     */
-    public function __debuginfo(): array
-    {
-        return $this->toArray();
     }
 }

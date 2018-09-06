@@ -23,11 +23,11 @@ class Options
     protected static function aliases(): array
     {
         return [
-            File::class            => 'file',
-            Obj::class             => 'arrayItem',
-            Page::class            => 'page',
-            StructureObject::class => 'structureItem',
-            User::class            => 'user',
+            'Kirby\Cms\File'            => 'file',
+            'Kirby\Toolkit\Obj'         => 'arrayItem',
+            'Kirby\Cms\Page'            => 'page',
+            'Kirby\Cms\StructureObject' => 'structureItem',
+            'Kirby\Cms\User'            => 'user',
         ];
     }
 
@@ -87,6 +87,22 @@ class Options
                 break;
             case 'query':
                 $options = static::query($props['query'], $model);
+                break;
+            case 'children':
+            case 'grandChildren':
+            case 'siblings':
+            case 'index':
+            case 'files':
+            case 'images':
+            case 'documents':
+            case 'videos':
+            case 'audio':
+            case 'code':
+            case 'archives':
+                $options = static::query('page.' . $options, $model);
+                break;
+            case 'pages':
+                $options = static::query('site.index', $model);
                 break;
         }
 

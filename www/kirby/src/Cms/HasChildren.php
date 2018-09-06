@@ -2,6 +2,8 @@
 
 namespace Kirby\Cms;
 
+use Kirby\Toolkit\Str;
+
 trait HasChildren
 {
 
@@ -26,7 +28,7 @@ trait HasChildren
      */
     public function children()
     {
-        if (is_a($this->children, Pages::class) === true) {
+        if (is_a($this->children, 'Kirby\Cms\Pages') === true) {
             return $this->children;
         }
 
@@ -48,11 +50,34 @@ trait HasChildren
      * Searches for a child draft by id
      *
      * @param string $path
-     * @return PageDraft|null
+     * @return Page|null
      */
     public function draft(string $path)
     {
-        return PageDraft::seek($this, $path);
+        $path = str_replace('_drafts/', '', $path);
+
+        if (Str::contains($path, '/') === false) {
+            return $this->drafts()->find($path);
+        }
+
+        $parts  = explode('/', $path);
+        $parent = $this;
+
+        foreach ($parts as $slug) {
+            if ($page = $parent->find($slug)) {
+                $parent = $page;
+                continue;
+            }
+
+            if ($draft = $parent->drafts()->find($slug)) {
+                $parent = $draft;
+                continue;
+            }
+
+            return null;
+        }
+
+        return $parent;
     }
 
     /**
@@ -62,13 +87,13 @@ trait HasChildren
      */
     public function drafts(): Pages
     {
-        if (is_a($this->drafts, Pages::class) === true) {
+        if (is_a($this->drafts, 'Kirby\Cms\Pages') === true) {
             return $this->drafts;
         }
 
         $inventory = Dir::inventory($this->root() . '/_drafts');
 
-        return $this->drafts = Pages::factory($inventory['children'], $this, PageDraft::class);
+        return $this->drafts = Pages::factory($inventory['children'], $this, true);
     }
 
     /**
@@ -182,6 +207,21 @@ trait HasChildren
     {
         if ($children !== null) {
             $this->children = Pages::factory($children, $this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Sets the Drafts collection
+     *
+     * @param array|null $drafts
+     * @return self
+     */
+    protected function setDrafts(array $drafts = null)
+    {
+        if ($drafts !== null) {
+            $this->drafts = Pages::factory($drafts, $this, true);
         }
 
         return $this;

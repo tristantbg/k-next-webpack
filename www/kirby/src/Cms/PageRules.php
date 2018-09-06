@@ -54,6 +54,10 @@ class PageRules
 
     public static function changeStatus(Page $page, string $status, int $position = null): bool
     {
+        if (isset($page->blueprint()->status()[$status]) === false) {
+            throw new InvalidArgumentException(['key' => 'page.status.invalid']);
+        }
+
         switch ($status) {
             case 'draft':
                 return static::changeStatusToDraft($page);
@@ -172,6 +176,13 @@ class PageRules
 
     public static function create(Page $page): bool
     {
+        if ($page->exists() === true) {
+            throw new DuplicateException([
+                'key'  => 'page.draft.duplicate',
+                'data' => ['slug' => $page->slug()]
+            ]);
+        }
+
         if ($page->permissions()->create() !== true) {
             throw new PermissionException(['key' => 'page.create.permission']);
         }
@@ -213,7 +224,12 @@ class PageRules
     public static function update(Page $page, array $content = []): bool
     {
         if ($page->permissions()->update() !== true) {
-            throw new PermissionException(['key' => 'page.update.permission']);
+            throw new PermissionException([
+                'key'  => 'page.update.permission',
+                'data' => [
+                    'slug' => $page->slug()
+                ]
+            ]);
         }
 
         return true;

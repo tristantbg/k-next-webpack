@@ -4,27 +4,29 @@ namespace Kirby\Cms;
 
 use stdClass;
 use ReflectionMethod;
+use Kirby\Toolkit\Properties;
 use Kirby\Toolkit\Str;
 
 /**
  * Foundation for Page, Site, File and User models.
  */
-abstract class Model extends Component
+abstract class Model
 {
-
-    /**
-     * The parent collection
-     *
-     * @var Collection
-     */
-    protected $collection;
+    use Properties;
 
     /**
      * The parent Kirby instance
      *
      * @var App
      */
-    protected $kirby;
+    public static $kirby;
+
+    /**
+     * The parent collection
+     *
+     * @var Collection
+     */
+    public $collection;
 
     /**
      * The parent Site instance
@@ -61,7 +63,7 @@ abstract class Model extends Component
      */
     public function kirby(): App
     {
-        return $this->kirby = $this->kirby ?? App::instance();
+        return static::$kirby = static::$kirby ?? App::instance();
     }
 
     /**
@@ -96,7 +98,7 @@ abstract class Model extends Component
      */
     protected function setKirby(App $kirby = null)
     {
-        $this->kirby = $kirby;
+        static::$kirby = $kirby;
         return $this;
     }
 
@@ -110,5 +112,15 @@ abstract class Model extends Component
     {
         $this->site = $site;
         return $this;
+    }
+
+    /**
+     * Convert the model to a simple array
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return $this->propertiesToArray();
     }
 }
