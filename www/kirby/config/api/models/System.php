@@ -16,6 +16,9 @@ return [
         'isLocal' => function (System $system) {
             return $system->isLocal();
         },
+        'multilang' => function () {
+            return $this->kirby()->option('languages', false) !== false;
+        },
         'languages' => function () {
             return $this->kirby()->languages();
         },
@@ -36,9 +39,15 @@ return [
 
             return $this->kirby()->translation();
         },
+        'kirbytext' => function () {
+            return $this->kirby()->option('panel')['kirbytext'] ?? true;
+        },
         'user' => function () {
             return $this->user();
         },
+        'version' => function () {
+            return $this->kirby()->version();
+        }
     ],
     'type'   => System::class,
     'views'  => [
@@ -46,12 +55,15 @@ return [
             'isOk',
             'isInstalled',
             'isLocal',
+            'kirbytext',
             'languages' => 'compact',
             'license',
+            'multilang',
             'requirements',
             'title',
             'translation',
-            'user' => 'auth'
+            'user' => 'auth',
+            'version'
         ]
     ],
 ];

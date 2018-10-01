@@ -7,7 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'claviska' => array($vendorDir . '/claviska/simpleimage/src'),
-    'Prophecy\\' => array($vendorDir . '/phpspec/prophecy/src'),
     'ParsedownExtra' => array($vendorDir . '/erusev/parsedown-extra'),
     'Parsedown' => array($vendorDir . '/erusev/parsedown'),
     'Michelf' => array($vendorDir . '/michelf/php-smartypants'),
