@@ -12,14 +12,14 @@ trait HasChildren
      *
      * @var Pages
      */
-    protected $children;
+    public $children;
 
     /**
      * The list of available drafts
      *
      * @var Pages
      */
-    protected $drafts;
+    public $drafts;
 
     /**
      * Returns the Pages collection
@@ -33,6 +33,16 @@ trait HasChildren
         }
 
         return $this->children = Pages::factory($this->inventory()['children'], $this);
+    }
+
+    /**
+     * Returns all children and drafts at the same time
+     *
+     * @return Pages
+     */
+    public function childrenAndDrafts()
+    {
+        return $this->children()->merge($this->drafts());
     }
 
     /**
@@ -190,11 +200,16 @@ trait HasChildren
     /**
      * Creates a flat child index
      *
+     * @param bool $drafts
      * @return Pages
      */
-    public function index(): Pages
+    public function index(bool $drafts = false): Pages
     {
-        return $this->children()->index();
+        if ($drafts === true) {
+            return $this->childrenAndDrafts()->index($drafts);
+        } else {
+            return $this->children()->index();
+        }
     }
 
     /**

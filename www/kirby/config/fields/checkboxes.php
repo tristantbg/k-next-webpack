@@ -6,6 +6,9 @@ use Kirby\Toolkit\Str;
 return [
     'mixins' => ['options'],
     'props' => [
+        'columns' => function (int $columns = 1) {
+            return $columns;
+        },
         'default' => function ($default = null) {
             return Str::split($default, ',');
         },
@@ -30,7 +33,7 @@ return [
             return $this->sanitizeOptions($this->value);
         },
     ],
-    'toString' => function ($value): string {
+    'save' => function ($value): string {
         return A::join($value, ', ');
     },
     'validations' => [

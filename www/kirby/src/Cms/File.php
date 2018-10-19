@@ -240,11 +240,12 @@ class File extends ModelWithContent
      * Store the template in addition to the
      * other content.
      *
+     * @param string|null $languageCode
      * @return array
      */
-    public function contentFileData(): array
+    public function contentFileData(string $languageCode = null): array
     {
-        $content = $this->content()->toArray();
+        $content = $this->content($languageCode)->toArray();
 
         // store main information in the content file
         $content['template'] = $this->template();
@@ -265,9 +266,9 @@ class File extends ModelWithContent
         switch ($type) {
             case 'kirbytext':
                 if ($this->type() === 'image') {
-                    return '(image: ' . $this->id() . ')';
+                    return '(image: ' . $this->filename() . ')';
                 } else {
-                    return '(file: ' . $this->id() . ')';
+                    return '(file: ' . $this->filename() . ')';
                 }
                 // no break
             case 'markdown':

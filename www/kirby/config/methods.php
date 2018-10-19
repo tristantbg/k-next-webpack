@@ -45,15 +45,22 @@ return function (App $app) {
             $value = $field->isEmpty() ? $default : $field->value;
             return filter_var($value, FILTER_VALIDATE_BOOLEAN);
         },
-        'toDate' => function ($field, $format = null) {
-            if (empty($field->value) === false) {
-                return $format === null ? $field->toTimestamp() : date($format, $field->toTimestamp());
+        'toDate' => function ($field, $format = null) use ($app) {
+            if (empty($field->value) === true) {
+                return null;
             }
 
-            return null;
+            if ($format === null) {
+                return $field->toTimestamp();
+            }
+
+            return $app->option('date.handler', 'date')($format, $field->toTimestamp());
         },
         'toFile' => function ($field) {
-            return $field->parent()->file($field->value);
+            return $field->toFiles()->first();
+        },
+        'toFiles' => function ($field) {
+            return $field->parent()->files()->find(false, ...$field->toData('yaml'));
         },
         'toFloat' => function ($field, $default = 0) {
             $value = $field->isEmpty() ? $default : $field->value;
@@ -79,10 +86,10 @@ return function (App $app) {
             return Html::a($href, $field->value, $attr ?? []);
         },
         'toPage' => function ($field) use ($app) {
-            return $app->site()->find($field->value);
+            return $field->toPages()->first();
         },
         'toPages' => function ($field, string $separator = 'yaml') use ($app) {
-            return $app->site()->find(...$field->toData('yaml'));
+            return $app->site()->find(true, ...$field->toData('yaml'));
         },
         'toStructure' => function ($field) {
             return new Structure(Yaml::decode($field->value), $field->parent());
@@ -94,7 +101,10 @@ return function (App $app) {
             return Url::to($field->value);
         },
         'toUser' => function ($field) use ($app) {
-            return $app->users()->find($field->value);
+            return $field->toUsers()->first();
+        },
+        'toUsers' => function ($field) use ($app) {
+            return $app->users()->find(true, ...$field->toData('yaml'));
         },
 
         // inspectors

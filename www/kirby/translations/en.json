@@ -23,12 +23,36 @@
   "replace": "Replace",
   "retry": "Try again",
   "revert": "Revert",
-  "settings": "Settings",
   "save": "Save",
   "saved": "Saved!",
+  "search": "Search",
+  "select": "Select",
+  "settings": "Settings",
+  "today": "Today",
   "upload": "Upload",
   "version": "Version",
   "welcome": "Welcome!",
+
+  "days.mon": "Mon",
+  "days.tue": "Tue",
+  "days.wed": "Wed",
+  "days.thu": "Thu",
+  "days.fri": "Fri",
+  "days.sat": "Sat",
+  "days.sun": "Sun",
+
+  "months.january": "January",
+  "months.february": "Feburary",
+  "months.march": "March",
+  "months.april": "April",
+  "months.may": "May",
+  "months.june": "June",
+  "months.july": "July",
+  "months.august": "August",
+  "months.september": "September",
+  "months.october": "October",
+  "months.november": "November",
+  "months.december": "December",
 
   "view.site": "Site",
   "view.users": "Users",
@@ -286,5 +310,8 @@
 
   "error.view.notFound": "This view does not exist",
 
+  "field.files.empty": "No files selected yet",
+  "field.pages.empty": "No pages selected yet",
+  "field.users.empty": "No users selected yet",
   "field.textarea.headline": "Headline"
 }

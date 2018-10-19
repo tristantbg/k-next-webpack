@@ -26,6 +26,14 @@ class Collection extends BaseCollection
     use HasMethods;
 
     /**
+     * Stores the parent object, which is needed
+     * in some collections to get the finder methods right.
+     *
+     * @var object
+     */
+    protected $parent;
+
+    /**
      * Magic getter function
      *
      * @param  string $key
@@ -39,14 +47,6 @@ class Collection extends BaseCollection
             return $this->callMethod($key, $arguments);
         }
     }
-
-    /**
-     * Stores the parent object, which is needed
-     * in some collections to get the finder methods right.
-     *
-     * @var object
-     */
-    protected $parent;
 
     /**
      * Creates a new Collection with the given objects
@@ -76,16 +76,25 @@ class Collection extends BaseCollection
     }
 
     /**
-     * Returns the plain prop value from a given
-     * object, to be used in filter functions.
+     * Appends an element to the data array
      *
-     * @param  object $object
-     * @param  string $prop
-     * @return mixed
+     * @param  mixed      $key
+     * @param  mixed      $item
+     * @return Collection
      */
-    public function getAttribute($object, $prop)
+    public function append(...$args)
     {
-        return (string)$object->$prop();
+        if (count($args) === 1) {
+            if (is_object($args[0]) === true) {
+                $this->data[$args[0]->id()] = $args[0];
+            } else {
+                $this->data[] = $args[0];
+            }
+        } elseif (count($args) === 2) {
+            $this->set($args[0], $args[1]);
+        }
+
+        return $this;
     }
 
     /**
@@ -196,6 +205,20 @@ class Collection extends BaseCollection
     public function parent()
     {
         return $this->parent;
+    }
+
+    /**
+     * Removes an object
+     *
+     * @param mixed $key the name of the key
+     */
+    public function remove($key)
+    {
+        if (is_object($key) === true) {
+            $key = $key->id();
+        }
+
+        return parent::remove($key);
     }
 
     /**

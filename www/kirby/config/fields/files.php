@@ -1,5 +1,7 @@
 <?php
 
+use Kirby\Toolkit\A;
+
 return [
     'props' => [
         'default' => function ($default = null) {
@@ -19,11 +21,11 @@ return [
         },
         'parent' => function (string $parent = null) {
 
-            if ($parent === null) {
-                return $this->model()->apiUrl(true);
+            if (is_string($parent) === true && $model = $this->model()->query($parent, 'Kirby\Cms\Model')) {
+                return $model->apiUrl(true);
             }
 
-            return $this->model()->query($parent, 'Kirby\Cms\Model')->apiUrl(true);
+            return $this->model()->apiUrl(true);
 
         },
         'value' => function ($value = null) {
@@ -39,16 +41,17 @@ return [
             foreach (Yaml::decode($value) as $id) {
 
                 if (is_array($id) === true) {
-                    $id = $id['id'] ?? null;
+                    $id = $id['filename'] ?? null;
                 }
 
-                if ($id !== null && ($file = $kirby->file($id))) {
+                if ($id !== null && ($file = $kirby->file($id, $this->model, true))) {
                     $files[] = [
                         'filename' => $file->filename(),
                         'link'     => $file->panelUrl(true),
                         'id'       => $file->id(),
                         'url'      => $file->url(),
-                        'thumb'    => $file->isResizable() ? $file->resize(512)->url() : null
+                        'thumb'    => $file->isResizable() ? $file->resize(512)->url() : null,
+                        'type'     => $file->type(),
                     ];
                 }
             }
@@ -57,12 +60,8 @@ return [
 
         }
     ],
-    'toString' => function ($value = null) {
-        if (is_array($value) === true) {
-            return Yaml::encode(array_column($value, 'id'));
-        }
-
-        return '';
+    'save' => function ($value = null) {
+        return A::pluck($value, 'filename');
     },
     'validations' => [
         'max',

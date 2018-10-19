@@ -86,12 +86,24 @@ return [
                     $pages = $this->parent->children()->unlisted();
                     break;
                 default:
-                    $pages = $this->parent->children()->merge('drafts');
+                    $pages = $this->parent->childrenAndDrafts();
             }
 
-            // filter by all set templates
-            if ($this->templates) {
-                $pages = $pages->template($this->templates);
+            // loop for the best performance
+            foreach ($pages->data as $id => $page) {
+
+                // remove all protected pages
+                if ($page->isReadable() === false) {
+                    unset($pages->data[$id]);
+                    continue;
+                }
+
+                // filter by all set templates
+                if ($this->templates && in_array($page->intendedTemplate()->name(), $this->templates) === false) {
+                    unset($pages->data[$id]);
+                    continue;
+                }
+
             }
 
             // sort

@@ -240,15 +240,16 @@ class Page extends ModelWithContent
         $templates       = $this->blueprint()->options()['changeTemplate'] ?? false;
         $currentTemplate = $this->intendedTemplate()->name();
 
-        if ($templates === false) {
-            return [];
-        }
+        // add the current template to the array
+        $templates[] = $currentTemplate;
+
+        // make sure every template is only included once
+        $templates = array_unique($templates);
+
+        // sort the templates
+        asort($templates);
 
         foreach ($templates as $template) {
-            if ($currentTemplate === $template) {
-                continue;
-            }
-
             try {
                 $props = Blueprint::load('pages/' . $template);
 
@@ -256,7 +257,7 @@ class Page extends ModelWithContent
                     'name'  => basename($props['name']),
                     'title' => $props['title'],
                 ];
-            } catch (Page $e) {
+            } catch (Exception $e) {
                 // skip invalid blueprints
             }
         }
@@ -368,7 +369,15 @@ class Page extends ModelWithContent
      */
     public function dirname(): string
     {
-        return $this->num() !== null ? $this->num() . Dir::$numSeparator . $this->uid() : $this->uid();
+        if ($this->dirname !== null) {
+            return $this->dirname;
+        }
+
+        if ($this->num() !== null) {
+            return $this->dirname = $this->num() . Dir::$numSeparator . $this->uid();
+        } else {
+            return $this->dirname = $this->uid();
+        }
     }
 
     /**
@@ -642,6 +651,24 @@ class Page extends ModelWithContent
         }
 
         return false;
+    }
+
+    /**
+     * Check if the page can be read by the current user
+     *
+     * @return boolean
+     */
+    public function isReadable(): bool
+    {
+        static $readable = [];
+
+        $template = $this->intendedTemplate()->name();
+
+        if (isset($readable[$template]) === true) {
+            return $readable[$template];
+        }
+
+        return $readable[$template] = $this->permissions()->can('read');
     }
 
     /**
@@ -1128,6 +1155,20 @@ class Page extends ModelWithContent
     }
 
     /**
+     * Sets the dirname manually, which works
+     * more reliable in connection with the inventory
+     * than computing the dirname afterwards
+     *
+     * @param string $dirname
+     * @return self
+     */
+    protected function setDirname(string $dirname = null): self
+    {
+        $this->dirname = $dirname;
+        return $this;
+    }
+
+    /**
      * Sets the draft flag
      *
      * @param boolean $isDraft
@@ -1160,6 +1201,18 @@ class Page extends ModelWithContent
     protected function setParent(Page $parent = null): self
     {
         $this->parent = $parent;
+        return $this;
+    }
+
+    /**
+     * Sets the absolute path to the page
+     *
+     * @param string|null $root
+     * @return self
+     */
+    protected function setRoot(string $root = null): self
+    {
+        $this->root = $root;
         return $this;
     }
 
