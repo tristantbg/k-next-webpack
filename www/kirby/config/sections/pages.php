@@ -15,18 +15,39 @@ return [
         'parent'
     ],
     'props' => [
+        /**
+         * Image options to control the source and look of page previews
+         */
         'image' => function ($image = null) {
             return $image ?? [];
         },
+        /**
+         * Optional info text setup. Info text is shown on the right (lists) or below (cards) the page title.
+         */
         'info' => function (string $info = null) {
             return $info;
         },
+        /**
+         * The size option controls the size of cards. By default cards are auto-sized and the cards grid will always fill the full width. With a size you can disable auto-sizing. Available sizes: tiny, small, medium, large
+         */
+        'size' => function (string $size = 'auto') {
+            return $size;
+        },
+        /**
+         * Enables/disables manual sorting
+         */
         'sortable' => function (bool $sortable = true) {
             return $sortable;
         },
+        /**
+         * Overwrites manual sorting and sorts by the given field and sorting direction (i.e. date desc)
+         */
         'sortBy' => function (string $sortBy = null) {
             return $sortBy;
         },
+        /**
+         * Filters pages by their status. Available status settings: draft, unlisted, listed, published, all.
+         */
         'status' => function (string $status = '') {
 
             if ($status === 'drafts') {
@@ -40,6 +61,9 @@ return [
             return $status;
 
         },
+        /**
+         * Setup for the main text in the list or cards. By default this will display the page title.
+         */
         'text' => function (string $text = '{{ page.title }}') {
             return $text;
         }
@@ -152,7 +176,6 @@ return [
                     'icon'        => $item->panelIcon(),
                     'image'       => $item->panelImage($this->image, $thumb),
                     'link'        => $item->panelUrl(true),
-                    'url'         => $item->url(),
                     'status'      => $item->status(),
                     'permissions' => [
                         'sort'         => $permissions->can('sort'),
@@ -268,7 +291,10 @@ return [
                         'title' => $props['title'],
                     ];
                 } catch (Throwable $e) {
-                    // skip invalid blueprints
+                    $blueprints[] = [
+                        'name'  => basename($template),
+                        'title' => ucfirst($template),
+                    ];
                 }
             }
 
@@ -285,6 +311,7 @@ return [
                 'headline' => $this->headline,
                 'layout'   => $this->layout,
                 'link'     => $this->link,
+                'size'     => $this->size,
                 'sortable' => $this->sortable
             ],
             'pagination' => $this->pagination,

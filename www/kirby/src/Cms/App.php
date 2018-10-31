@@ -5,7 +5,6 @@ namespace Kirby\Cms;
 use Closure;
 use Exception;
 use Throwable;
-use Kirby\Api\Api;
 use Kirby\Data\Data;
 use Kirby\Email\PHPMailer as Emailer;
 use Kirby\Exception\InvalidArgumentException;
@@ -19,6 +18,7 @@ use Kirby\Http\Visitor;
 use Kirby\Image\Darkroom;
 use Kirby\Session\AutoSession as Session;
 use Kirby\Text\KirbyTag;
+use Kirby\Toolkit\A;
 use Kirby\Toolkit\Controller;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\Dir;
@@ -91,6 +91,7 @@ class App
         $this->setOptionalProperties($props, [
             'languages',
             'path',
+            'request',
             'roles',
             'site',
             'user',
@@ -139,15 +140,18 @@ class App
      */
     public function api(): Api
     {
-        $root   = static::$root . '/config/api';
-        $routes = $this->extensions['api'] ?? [];
+        $root       = static::$root . '/config/api';
+        $extensions = $this->extensions['api'] ?? [];
+        $routes     = (include $root . '/routes.php')($this);
 
         $api = [
-            'authentication' => include $root . '/authentication.php',
-            'collections'    => include $root . '/collections.php',
-            'data'           => include $root . '/data.php',
-            'models'         => include $root . '/models.php',
-            'routes'         => array_merge(include $root . '/routes.php', $routes),
+            'debug'          => $this->option('debug', false),
+            'authentication' => $extensions['authentication'] ?? include $root . '/authentication.php',
+            'data'           => $extensions['data']           ?? [],
+            'collections'    => array_merge($extensions['collections'] ?? [], include $root . '/collections.php'),
+            'models'         => array_merge($extensions['models']      ?? [], include $root . '/models.php'),
+            'routes'         => array_merge($routes, $extensions['routes'] ?? []),
+            'kirby'          => $this,
         ];
 
         return $this->api = $this->api ?? new Api($api);
@@ -514,7 +518,7 @@ class App
      */
     public function option(string $key, $default = null)
     {
-        return $this->options[$key] ?? $default;
+        return A::get($this->options, $key, $default);
     }
 
     /**
@@ -623,13 +627,16 @@ class App
      * Path resolver for the router
      *
      * @param string $path
-     * @param Language $language
+     * @param string|null $language
      * @return mixed
      */
-    public function resolve(string $path = null, Language $language = null)
+    public function resolve(string $path = null, string $language = null)
     {
+        // set the current translation
+        $this->setCurrentTranslation($language);
+
         // set the current locale
-        $this->localize($language);
+        $this->setCurrentLanguage($language);
 
         // the site is needed a couple times here
         $site = $this->site();
@@ -643,7 +650,7 @@ class App
         }
 
         if ($draft = $site->draft($path)) {
-            if ($draft->isVerified(get('token'))) {
+            if ($this->user() || $draft->isVerified(get('token'))) {
                 return $draft;
             }
         }
@@ -798,6 +805,15 @@ class App
     protected function setPath(string $path = null)
     {
         $this->path = $path !== null ? trim($path, '/') : null;
+        return $this;
+    }
+
+    protected function setRequest(array $request = null): self
+    {
+        if ($request !== null) {
+            $this->request = new Request($request);
+        }
+
         return $this;
     }
 

@@ -71,13 +71,6 @@ return [
         }
     ],
     [
-        'pattern' => 'users/(:any)/blueprint',
-        'method'  => 'GET',
-        'action'  => function (string $id) {
-            return $this->user($id)->blueprint();
-        }
-    ],
-    [
         'pattern' => 'users/(:any)/email',
         'method'  => 'PATCH',
         'action'  => function (string $id) {
@@ -96,13 +89,6 @@ return [
         'method'  => 'PATCH',
         'action'  => function (string $id) {
             return $this->user($id)->changeName($this->requestBody('name'));
-        }
-    ],
-    [
-        'pattern' => 'users/(:any)/options',
-        'method'  => 'GET',
-        'action'  => function (string $id) {
-            return $this->user($id)->permissions()->toArray();
         }
     ],
     [

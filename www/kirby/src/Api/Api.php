@@ -23,6 +23,7 @@ class Api
     use Properties;
 
     protected $authentication;
+    protected $debug = false;
     protected $collections = [];
     protected $data = [];
     protected $models = [];
@@ -226,6 +227,12 @@ class Api
         return $this;
     }
 
+    protected function setDebug(bool $debug = false)
+    {
+        $this->debug = $debug;
+        return $this;
+    }
+
     protected function setModels(array $models = null)
     {
         if ($models !== null) {
@@ -264,8 +271,6 @@ class Api
         try {
             $result = $this->call($path, $method, $requestData);
         } catch (Throwable $e) {
-            error_log($e);
-
             if (is_a($e, 'Kirby\Exception\Exception') === true) {
                 $result = ['status' => 'error'] + $e->toArray();
             } else {
@@ -275,7 +280,7 @@ class Api
                     'message'   => $e->getMessage(),
                     'file'      => ltrim($e->getFile(), $_SERVER['DOCUMENT_ROOT'] ?? null),
                     'line'      => $e->getLine(),
-                    'code'      => 500
+                    'code'      => empty($e->getCode()) === false ? $e->getCode() : 500
                 ];
             }
         }
@@ -302,8 +307,22 @@ class Api
             ];
         }
 
+        if (is_array($result) === false) {
+            return $result;
+        }
+
         // pretty print json data
         $pretty = (bool)($requestData['query']['pretty'] ?? false) === true;
+
+        // remove critical info from the result set if
+        // debug mode is switched off
+        if ($this->debug !== true) {
+            unset(
+                $result['file'],
+                $result['exception'],
+                $result['line']
+            );
+        }
 
         if (($result['status'] ?? 'ok') === 'error') {
             return Response::json($result, $result['code'] ?? 400, $pretty);

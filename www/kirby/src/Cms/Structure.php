@@ -29,17 +29,18 @@ class Structure extends Collection
      * @param string $id
      * @param array|StructureObject $object
      */
-    public function __set(string $id, $object)
+    public function __set(string $id, $props)
     {
-        if (is_array($object)) {
+        if (is_a($props, StructureObject::class) === true) {
+            $object = $props;
+        } else {
             $object = new StructureObject([
+                'content'    => $props,
+                'id'         => $props['id'] ?? $id,
                 'parent'     => $this->parent,
-                'content'    => $object,
-                'id'         => $object['id'] ?? $id,
+                'structure'  => $this
             ]);
         }
-
-        $object->collection = $this;
 
         return parent::__set($object->id(), $object);
     }

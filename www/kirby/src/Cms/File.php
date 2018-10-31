@@ -181,7 +181,7 @@ class File extends ModelWithContent
      */
     public function asset(): Image
     {
-        return $this->asset = $this->asset ?? new Image($this->root(), $this->url());
+        return $this->asset = $this->asset ?? new Image($this->root());
     }
 
     /**
@@ -194,20 +194,6 @@ class File extends ModelWithContent
         }
 
         return $this->blueprint = FileBlueprint::factory('files/' . $this->template(), 'files/default', $this);
-    }
-
-    /**
-     * Returns the parent Files collection
-     *
-     * @return Files
-     */
-    public function collection(): Files
-    {
-        if (is_a($this->collection, 'Kirby\Cms\Files') === true) {
-            return $this->collection;
-        }
-
-        return $this->collection = $this->parent()->files();
     }
 
     /**
@@ -273,9 +259,9 @@ class File extends ModelWithContent
                 // no break
             case 'markdown':
                 if ($this->type() === 'image') {
-                    return '![' . $this->alt() . '](' . $this->url() . ')';
+                    return '![' . $this->alt() . '](./' . $this->filename() . ')';
                 } else {
-                    return '[' . $this->filename() . '](' . $this->url() . ')';
+                    return '[' . $this->filename() . '](./' . $this->filename() . ')';
                 }
         }
     }
@@ -308,6 +294,15 @@ class File extends ModelWithContent
     public function files(): Files
     {
         return $this->collection();
+    }
+
+    /**
+     * @param  array  $attr
+     * @return string
+     */
+    public function html(array $attr = []): string
+    {
+        return Html::img($this->url(), $attr);
     }
 
     /**
@@ -358,13 +353,23 @@ class File extends ModelWithContent
     }
 
     /**
+     * Create a unique media hash
+     *
+     * @return string
+     */
+    public function mediaHash(): string
+    {
+        return crc32($this->filename()) . '-' . $this->modified();
+    }
+
+    /**
      * Returns the absolute path to the file in the public media folder
      *
      * @return string
      */
     public function mediaRoot(): string
     {
-        return $this->parent()->mediaRoot() . '/' . $this->filename();
+        return $this->parent()->mediaRoot() . '/' . $this->mediaHash() . '/' . $this->filename();
     }
 
     /**
@@ -374,7 +379,7 @@ class File extends ModelWithContent
      */
     public function mediaUrl(): string
     {
-        return $this->parent()->mediaUrl() . '/' . $this->filename();
+        return $this->parent()->mediaUrl() . '/' . $this->mediaHash() . '/' . $this->filename();
     }
 
     /**
@@ -646,6 +651,16 @@ class File extends ModelWithContent
     {
         $this->url = $url;
         return $this;
+    }
+
+    /**
+     * Returns the parent Files collection
+     *
+     * @return Files
+     */
+    protected function siblingsCollection()
+    {
+        return $this->parent()->files();
     }
 
     /**

@@ -38,7 +38,6 @@ trait PageActions
 
             // actually move the page on disk
             if ($oldPage->exists() === true) {
-                error_log($newPage->root() . '->' . $newPage->root());
                 Dir::move($oldPage->root(), $newPage->root());
             }
 
@@ -320,6 +319,14 @@ trait PageActions
 
         // create a temporary page object
         $page = Page::factory($props);
+
+        // create a form for the page
+        $form = Form::for($page, [
+            'values' => $props['content'] ?? []
+        ]);
+
+        // inject the content
+        $page = $page->clone(['content' => $form->data(true)]);
 
         // run the hooks and creation action
         $page = $page->commit('create', [$page, $props], function ($page, $props) {
@@ -720,6 +727,10 @@ trait PageActions
      */
     public function update(array $input = null, string $language = null, bool $validate = false)
     {
+        if ($this->isDraft() === true) {
+            $validate = false;
+        }
+
         $page = parent::update($input, $language, $validate);
 
         // if num is created from page content, update num on content update

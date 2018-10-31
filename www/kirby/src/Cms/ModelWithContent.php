@@ -49,7 +49,7 @@ abstract class ModelWithContent extends Model
             $data = $this->translationData($languageCode);
         }
 
-        return $this->setContent($data)->content();
+        return $this->setContent($data)->content;
     }
 
     /**
@@ -93,7 +93,7 @@ abstract class ModelWithContent extends Model
         $errors = [];
 
         foreach ($this->blueprint()->sections() as $section) {
-            if (method_exists($section, 'errors') === true) {
+            if (method_exists($section, 'errors') === true || isset($section->errors)) {
                 $errors = array_merge($errors, $section->errors());
             }
         }

@@ -20,6 +20,9 @@ return [
         'content' => function (Page $page) {
             return Form::for($page)->values();
         },
+        'drafts' => function (Page $page) {
+            return $page->drafts();
+        },
         'errors' => function (Page $page) {
             return $page->errors();
         },
@@ -28,6 +31,9 @@ return [
         },
         'hasChildren' => function (Page $page) {
             return $page->hasChildren();
+        },
+        'hasDrafts' => function (Page $page) {
+            return $page->hasDrafts();
         },
         'id' => function (Page $page) {
             return $page->id();
@@ -53,6 +59,9 @@ return [
         'prev' => function (Page $page) {
             return $page->prevAll()->filterBy('isReadable', true)->last();
         },
+        'previewUrl' => function (Page $page) {
+            return $page->previewUrl();
+        },
         'siblings' => function (Page $page) {
             if ($page->isDraft() === true) {
                 return $page->parentModel()->children()->not($page);
@@ -73,7 +82,7 @@ return [
             return $page->title()->value();
         },
         'url' => function (Page $page) {
-            return $page->previewUrl();
+            return $page->url();
         },
     ],
     'type' => Page::class,

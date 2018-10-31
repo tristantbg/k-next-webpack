@@ -111,7 +111,6 @@ class Response
         try {
             return $this->send();
         } catch (Throwable $e) {
-            error_log($e);
             return '';
         }
     }
@@ -178,6 +177,17 @@ class Response
                 'Connection'                => 'close'
             ]
         ]);
+    }
+
+    /**
+     * Creates a response for a file and
+     * sends the file content to the browser
+     *
+     * @return self
+     */
+    public static function file(string $file)
+    {
+        return new static(F::read($file), F::mime($file));
     }
 
     /**

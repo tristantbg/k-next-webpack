@@ -116,7 +116,9 @@
 
   "page.create": "Create draft",
   "page.created": "The draft has been created",
-  "page.delete.confirm": "Do you really want to delete <br><strong>{title}</strong>?",
+  "page.delete.confirm": "Do you really want to delete <strong>{title}</strong>?",
+  "page.delete.confirm.title": "Enter the page title to confirm",
+  "page.delete.confirm.subpages": "<strong>This page has subpages</strong>. <br>All subpages will be deleted as well.",
   "page.deleted": "The page has been deleted",
   "page.rename.fromTitle": "Create from title",
   "page.renamed": "The page has been renamed",
@@ -219,6 +221,8 @@
 
   "error.email.preset.notFound": "The email preset \"{name}\" cannot be found",
 
+  "error.file.notFound": "The file \"{filename}\" cannot be found",
+  "error.file.undefined": "The file cannot be found",
   "error.file.name.missing": "The filename must not be empty",
   "error.file.forbidden": "You are not allowed to upload {type} files",
   "error.file.extension.missing": "The extensions for \"{filename}\" is missing",
@@ -251,6 +255,7 @@
   "error.form.time.notation": "Invalid time notation",
   "error.form.url.invalid": "Invalid URL",
 
+  "error.page.notFound": "The page \"{slug}\" cannot be found",
   "error.page.undefined": "The page cannot be found",
   "error.page.duplicate": "A page with the URL appendix \"{slug}\" already exists",
   "error.page.draft.duplicate": "A page draft with the URL appendix \"{slug}\" already exists",
@@ -262,6 +267,7 @@
   "error.template.default.notFound": "The default template does not exist",
   "error.page.status.invalid": "Please set a valid page status",
   "error.page.delete": "The page \"{slug}\" cannot be deleted",
+  "error.page.delete.confirm": "Please enter the page title to confirm",
   "error.page.delete.permission": "You are not allowed to delete \"{slug}\"",
   "error.page.delete.hasChildren": "The page has subpages and cannot be deleted",
   "error.page.update.permission": "You are not allowed to update \"{slug}\"",
@@ -288,6 +294,7 @@
   "error.site.update.permission": "You are not allowed to update the site",
 
   "error.user.notFound": "The user \"{name}\" cannot be found",
+  "error.user.undefined": "The user cannot be found",
   "error.user.delete": "The user \"{name}\" cannot be deleted",
   "error.user.duplicate": "A user with the email address \"{email}\" already exists",
   "error.user.changeEmail.permission": "You are not allowed to change the email for the user \"{name}\"",

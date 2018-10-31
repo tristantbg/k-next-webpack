@@ -140,8 +140,7 @@ class User extends ModelWithContent
     public function avatar(): Avatar
     {
         return $this->avatar = $this->avatar ?? new Avatar([
-            'url'   => $this->mediaUrl() . '/profile.jpg',
-            'user'  => $this
+            'user' => $this
         ]);
     }
 
@@ -165,20 +164,6 @@ class User extends ModelWithContent
                 'title' => 'Default',
             ]);
         }
-    }
-
-    /**
-     * Returns the parent Users collection
-     *
-     * @return Users
-     */
-    public function collection(): Users
-    {
-        if (is_a($this->collection, 'Kirby\Cms\Users') === true) {
-            return $this->collection;
-        }
-
-        return $this->collection = $this->kirby()->users();
     }
 
     /**
@@ -272,6 +257,16 @@ class User extends ModelWithContent
     public function exists(): bool
     {
         return is_file($this->root() . '/user.txt') === true;
+    }
+
+    /**
+     * File finder
+     *
+     * @return Avatar
+     */
+    public function file()
+    {
+        return $this->avatar();
     }
 
     /**
@@ -681,6 +676,16 @@ class User extends ModelWithContent
         }
 
         return $session;
+    }
+
+    /**
+     * Returns the parent Users collection
+     *
+     * @return Users
+     */
+    protected function siblingsCollection()
+    {
+        return $this->kirby()->users();
     }
 
     /**

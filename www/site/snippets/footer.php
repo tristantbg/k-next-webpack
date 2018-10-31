@@ -12,7 +12,6 @@
   <br>Please <a href="http://outdatedbrowser.com" target="_blank">upgrade your browser</a> to improve your experience.</p>
   </div>
 </div>
-<div id="outdated"><!-- handled by assets/js/vendor/outdated lib !--></div>
 
 <?php if($site->googleanalytics()->isNotEmpty()): ?>
   <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -33,7 +32,7 @@
 <?php if($kirby->option('environnement') == 'dev'): ?>
   <script src="http://localhost:8080/assets/bundle.js"></script>
 <?php else: ?>
-  <?= js('assets/build/bundle.js'); ?>
+  <?= Bnomei\Fingerprint::js('assets/build/bundle.js') ?>
 <?php endif ?>
 
 </body>

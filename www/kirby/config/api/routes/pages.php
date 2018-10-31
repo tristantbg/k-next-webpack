@@ -25,14 +25,7 @@ return [
         'pattern' => 'pages/(:any)',
         'method'  => 'DELETE',
         'action'  => function (string $id) {
-            return $this->page($id)->delete();
-        }
-    ],
-    [
-        'pattern' => 'pages/(:any)/blueprints',
-        'method'  => 'GET',
-        'action'  => function (string $id) {
-            return $this->page($id)->blueprints($this->requestQuery('section'));
+            return $this->page($id)->delete($this->requestBody('force', false));
         }
     ],
     [
@@ -47,6 +40,13 @@ return [
         'method'  => 'POST',
         'action'  => function (string $id) {
             return $this->page($id)->createChild($this->requestBody());
+        }
+    ],
+    [
+        'pattern' => 'pages/(:any)/children/blueprints',
+        'method'  => 'GET',
+        'action'  => function (string $id) {
+            return $this->page($id)->blueprints($this->requestQuery('section'));
         }
     ],
     [
@@ -121,14 +121,7 @@ return [
         }
     ],
     [
-        'pattern' => 'pages/(:any)/files/(:any)/options',
-        'method'  => 'GET',
-        'action'  => function (string $id, string $filename) {
-            return $this->file($id, $filename)->permissions()->toArray();
-        }
-    ],
-    [
-        'pattern' => 'pages/(:any)/files/(:any)/rename',
+        'pattern' => 'pages/(:any)/files/(:any)/name',
         'method'  => 'PATCH',
         'action'  => function (string $id, string $filename) {
             return $this->file($id, $filename)->changeName($this->requestBody('name'));
@@ -141,13 +134,6 @@ return [
             if ($section = $this->file($id, $filename)->blueprint()->section($sectionName)) {
                 return $section->toResponse();
             }
-        }
-    ],
-    [
-        'pattern' => 'pages/(:any)/options',
-        'method'  => 'GET',
-        'action'  => function (string $id) {
-            return $this->page($id)->permissions()->toArray();
         }
     ],
     [

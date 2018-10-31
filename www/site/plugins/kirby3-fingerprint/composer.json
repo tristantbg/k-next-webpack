@@ -1,0 +1,37 @@
+{
+    "name": "bnomei/kirby3-fingerprint",
+    "type": "plugin",
+    "version": "2.2.0",
+    "description": "File Method and css/js helper to add cachbusting hash and optional Subresource Integrity to file",
+    "license": "MIT",
+    "autoload": {
+        "files": [
+            "config.php"
+        ],
+        "psr-4": {
+            "Bnomei\\": "classes/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Bruno Meilick",
+            "email": "b@bnomei.com"
+        }
+    ],
+    "repositories": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/k-next/kirby"
+        }
+      ],
+    "require": {
+    },
+    "require-dev" : {
+    },
+    "scripts": {
+        "build": "composer update; composer dumpautoload -o;",
+        "dev-zip": "rm kirby3-fingerprint.zip; composer remove getkirby/cms; composer dumpautoload -o; composer archive --format=zip --file=kirby3-fingerprint; composer require getkirby/cms:'dev-master as 3.0.0'; composer dumpautoload -o;",
+        "zip": "rm kirby3-fingerprint.zip; composer update; composer remove getkirby/cms; composer dumpautoload -o; zip -r kirby3-fingerprint.zip . -x *.git*; composer require getkirby/cms:'dev-master as 3.0.0'; composer dumpautoload -o;"
+    },
+    "minimum-stability": "beta"
+}

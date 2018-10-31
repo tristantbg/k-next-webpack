@@ -49,63 +49,101 @@ class Field extends Component
 
         parent::__construct($type, $attrs);
 
-        // apply the default value if the field is empty
-        if ($this->isEmpty() === true) {
-            $this->value = $this->default;
-        }
-
         $this->validate();
     }
 
-    public function data()
+    public function data($default = false)
     {
         $save = $this->options['save'] ?? true;
 
         if ($save === false) {
-            return null;
+            $value = null;
+        } elseif (is_callable($save) === true) {
+            $value = $save->call($this, $this->value);
+        } else {
+            $value = $this->value;
         }
 
-        if (is_callable($save) === true) {
-            return $save->call($this, $this->value);
+        if ($default === true && $this->isEmpty($value)) {
+            $value = $this->default();
         }
 
-        return $this->value;
+        return $value;
     }
 
-    protected function defaults(): array
+    public static function defaults(): array
     {
         return [
             'props' => [
+                /**
+                 * Optional text that will be shown after the input
+                 */
                 'after' => function ($after = null) {
                     return I18n::translate($after, $after);
                 },
+                /**
+                 * Sets the focus on this field when the form loads. Only the first field with this label gets
+                 */
                 'autofocus' => function (bool $autofocus = null): bool {
                     return $autofocus ?? false;
                 },
+                /**
+                 * Optional text that will be shown before the input
+                 */
                 'before' => function ($before = null) {
                     return I18n::translate($before, $before);
                 },
+                /**
+                 * Default value for the field, which will be used when a Page/File/User is created
+                 */
                 'default' => function ($default = null) {
                     return $default;
                 },
+                /**
+                 * If true, the field is no longer editable and will not be saved
+                 */
                 'disabled' => function (bool $disabled = null): bool {
                     return $disabled ?? false;
                 },
+                /**
+                 * Optional help text below the field
+                 */
                 'help' => function ($help = null) {
                     return I18n::translate($help, $help);
                 },
+                /**
+                 * Optional icon that will be shown at the end of the field
+                 */
                 'icon' => function (string $icon = null) {
                     return $icon;
                 },
+                /**
+                 * The field label can be set as string or associative array with translations
+                 */
                 'label' => function ($label = null) {
                     return I18n::translate($label, $label);
                 },
+                /**
+                 * Optional placeholder value that will be shown when the field is empty
+                 */
                 'placeholder' => function ($placeholder = null) {
                     return I18n::translate($placeholder, $placeholder);
                 },
+                /**
+                 * If true, the field has to be filled in correctly to be saved.
+                 */
                 'required' => function (bool $required = null): bool {
                     return $required ?? false;
                 },
+                /**
+                 * If false, the field will be disabled in non-default languages and cannot be translated. This is only relevant in multi-language setups.
+                 */
+                'translate' => function (bool $translate = true): bool {
+                    return $translate;
+                },
+                /**
+                 * The width of the field in the field grid. Available widths: 1/1, 1/2, 1/3, 1/4, 2/3, 3/4
+                 */
                 'width' => function (string $width = '1/1') {
                     return $width;
                 },

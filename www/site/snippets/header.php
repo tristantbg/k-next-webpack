@@ -16,7 +16,7 @@
     <meta name="description" content="<?= $site->description()->html() ?>">
   <?php else: ?>
     <meta name="DC.Title" content="<?= $page->title()->html() ?>" />
-    <?php if(!$page->text()->empty()): ?>
+    <?php if($page->text()->isNotEmpty()): ?>
       <meta name="description" content="<?= $page->text()->excerpt(250) ?>">
       <meta name="DC.Description" content="<?= $page->text()->excerpt(250) ?>"/ >
       <meta property="og:description" content="<?= $page->text()->excerpt(250) ?>" />
@@ -38,13 +38,13 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="<?= html($page->url()) ?>" />
   <?php if($page->featured()->isNotEmpty() && $ogimage = $page->featured()->toFile()): ?>
-    <?php $ogimage = $ogimage->width(1200) ?>
+    <?php $ogimage = $ogimage->resize(1200) ?>
     <meta property="og:image" content="<?= $ogimage->url() ?>"/>
     <meta property="og:image:width" content="<?= $ogimage->width() ?>"/>
     <meta property="og:image:height" content="<?= $ogimage->height() ?>"/>
   <?php else: ?>
     <?php if($site->ogimage()->isNotEmpty() && $ogimage = $site->ogimage()->toFile()): ?>
-      <?php $ogimage = $ogimage->width(1200) ?>
+      <?php $ogimage = $ogimage->resize(1200) ?>
       <meta property="og:image" content="<?= $ogimage->url() ?>"/>
       <meta property="og:image:width" content="<?= $ogimage->width() ?>"/>
       <meta property="og:image:height" content="<?= $ogimage->height() ?>"/>
@@ -59,13 +59,12 @@
     <link rel="stylesheet" media="all" href="http://localhost:8080/assets/index.css" />
     <script src="http://localhost:8080/assets/vendor/modernizr-bundle.js"></script>
   <?php else: ?>
-    <?php
-    echo css('assets/build/index.css');
-    echo js('assets/build/vendor/modernizr-bundle.js');
-    ?>
+    <?= Bnomei\Fingerprint::css('/assets/build/index.css') ?>
+    <?= Bnomei\Fingerprint::js('/assets/build/vendor/modernizr-bundle.js') ?>
   <?php endif ?>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
 
-  <?php if(!$site->customcss()->empty()): ?>
+  <?php if($site->customcss()->isNotEmpty()): ?>
     <style type="text/css">
       <?php echo $site->customcss()->html() ?>
     </style>

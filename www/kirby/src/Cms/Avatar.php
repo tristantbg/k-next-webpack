@@ -4,6 +4,7 @@ namespace Kirby\Cms;
 
 use Kirby\Exception\BadMethodCallException;
 use Kirby\Image\Image;
+use Kirby\Toolkit\F;
 
 /**
  * The Avatar class handles user images.
@@ -94,6 +95,16 @@ class Avatar extends Model
     }
 
     /**
+     * Renders the HTML for the avatar
+     *
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->asset()->html();
+    }
+
+    /**
      * Returns the defined Image object
      * or initializes a default.
      *
@@ -101,7 +112,7 @@ class Avatar extends Model
      */
     public function asset(): Image
     {
-        return $this->asset = $this->asset ?? new Image($this->root(), $this->url());
+        return $this->asset = $this->asset ?? new Image($this->root());
     }
 
     /**
@@ -127,13 +138,47 @@ class Avatar extends Model
     }
 
     /**
+     * @param  array  $attr
+     * @return string
+     */
+    public function html(array $attr = []): string
+    {
+        return Html::img($this->url(), $attr);
+    }
+
+    public function id(): string
+    {
+        return $this->root();
+    }
+
+    /**
+     * Avatars are resizable by default
+     *
+     * @return boolean
+     */
+    public function isResizable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Create a unique media hash
+     *
+     * @return string
+     */
+    public function mediaHash(): string
+    {
+        return crc32($this->filename()) . '-' . $this->modified();
+    }
+
+    /**
      * Returns the absolute path to the file in the public media folder
      *
      * @return string
      */
     public function mediaRoot(): string
     {
-        return $this->user()->mediaRoot() . '/' . $this->filename();
+        return $this->user()->mediaRoot() . '/' . $this->mediaHash() . '/' . $this->filename();
     }
 
     /**
@@ -143,7 +188,19 @@ class Avatar extends Model
      */
     public function mediaUrl(): string
     {
-        return $this->user()->mediaUrl() . '/' . $this->filename();
+        return $this->user()->mediaUrl() . '/' . $this->mediaHash() . '/' . $this->filename();
+    }
+
+    /**
+     * Get the file's last modification time.
+     *
+     * @param  string $format
+     * @param  string|null $handler date or strftime
+     * @return mixed
+     */
+    public function modified(string $format = null, string $handler = null)
+    {
+        return F::modified($this->root(), $format, $handler ?? $this->kirby()->option('date.handler', 'date'));
     }
 
     /**

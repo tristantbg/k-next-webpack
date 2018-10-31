@@ -633,7 +633,7 @@ class Str
      *                           string is too long. Ellipsis is the default.
      * @return string            The shortened string
      */
-    public static function short(string $string, int $length = 0, string $appendix = '…'): string
+    public static function short(string $string = null, int $length = 0, string $appendix = '…'): ?string
     {
         if ($length === 0) {
             return $string;
@@ -715,7 +715,7 @@ class Str
             return $string;
         }
 
-        $string = trim($string, $separator);
+        $string = trim((string)$string, $separator);
         $parts  = explode($separator, $string);
         $out    = [];
 

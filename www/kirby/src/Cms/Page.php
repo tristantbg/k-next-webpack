@@ -285,24 +285,6 @@ class Page extends ModelWithContent
     }
 
     /**
-     * Returns the default parent collection
-     *
-     * @return Collection
-     */
-    public function collection()
-    {
-        if (is_a($this->collection, 'Kirby\Cms\Collection')) {
-            return $this->collection;
-        }
-
-        if ($parent = $this->parentModel()) {
-            return $this->collection = $parent->children();
-        }
-
-        return $this->collection = new Pages([$this]);
-    }
-
-    /**
      * Returns the content text file
      * which is found by the inventory method
      *
@@ -573,8 +555,8 @@ class Page extends ModelWithContent
         // inspect the current request
         $request = $kirby->request();
 
-        // disable the pages cache for any request types but GET or special data
-        if ((string)$request->method() !== 'GET' || empty($request->data()) === false) {
+        // disable the pages cache for any request types but GET or HEAD or special data
+        if (in_array($request->method(), ['GET', 'HEAD']) === false || empty($request->data()) === false) {
             return false;
         }
 
@@ -646,11 +628,7 @@ class Page extends ModelWithContent
      */
     public function isErrorPage(): bool
     {
-        if ($errorPage = $this->site()->errorPage()) {
-            return $errorPage->is($this);
-        }
-
-        return false;
+        return $this->id() === $this->site()->errorPageId();
     }
 
     /**
@@ -678,11 +656,7 @@ class Page extends ModelWithContent
      */
     public function isHomePage(): bool
     {
-        if ($homePage = $this->site()->homePage()) {
-            return $homePage->is($this);
-        }
-
-        return false;
+        return $this->id() === $this->site()->homePageId();
     }
 
     /**
@@ -1010,15 +984,27 @@ class Page extends ModelWithContent
     /**
      * Draft preview Url
      *
-     * @return string
+     * @return string|null
      */
-    public function previewUrl(): string
+    public function previewUrl(): ?string
     {
-        if ($this->isDraft() === true) {
-            return $this->url() . '?token=' . $this->token();
-        } else {
-            return $this->url();
+        $preview = $this->blueprint()->preview();
+
+        if ($preview === false) {
+            return null;
         }
+
+        if ($preview === true) {
+            $url = $this->url();
+        } else {
+            $url = $preview;
+        }
+
+        if ($this->isDraft() === true) {
+            $url .= '?token=' . $this->token();
+        }
+
+        return $url;
     }
 
     /**
@@ -1271,10 +1257,13 @@ class Page extends ModelWithContent
             if ($languageCode === null) {
                 $languageCode = $this->kirby()->languageCode();
             }
-            return $this->translations()->find($languageCode)->slug() ?? $this->slug;
-        } else {
-            return $this->slug;
+
+            if ($translation = $this->translations()->find($languageCode)) {
+                return $translation->slug() ?? $this->slug;
+            }
         }
+
+        return $this->slug;
     }
 
     /**

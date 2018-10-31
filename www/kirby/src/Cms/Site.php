@@ -255,7 +255,11 @@ class Site extends ModelWithContent
             return $this->errorPage;
         }
 
-        return $this->errorPage = $this->find($this->errorPageId());
+        if ($error = $this->find($this->errorPageId())) {
+            return $this->errorPage = $error;
+        }
+
+        return null;
     }
 
     /**
@@ -289,7 +293,11 @@ class Site extends ModelWithContent
             return $this->homePage;
         }
 
-        return $this->homePage ?? $this->find($this->homePageId());
+        if ($home = $this->find($this->homePageId())) {
+            return $this->homePage = $home;
+        }
+
+        return null;
     }
 
     /**
@@ -379,7 +387,11 @@ class Site extends ModelWithContent
             return $this->page;
         }
 
-        return $this->page = $this->homePage();
+        try {
+            return $this->page = $this->homePage();
+        } catch (LogicException $e) {
+            return $this->page = null;
+        }
     }
 
     /**
@@ -482,22 +494,6 @@ class Site extends ModelWithContent
     }
 
     /**
-     * Sets the error page object
-     *
-     * @param Page|null $errorPage
-     * @return self
-     */
-    public function setErrorPage(Page $errorPage = null): self
-    {
-        if (is_a($this->errorPage, 'Kirby\Cms\Page') === true) {
-            throw new LogicException('The error page has already been set');
-        }
-
-        $this->errorPage = $errorPage;
-        return $this;
-    }
-
-    /**
      * Sets the id of the error page, which
      * is used in the errorPage method
      * to get the default error page if nothing
@@ -509,22 +505,6 @@ class Site extends ModelWithContent
     protected function setErrorPageId(string $id = 'error'): self
     {
         $this->errorPageId = $id;
-        return $this;
-    }
-
-    /**
-     * Sets the home page object
-     *
-     * @param Page|null $homePage
-     * @return self
-     */
-    public function setHomePage(Page $homePage = null): self
-    {
-        if (is_a($this->homePage, 'Kirby\Cms\Page') === true) {
-            throw new LogicException('The home page has already been set');
-        }
-
-        $this->homePage = $homePage;
         return $this;
     }
 
@@ -636,10 +616,16 @@ class Site extends ModelWithContent
      * returns the current page
      *
      * @param  string|Page $page
+     * @param  string|null $languageCode
      * @return Page
      */
-    public function visit($page): Page
+    public function visit($page, string $languageCode = null): Page
     {
+        if ($languageCode !== null) {
+            $this->kirby()->setCurrentTranslation($languageCode);
+            $this->kirby()->setCurrentLanguage($languageCode);
+        }
+
         // convert ids to a Page object
         if (is_string($page)) {
             $page = $this->find($page);

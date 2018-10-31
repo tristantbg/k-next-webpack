@@ -61,10 +61,15 @@ function csrf(string $check = null)
         }
 
         return $token;
-    } else {
-        // argument has been passed, check the token
-        return $check === $session->get('csrf');
     }
+
+    if (is_string($check) === true) {
+        // argument has been passed, check the token
+        return hash_equals($check, $session->get('csrf')) === true;
+    }
+
+    return false;
+
 }
 
 /**
@@ -530,8 +535,12 @@ function size($value): int
     }
 
     if (is_object($value)) {
-        if ($value instanceof Countable) {
+        if (is_a($value, 'Countable') === true) {
             return count($value);
+        }
+
+        if (is_a($value, 'Kirby\Toolkit\Collection') === true) {
+            return $value->count();
         }
     }
 }

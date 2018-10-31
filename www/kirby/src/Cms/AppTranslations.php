@@ -30,27 +30,58 @@ trait AppTranslations
             return $translations[$locale] ?? [];
         };
 
-        I18n::$locale       = 'en';
-        I18n::$fallback     = 'en';
+        I18n::$locale = function () {
+            if ($this->multilang() === true) {
+                return $this->defaultLanguage()->code();
+            } else {
+                return 'en';
+            }
+        };
+
+        I18n::$fallback = function () {
+            if ($this->multilang() === true) {
+                return $this->defaultLanguage()->code();
+            } else {
+                return 'en';
+            }
+        };
+
         I18n::$translations = [];
     }
 
     /**
-     * Apply the current language
+     * Load and set the current language if it exists
+     * Otherwise fall back to the default language
      *
-     * @param Language $language
+     * @param string $languageCode
+     * @return Language|null
+     */
+    public function setCurrentLanguage(string $languageCode = null)
+    {
+        if ($languageCode === null) {
+            return $this->language = null;
+        }
+
+        if ($language = $this->language($languageCode)) {
+            $this->language = $language;
+        } else {
+            $this->language = $this->defaultLanguage();
+        }
+
+        setlocale(LC_ALL, $this->language->locale());
+
+        return $this->language;
+    }
+
+    /**
+     * Set the current translation
+     *
+     * @param string $translationCode
      * @return void
      */
-    public function localize(Language $language = null)
+    public function setCurrentTranslation(string $translationCode = null)
     {
-        $this->language = $language;
-
-        if ($language !== null) {
-            I18n::$locale = $language->code();
-            setlocale(LC_ALL, $language->locale());
-        } elseif ($locale = ($this->options['locale'] ?? null)) {
-            setlocale(LC_ALL, $locale);
-        }
+        I18n::$locale = $translationCode ?? 'en';
     }
 
     /**
@@ -61,7 +92,7 @@ trait AppTranslations
      */
     public function translation(string $locale = null)
     {
-        $locale = $locale ?? I18n::$locale;
+        $locale = $locale ?? I18n::locale();
         $locale = basename($locale);
 
         // prefer loading them from the translations collection

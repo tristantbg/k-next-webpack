@@ -33,24 +33,17 @@ return [
         }
     ],
     [
+        'pattern' => 'site/children/blueprints',
+        'method'  => 'GET',
+        'action'  => function () {
+            return $this->site()->blueprints($this->requestQuery('section'));
+        }
+    ],
+    [
         'pattern' => 'site/children/search',
         'method'  => 'POST',
         'action'  => function () {
             return $this->site()->children()->query($this->requestBody());
-        }
-    ],
-    [
-        'pattern' => 'site/blueprint',
-        'method'  => 'GET',
-        'action'  => function () {
-            return $this->site()->blueprint();
-        }
-    ],
-    [
-        'pattern' => 'site/blueprints',
-        'method'  => 'GET',
-        'action'  => function () {
-            return $this->site()->blueprints($this->requestQuery('section'));
         }
     ],
     [
@@ -118,14 +111,7 @@ return [
         }
     ],
     [
-        'pattern' => 'site/files/(:any)/options',
-        'method'  => 'GET',
-        'action'  => function (string $filename) {
-            return $this->file(null, $filename)->permissions()->toArray();
-        }
-    ],
-    [
-        'pattern' => 'site/files/(:any)/rename',
+        'pattern' => 'site/files/(:any)/name',
         'method'  => 'PATCH',
         'action'  => function (string $filename) {
             return $this->file(null, $filename)->changeName($this->requestBody('name'));
@@ -145,13 +131,6 @@ return [
         'method'  => 'POST',
         'action'  => function () {
             return $this->site()->find(true, ...$this->requestBody());
-        }
-    ],
-    [
-        'pattern' => 'site/options',
-        'method'  => 'GET',
-        'action'  => function () {
-            return $this->site()->permissions()->toArray();
         }
     ],
     [
