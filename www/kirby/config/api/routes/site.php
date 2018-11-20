@@ -130,7 +130,7 @@ return [
         'pattern' => 'site/find',
         'method'  => 'POST',
         'action'  => function () {
-            return $this->site()->find(true, ...$this->requestBody());
+            return $this->site()->find(false, ...$this->requestBody());
         }
     ],
     [
@@ -144,9 +144,15 @@ return [
         'pattern' => 'site/search',
         'method'  => 'GET',
         'action'  => function () {
-            return $this->site()->index(true)->search($this->requestQuery('q'), [
-                'minlength' => 0
-            ]);
+            return $this->site()
+                        ->index(true)
+                        ->filterBy('isReadable', true)
+                        ->search($this->requestQuery('q'), [
+                            'score'     => [
+                                'id'    => 64,
+                                'title' => 64,
+                            ]
+                        ]);
         }
     ],
     [

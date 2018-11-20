@@ -5,6 +5,7 @@ namespace Kirby\Cms;
 use Kirby\Data\Data;
 use Kirby\Exception\Exception;
 use Kirby\Image\Image;
+use Kirby\Toolkit\A;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\Str;
 use Throwable;
@@ -226,17 +227,15 @@ class File extends ModelWithContent
      * Store the template in addition to the
      * other content.
      *
+     * @param array $data
      * @param string|null $languageCode
      * @return array
      */
-    public function contentFileData(string $languageCode = null): array
+    public function contentFileData(array $data, string $languageCode = null): array
     {
-        $content = $this->content($languageCode)->toArray();
-
-        // store main information in the content file
-        $content['template'] = $this->template();
-
-        return $content;
+        return A::append($data, [
+            'template' => $this->template(),
+        ]);
     }
 
     /**
@@ -431,13 +430,15 @@ class File extends ModelWithContent
     /**
      * Panel icon definition
      *
+     * @param array $params
      * @return array
      */
-    public function panelIcon(): array
+    public function panelIcon(array $params = null): array
     {
         return [
-            'type' => 'file',
-            'back' => 'black'
+            'type'  => 'file',
+            'back'  => 'black',
+            'ratio' => $params['ratio'] ?? null
         ];
     }
 

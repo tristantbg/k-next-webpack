@@ -13,6 +13,7 @@ return [
 
             $fields   = $this->fields;
             $disabled = $this->model->permissions()->update() === false;
+            $content  = $this->model->content()->toArray();
 
             if ($disabled === true) {
                 foreach ($fields as $key => $props) {
@@ -22,8 +23,9 @@ return [
 
             return new Form([
                 'fields' => $fields,
-                'values' => $this->model->content()->toArray(),
+                'values' => $content,
                 'model'  => $this->model,
+                'strict' => true
             ]);
 
         },
@@ -35,6 +37,10 @@ return [
                 // the title should never be updated directly via
                 // fields section to avoid conflicts with the rename dialog
                 unset($fields['title']);
+            }
+
+            foreach ($fields as $index => $props) {
+                unset($fields[$index]['value']);
             }
 
             return $fields;
@@ -59,7 +65,6 @@ return [
     ],
     'toArray' => function () {
         return [
-            'data'   => $this->data,
             'errors' => $this->errors,
             'fields' => $this->fields,
         ];

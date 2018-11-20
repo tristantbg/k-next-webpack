@@ -67,35 +67,41 @@ class KirbyTag
         return (new static(...$arguments))->render();
     }
 
-    public static function parse(string $string, array $data = [], array $options = []): string
+    public static function parse(string $string, array $data = [], array $options = []): self
     {
-        // remove the brackets
+        // remove the brackets, extract the first attribute (the tag type)
         $tag  = trim(rtrim(ltrim($string, '('), ')'));
         $type = trim(substr($tag, 0, strpos($tag, ':')));
         $attr = static::$types[$type]['attr'] ?? [];
 
+        // the type should be parsed as an attribute, so we add it here
+        // to the list of possible attributes
         array_unshift($attr, $type);
 
         // extract all attributes
-        $search = preg_split('!(' . implode('|', $attr) . '):!i', $tag, false, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-        $num    = 0;
+        $regex = sprintf('/\s*(%s):\s*/i', implode('|', $attr));
+        $search = preg_split($regex, $tag, false, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 
-        $attributes = [];
+        // $search is now an array with alternating keys and values
+        // convert it to arrays of keys and values
+        $chunks = array_chunk($search, 2);
+        $keys   = array_column($chunks, 0);
+        $values = array_column($chunks, 1);
 
-        foreach ($search as $key) {
-            if (!isset($search[$num + 1])) {
-                break;
-            }
-            $key   = trim($search[$num]);
-            $value = trim($search[$num + 1]);
-
-            $attributes[$key] = $value;
-            $num = $num + 2;
+        // ensure that there is a value for each key
+        // otherwise combining won't work
+        if (count($values) < count($keys)) {
+            $values[] = '';
         }
 
+        // combine the two arrays to an associative array
+        $attributes = array_combine($keys, $values);
+
+        // the first attribute is the type attribute
+        // extract and pass its value separately
         $value = array_shift($attributes);
 
-        return (new static($type, $value, $attributes, $data, $options))->render();
+        return new static($type, $value, $attributes, $data, $options);
     }
 
     public function option(string $key, $default = null)
@@ -105,8 +111,10 @@ class KirbyTag
 
     public function render()
     {
-        if (is_a(static::$types[$this->type]['html'], 'Closure') === true) {
-            return static::$types[$this->type]['html']($this, $this);
+        $callback = static::$types[$this->type]['html'] ?? null;
+
+        if (is_a($callback, Closure::class) === true) {
+            return $callback($this);
         }
 
         throw new BadMethodCallException('Invalid tag render function in tag: ' . $this->type);

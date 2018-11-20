@@ -23,6 +23,7 @@ class Form
         $fields = $props['fields'] ?? [];
         $values = $props['values'] ?? [];
         $input  = $props['input']  ?? [];
+        $strict = $props['strict'] ?? false;
         $inject = $props;
 
         // lowercase all value names
@@ -32,7 +33,7 @@ class Form
         unset($inject['fields'], $inject['values'], $inject['input']);
 
         $this->fields = new Fields;
-        $this->values = array_merge($values, $input);
+        $this->values = [];
 
         foreach ($fields as $name => $props) {
 
@@ -40,7 +41,7 @@ class Form
             $props = array_merge($inject, $props);
 
             // inject the name
-            $props['name']  = $name = strtolower($name);
+            $props['name'] = $name = strtolower($name);
 
             // overwrite the field value if not set
             if (($props['disabled'] ?? false) === true) {
@@ -68,19 +69,34 @@ class Form
 
             $this->fields->append($name, $field);
         }
+
+        if ($strict !== true) {
+
+            // use all given values, no matter
+            // if there's a field or not.
+            $input = array_merge($values, $input);
+
+            foreach ($input as $key => $value) {
+                if (isset($this->values[$key]) === false) {
+                    $this->values[$key] = $value;
+                }
+            }
+        }
     }
 
     public function data($defaults = false): array
     {
-        $data = [];
+        $data = $this->values;
 
         foreach ($this->fields as $field) {
-            if ($field->save() !== false) {
+            if ($field->save() === false || $field->unset() === true) {
+                unset($data[$field->name()]);
+            } else {
                 $data[$field->name()] = $field->data($defaults);
             }
         }
 
-        return $data + $this->values;
+        return $data;
     }
 
     public function errors(): array

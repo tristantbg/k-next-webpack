@@ -32,7 +32,10 @@ $aliases = [
 
     // toolkit classes
     'a'          => 'Kirby\Toolkit\A',
+    'c'          => 'Kirby\Toolkit\Config',
+    'config'     => 'Kirby\Toolkit\Config',
     'collection' => 'Kirby\Toolkit\Collection',
+    'escape'     => 'Kirby\Toolkit\Escape',
     'f'          => 'Kirby\Toolkit\F',
     'i18n'       => 'Kirby\Toolkit\I18n',
     'obj'        => 'Kirby\Toolkit\Obj',

@@ -51,8 +51,18 @@ trait FileActions
             // rename the main file
             F::move($oldFile->root(), $newFile->root());
 
-            // rename the content file
-            F::move($oldFile->contentFile(), $newFile->contentFile());
+            if ($newFile->kirby()->multilang() === true) {
+                foreach ($newFile->translations() as $translation) {
+                    $translationCode = $translation->code();
+
+                    // rename the content file
+                    F::move($oldFile->contentFile($translationCode), $newFile->contentFile($translationCode));
+                }
+            } else {
+                // rename the content file
+                F::move($oldFile->contentFile(), $newFile->contentFile());
+            }
+
 
             return $newFile;
         });
@@ -67,12 +77,7 @@ trait FileActions
     public function changeSort(int $sort)
     {
         return $this->commit('changeSort', [$this, $sort], function ($file, $sort) {
-            $content = $file
-                ->content()
-                ->update(['sort' => $sort])
-                ->toArray();
-
-            return $file->clone(['content' => $content])->save();
+            return $file->save(['sort' => $sort]);
         });
     }
 
@@ -143,8 +148,15 @@ trait FileActions
                 throw new LogicException('The file could not be created');
             }
 
+            // always create pages in the default language
+            if ($file->kirby()->multilang() === true) {
+                $languageCode = $file->kirby()->defaultLanguage()->code();
+            } else {
+                $languageCode = null;
+            }
+
             // store the content if necessary
-            $file->save();
+            $file->save($file->content()->toArray(), $languageCode);
 
             // add the file to the list of siblings
             $file->siblings()->append($file->id(), $file);

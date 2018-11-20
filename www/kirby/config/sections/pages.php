@@ -166,6 +166,7 @@ return [
 
                 $permissions = $item->permissions();
                 $blueprint   = $item->blueprint();
+                $image       = $item->panelImage($this->image, $thumb);
 
                 $data[] = [
                     'id'          => $item->id(),
@@ -173,8 +174,8 @@ return [
                     'text'        => $item->toString($this->text),
                     'info'        => $item->toString($this->info ?? false),
                     'parent'      => $item->parentId(),
-                    'icon'        => $item->panelIcon(),
-                    'image'       => $item->panelImage($this->image, $thumb),
+                    'icon'        => $item->panelIcon($image),
+                    'image'       => $image,
                     'link'        => $item->panelUrl(true),
                     'status'      => $item->status(),
                     'permissions' => [
@@ -193,23 +194,17 @@ return [
             $errors = [];
 
             if ($this->validateMax() === false) {
-                $errors['max'] = Str::template(
-                    I18n::translate('error.pages.max.' . r($this->max === 1, 'singular', 'plural')),
-                    [
-                        'max'     => $this->max,
-                        'section' => $this->headline
-                    ]
-                );
+                $errors['max'] = I18n::template('error.section.pages.max.' . I18n::form($this->max), [
+                    'max'     => $this->max,
+                    'section' => $this->headline
+                ]);
             }
 
             if ($this->validateMin() === false) {
-                $errors['min'] = Str::template(
-                    I18n::translate('error.pages.min' . r($this->min === 1, 'singular', 'plural')),
-                    [
-                        'min'     => $this->min,
-                        'section' => $this->headline
-                    ]
-                );
+                $errors['min'] = I18n::template('error.section.pages.min.' . I18n::form($this->max), [
+                    'min'     => $this->min,
+                    'section' => $this->headline
+                ]);
             }
 
             if (empty($errors) === true) {

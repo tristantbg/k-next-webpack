@@ -116,8 +116,12 @@ return function (App $app) {
         },
 
         // manipulators
+        'escape' => function($field, $context = 'html') {
+            $field->value = esc($field->value, $context);
+            return $field;
+        },
         'excerpt' => function ($field, int $chars = 0, bool $strip = true, string $rep = '…') {
-            $field->value = Str::excerpt($field->value, $chars, $strip, $rep);
+            $field->value = Str::excerpt($field->kirbytext()->value(), $chars, $strip, $rep);
             return $field;
         },
         'html' => function ($field) {

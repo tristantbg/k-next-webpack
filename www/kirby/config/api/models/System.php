@@ -29,15 +29,24 @@ return [
         'requirements' => function (System $system) {
             return $system->toArray();
         },
+        'breadcrumbTitle' => function () {
+            return $this->site()->blueprint()->title();
+        },
         'title' => function () {
             return $this->site()->title()->value();
         },
         'translation' => function () {
             if ($user = $this->user()) {
-                return $this->kirby()->translation($user->language());
+                $translationCode = $user->language();
+            } else {
+                $translationCode = $this->kirby()->option('panel.language', 'en');
             }
 
-            return $this->kirby()->translation();
+            if ($translation = $this->kirby()->translation($translationCode)) {
+                return $translation;
+            } else {
+                return $this->kirby()->translation('en');
+            }
         },
         'kirbytext' => function () {
             return $this->kirby()->option('panel')['kirbytext'] ?? true;
@@ -52,6 +61,7 @@ return [
     'type'   => System::class,
     'views'  => [
         'panel' => [
+            'breadcrumbTitle',
             'isOk',
             'isInstalled',
             'isLocal',

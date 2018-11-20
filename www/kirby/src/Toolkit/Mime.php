@@ -94,6 +94,38 @@ class Mime
         'zip'   => ['application/x-zip', 'application/zip', 'application/x-zip-compressed'],
     ];
 
+    public static function fix(string $file, string $mime = null, string $extension = null)
+    {
+        // fixing map
+        $map = [
+            'text/html' => [
+                'svg' => [Mime::class, 'fromSvg'],
+            ],
+            'text/plain' => [
+                'css' => 'text/css',
+                'svg' => [Mime::class, 'fromSvg'],
+            ],
+            'text/x-asm' => [
+                'css' => 'text/css'
+            ],
+            'image/svg' => [
+                'svg' => 'image/svg+xml'
+            ]
+        ];
+
+        if ($mode = ($map[$mime][$extension] ?? null)) {
+            if (is_callable($mode) === true) {
+                return $mode($file, $mime, $extension);
+            }
+
+            if (is_string($mode) === true) {
+                return $mode;
+            }
+        }
+
+        return $mime;
+    }
+
     public static function fromExtension(string $extension)
     {
         $mime = static::$types[$extension] ?? null;
@@ -187,17 +219,8 @@ class Mime
             $mime = static::fromExtension($extension);
         }
 
-        // fix broken mime detection for svg files with style attribute
-        if (in_array($mime, ['text/html', 'text/plain']) === true && $extension === 'svg') {
-            $mime = static::fromSvg($file);
-        }
-
-        // normalize image/svg file type
-        if ($mime === 'image/svg') {
-            $mime = 'image/svg+xml';
-        }
-
-        return $mime;
+        // fix broken mime detection
+        return static::fix($file, $mime, $extension);
     }
 
     /**

@@ -109,14 +109,17 @@ return [
             }
 
             foreach ($this->files as $file) {
+
+                $image = $file->panelImage($this->image, $thumb);
+
                 $data[] = [
                     'dragText' => $file->dragText($this->dragTextType),
                     'filename' => $file->filename(),
                     'id'       => $file->id(),
                     'text'     => $file->toString($this->text),
                     'info'     => $file->toString($this->info ?? false),
-                    'icon'     => $file->panelIcon(),
-                    'image'    => $file->panelImage($this->image, $thumb),
+                    'icon'     => $file->panelIcon($image),
+                    'image'    => $image,
                     'link'     => $file->panelUrl(true),
                     'parent'   => $file->parentId(),
                     'url'      => $file->url(),
@@ -133,23 +136,17 @@ return [
             $errors = [];
 
             if ($this->validateMax() === false) {
-                $errors['max'] = Str::template(
-                    I18n::translate('error.files.max.' . r($this->max === 1, 'singular', 'plural')),
-                    [
-                        'max'     => $this->max,
-                        'section' => $this->headline
-                    ]
-                );
+                $errors['max'] = I18n::template('error.section.files.max.' . I18n::form($this->max), [
+                    'max'     => $this->max,
+                    'section' => $this->headline
+                ]);
             }
 
             if ($this->validateMin() === false) {
-                $errors['min'] = Str::template(
-                    I18n::translate('error.files.min.' .  r($this->min === 1, 'singular', 'plural')),
-                    [
-                        'min'     => $this->min,
-                        'section' => $this->headline
-                    ]
-                );
+                $errors['min'] = I18n::template('error.section.files.min.' . I18n::form($this->min), [
+                    'min'     => $this->min,
+                    'section' => $this->headline
+                ]);
             }
 
             if (empty($errors) === true) {
@@ -196,7 +193,11 @@ return [
                 return false;
             }
 
-            if ($this->max && count($this->data) === $this->max - 1) {
+            // count all uploaded files
+            $total = count($this->data);
+            $max   = $this->max ? $this->max - $total : null;
+
+            if ($this->max && $total === $this->max - 1) {
                 $multiple = false;
             } else {
                 $multiple = true;
@@ -205,6 +206,7 @@ return [
             return [
                 'accept'     => $this->accept,
                 'multiple'   => $multiple,
+                'max'        => $max,
                 'api'        => $this->parent->apiUrl(true) . '/files',
                 'attributes' => array_filter([
                     'template' => $this->template

@@ -19,6 +19,7 @@ use Kirby\Image\Darkroom;
 use Kirby\Session\AutoSession as Session;
 use Kirby\Text\KirbyTag;
 use Kirby\Toolkit\A;
+use Kirby\Toolkit\Config;
 use Kirby\Toolkit\Controller;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\Dir;
@@ -113,6 +114,9 @@ class App
 
         // set the singleton
         Model::$kirby = static::$instance = $this;
+
+        // bake config
+        Config::$data = $this->options;
     }
 
     /**
@@ -551,11 +555,15 @@ class App
         $server = $this->server();
         $root   = $this->root('config');
 
-        $main = (array)F::load($root . '/config.php', []);
-        $host = (array)F::load($root . '/config.' . basename($server->host()) . '.php', []);
-        $addr = (array)F::load($root . '/config.' . basename($server->address()) . '.php', []);
+        Config::$data = [];
 
-        return $this->options = array_replace_recursive($main, $host, $addr);
+        $main   = F::load($root . '/config.php', []);
+        $host   = F::load($root . '/config.' . basename($server->host()) . '.php', []);
+        $addr   = F::load($root . '/config.' . basename($server->address()) . '.php', []);
+
+        $config = Config::$data;
+
+        return $this->options = array_replace_recursive($config, $main, $host, $addr);
     }
 
     /**

@@ -313,6 +313,19 @@ class Page extends ModelWithContent
     }
 
     /**
+     * Prepares the content for the write method
+     *
+     * @return array
+     */
+    public function contentFileData(array $data, string $languageCode = null): array
+    {
+        return A::prepend($data, [
+            'title' => $data['title'] ?? null,
+            'slug'  => $data['slug']  ?? null
+        ]);
+    }
+
+    /**
      * Call the page controller
      *
      * @param array $data
@@ -742,7 +755,7 @@ class Page extends ModelWithContent
      */
     public function isVerified(string $token = null)
     {
-        if ($this->isDraft() === false) {
+        if (!$draft = $this->parents()->findBy('status', 'draft')) {
             return true;
         }
 
@@ -829,31 +842,36 @@ class Page extends ModelWithContent
      * Returns the panel icon definition
      * according to the blueprint settings
      *
+     * @params array $params
      * @return array
      */
-    public function panelIcon(): array
+    public function panelIcon(array $params = null): array
     {
         if ($icon = $this->blueprint()->icon()) {
 
             // check for emojis
             if (strlen($icon) !== Str::length($icon)) {
-                return [
+                $options = [
                     'type'  => $icon,
                     'back'  => 'black',
                     'emoji' => true
                 ];
+            } else {
+                $options = [
+                    'type' => $icon,
+                    'back' => 'black',
+                ];
             }
-
-            return [
-                'type' => $icon,
+        } else {
+            $options = [
+                'type' => 'file',
                 'back' => 'black',
             ];
         }
 
-        return [
-            'type' => 'file',
-            'back' => 'black',
-        ];
+        $options['ratio'] = $params['ratio'] ?? null;
+
+        return $options;
     }
 
     /**

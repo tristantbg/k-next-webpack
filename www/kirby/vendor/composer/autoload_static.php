@@ -14,6 +14,10 @@ class ComposerStaticInite3bcbbc118c1197de6dc2746b169e2be
     );
 
     public static $prefixLengthsPsr4 = array (
+        'Z' => 
+        array (
+            'Zend\\Escaper\\' => 13,
+        ),
         'W' => 
         array (
             'Whoops\\' => 7,
@@ -38,6 +42,10 @@ class ComposerStaticInite3bcbbc118c1197de6dc2746b169e2be
     );
 
     public static $prefixDirsPsr4 = array (
+        'Zend\\Escaper\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/zendframework/zend-escaper/src',
+        ),
         'Whoops\\' => 
         array (
             0 => __DIR__ . '/..' . '/filp/whoops/src/Whoops',
@@ -287,6 +295,7 @@ class ComposerStaticInite3bcbbc118c1197de6dc2746b169e2be
         'Kirby\\Cms\\UserRules' => __DIR__ . '/../..' . '/src/Cms/UserRules.php',
         'Kirby\\Cms\\UserRulesTest' => __DIR__ . '/../..' . '/tests/Cms/UserRulesTest.php',
         'Kirby\\Cms\\Users' => __DIR__ . '/../..' . '/src/Cms/Users.php',
+        'Kirby\\Cms\\VTest' => __DIR__ . '/../..' . '/tests/Cms/VTest.php',
         'Kirby\\Data\\CustomHandler' => __DIR__ . '/../..' . '/tests/Data/DataTest.php',
         'Kirby\\Data\\Data' => __DIR__ . '/../..' . '/src/Data/Data.php',
         'Kirby\\Data\\DataTest' => __DIR__ . '/../..' . '/tests/Data/DataTest.php',
@@ -353,6 +362,7 @@ class ComposerStaticInite3bcbbc118c1197de6dc2746b169e2be
         'Kirby\\Form\\OptionsQuery' => __DIR__ . '/../..' . '/src/Form/OptionsQuery.php',
         'Kirby\\Form\\OptionsTest' => __DIR__ . '/../..' . '/tests/Form/OptionsTest.php',
         'Kirby\\Form\\Validations' => __DIR__ . '/../..' . '/src/Form/Validations.php',
+        'Kirby\\Form\\ValidationsTest' => __DIR__ . '/../..' . '/tests/Form/ValidationsTest.php',
         'Kirby\\Http\\Acceptance' => __DIR__ . '/../..' . '/src/Http/Acceptance.php',
         'Kirby\\Http\\Acceptance\\Language' => __DIR__ . '/../..' . '/src/Http/Acceptance/Language.php',
         'Kirby\\Http\\Acceptance\\MimeType' => __DIR__ . '/../..' . '/src/Http/Acceptance/MimeType.php',
@@ -442,10 +452,13 @@ class ComposerStaticInite3bcbbc118c1197de6dc2746b169e2be
         'Kirby\\Toolkit\\CollectionTest' => __DIR__ . '/../..' . '/tests/Toolkit/CollectionTest.php',
         'Kirby\\Toolkit\\Component' => __DIR__ . '/../..' . '/src/Toolkit/Component.php',
         'Kirby\\Toolkit\\ComponentTest' => __DIR__ . '/../..' . '/tests/Toolkit/ComponentTest.php',
+        'Kirby\\Toolkit\\Config' => __DIR__ . '/../..' . '/src/Toolkit/Config.php',
+        'Kirby\\Toolkit\\ConfigTest' => __DIR__ . '/../..' . '/tests/Toolkit/ConfigTest.php',
         'Kirby\\Toolkit\\Controller' => __DIR__ . '/../..' . '/src/Toolkit/Controller.php',
         'Kirby\\Toolkit\\ControllerTest' => __DIR__ . '/../..' . '/tests/Toolkit/ControllerTest.php',
         'Kirby\\Toolkit\\Dir' => __DIR__ . '/../..' . '/src/Toolkit/Dir.php',
         'Kirby\\Toolkit\\DirTest' => __DIR__ . '/../..' . '/tests/Toolkit/DirTest.php',
+        'Kirby\\Toolkit\\Escape' => __DIR__ . '/../..' . '/src/Toolkit/Escape.php',
         'Kirby\\Toolkit\\F' => __DIR__ . '/../..' . '/src/Toolkit/F.php',
         'Kirby\\Toolkit\\FTest' => __DIR__ . '/../..' . '/tests/Toolkit/FTest.php',
         'Kirby\\Toolkit\\File' => __DIR__ . '/../..' . '/src/Toolkit/File.php',
@@ -468,6 +481,7 @@ class ComposerStaticInite3bcbbc118c1197de6dc2746b169e2be
         'Kirby\\Toolkit\\Query' => __DIR__ . '/../..' . '/src/Toolkit/Query.php',
         'Kirby\\Toolkit\\QueryTest' => __DIR__ . '/../..' . '/tests/Toolkit/QueryTest.php',
         'Kirby\\Toolkit\\QueryTestUser' => __DIR__ . '/../..' . '/tests/Toolkit/QueryTestUser.php',
+        'Kirby\\Toolkit\\Silo' => __DIR__ . '/../..' . '/src/Toolkit/Silo.php',
         'Kirby\\Toolkit\\Str' => __DIR__ . '/../..' . '/src/Toolkit/Str.php',
         'Kirby\\Toolkit\\StrTest' => __DIR__ . '/../..' . '/tests/Toolkit/StrTest.php',
         'Kirby\\Toolkit\\TestCase' => __DIR__ . '/../..' . '/tests/Toolkit/TestCase.php',
@@ -525,6 +539,10 @@ class ComposerStaticInite3bcbbc118c1197de6dc2746b169e2be
         'Whoops\\Util\\Misc' => __DIR__ . '/..' . '/filp/whoops/src/Whoops/Util/Misc.php',
         'Whoops\\Util\\SystemFacade' => __DIR__ . '/..' . '/filp/whoops/src/Whoops/Util/SystemFacade.php',
         'Whoops\\Util\\TemplateHelper' => __DIR__ . '/..' . '/filp/whoops/src/Whoops/Util/TemplateHelper.php',
+        'Zend\\Escaper\\Escaper' => __DIR__ . '/..' . '/zendframework/zend-escaper/src/Escaper.php',
+        'Zend\\Escaper\\Exception\\ExceptionInterface' => __DIR__ . '/..' . '/zendframework/zend-escaper/src/Exception/ExceptionInterface.php',
+        'Zend\\Escaper\\Exception\\InvalidArgumentException' => __DIR__ . '/..' . '/zendframework/zend-escaper/src/Exception/InvalidArgumentException.php',
+        'Zend\\Escaper\\Exception\\RuntimeException' => __DIR__ . '/..' . '/zendframework/zend-escaper/src/Exception/RuntimeException.php',
         'claviska\\SimpleImage' => __DIR__ . '/..' . '/claviska/simpleimage/src/claviska/SimpleImage.php',
     );
 

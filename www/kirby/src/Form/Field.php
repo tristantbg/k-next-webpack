@@ -7,6 +7,7 @@ use Kirby\Data\Yaml;
 use Kirby\Exception\InvalidArgumentException;
 use Kirby\Toolkit\Component;
 use Kirby\Toolkit\I18n;
+use Kirby\Toolkit\V;
 
 /**
  * Form Field object that takes a Vue component style
@@ -228,12 +229,7 @@ class Field extends Component
 
         // validate required values
         if ($this->isRequired() === true && $this->save() === true && $this->isEmpty() === true) {
-            $this->errors['required'] = I18n::translate('error.form.field.required', 'The field is required');
-        }
-
-        // no further validations? fine!
-        if (empty($validations) === true) {
-            return true;
+            $this->errors['required'] = I18n::translate('error.validation.required');
         }
 
         foreach ($validations as $key => $validation) {
@@ -253,6 +249,14 @@ class Field extends Component
                 } catch (Exception $e) {
                     $this->errors[$key] = $e->getMessage();
                 }
+            }
+        }
+
+        if (empty($this->validate) === false) {
+            $errors = V::errors($this->value(), $this->validate);
+
+            if (empty($errors) === false) {
+                $this->errors = array_merge($this->errors, $errors);
             }
         }
     }

@@ -6,6 +6,7 @@ use Kirby\Cms\Response;
 use Kirby\Cms\Url;
 use Kirby\Exception\Exception;
 use Kirby\Http\Server;
+use Kirby\Toolkit\Escape;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\I18n;
 use Kirby\Toolkit\View;
@@ -61,11 +62,10 @@ function csrf(string $check = null)
         }
 
         return $token;
-    }
 
-    if (is_string($check) === true) {
+    } elseif (is_string($check) === true && is_string($session->get('csrf')) === true) {
         // argument has been passed, check the token
-        return hash_equals($check, $session->get('csrf')) === true;
+        return hash_equals($session->get('csrf'), $check) === true;
     }
 
     return false;
@@ -141,6 +141,24 @@ function e($condition, $value, $alternative = null)
 {
     echo r($condition, $value, $alternative);
 }
+
+/**
+ * Escape context specific output
+ *
+ * @param  string  $string  Untrusted data
+ * @param  string  $context Location of output
+ * @param  boolean $strict  Whether to escape an extended set of characters (HTML attributes only)
+ * @return string  Escaped data
+ */
+function esc($string, $context = 'html', $strict = false)
+{
+    if (method_exists('Kirby\Toolkit\Escape', $context) === true) {
+        return Escape::$context($string, $strict);
+    }
+
+    return $string;
+}
+
 
 /**
  * Shortcut for $kirby->request()->get()
