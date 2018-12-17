@@ -5,11 +5,7 @@ yarn-error.log
 www/media/*
 /lib
 www/assets/fonts/*
-www/assets/css/app.min.css
-www/assets/css/build/*
-www/assets/js/app.concat.js
-www/assets/js/plugins.concat.js
-www/assets/js/build/*
+www/assets/build/*
 /node_modules
 /npm-debug.log
 www/site/accounts
