@@ -15,8 +15,8 @@ use Kirby\Toolkit\View;
 
 return function ($kirby) {
 
-    $api   = $kirby->options['api']['slug']   ?? 'api';
-    $panel = $kirby->options['panel']['slug'] ?? 'panel';
+    $api   = $kirby->option('api.slug', 'api');
+    $panel = $kirby->option('panel.slug', 'panel');
 
     /**
      * Before routes are running before the
@@ -47,16 +47,20 @@ return function ($kirby) {
             'pattern' => 'media/plugins/index.(css|js)',
             'env'     => 'media',
             'action'  => function (string $extension) use ($kirby) {
-                return new Response(PluginAssets::index($extension), F::extensionToMime($extension));
+                return $kirby
+                    ->response()
+                    ->type($extension)
+                    ->body(PluginAssets::index($extension));
             }
         ],
         [
             'pattern' => 'media/plugins/(:any)/(:any)/(:all).(css|gif|js|jpg|png|svg|webp|woff2|woff)',
             'env'     => 'media',
             'action'  => function (string $provider, string $pluginName, string $filename, string $extension) use ($kirby) {
-
                 if ($url = PluginAssets::resolve($provider . '/' . $pluginName, $filename . '.' . $extension)) {
-                    return Response::redirect($url, 307);
+                    return $kirby
+                        ->response()
+                        ->redirect($url, 307);
                 }
             }
         ],
@@ -107,7 +111,15 @@ return function ($kirby) {
                 $home = $kirby->site()->homePage();
 
                 if ($kirby->url() !== $home->url()) {
-                    return Response::redirect($kirby->site()->url());
+                    if ($kirby->option('languages.detect') === true) {
+                        return $kirby
+                            ->response()
+                            ->redirect($kirby->detectedLanguage()->url());
+                    } else {
+                        return $kirby
+                            ->response()
+                            ->redirect($kirby->site()->url());
+                    }
                 } else {
                     return $home;
                 }
@@ -126,7 +138,7 @@ return function ($kirby) {
             ];
         }
 
-        // fallback route for unprefixed language URLs.
+        // fallback route for unprefixed default language URLs.
         $after[] = [
             'pattern' => '(:all)',
             'method'  => 'ALL',
@@ -142,10 +154,13 @@ return function ($kirby) {
                     ]);
 
                     if ($url->toString() !== $page->url()) {
-                        go($page->url());
+                        return $kirby
+                            ->response()
+                            ->redirect($page->url());
                     }
 
-                    return $page;
+                    return $kirby->resolve($path, $kirby->defaultLanguage()->code());
+
                 }
 
             }
@@ -169,7 +184,9 @@ return function ($kirby) {
             'method'  => 'ALL',
             'env'     => 'site',
             'action'  => function () use ($kirby) {
-                return Response::redirect($kirby->site()->url());
+                return $kirby
+                    ->response()
+                    ->redirect($kirby->site()->url());
             }
         ];
 

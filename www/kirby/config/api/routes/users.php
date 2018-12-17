@@ -1,5 +1,7 @@
 <?php
 
+use Kirby\Toolkit\F;
+
 /**
  * User Routes
  */
@@ -58,8 +60,16 @@ return [
         'pattern' => 'users/(:any)/avatar',
         'method'  => 'POST',
         'action'  => function (string $id) {
+            if ($avatar = $this->user($id)->avatar()) {
+                $avatar->delete();
+            }
+
             return $this->upload(function ($source, $filename) use ($id) {
-                return $this->user($id)->avatar()->replace($source);
+                return $this->user($id)->createFile([
+                    'filename' => 'profile.' . F::extension($filename),
+                    'template' => 'avatar',
+                    'source'   => $source
+                ]);
             }, $single = true);
         }
     ],
@@ -111,6 +121,15 @@ return [
         'action'  => function (string $id, string $sectionName) {
             if ($section = $this->user($id)->blueprint()->section($sectionName)) {
                 return $section->toResponse();
+            }
+        }
+    ],
+    [
+        'pattern' => 'users/(:any)/fields/(:any)/(:all?)',
+        'method'  => 'ALL',
+        'action'  => function (string $id, string $fieldName, string $path = null) {
+            if ($user = $this->user($id)) {
+                return $this->fieldApi($user, $fieldName, $path);
             }
         }
     ]

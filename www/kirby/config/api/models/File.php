@@ -17,8 +17,8 @@ return [
         'dimensions' => function (File $file) {
             return $file->dimensions()->toArray();
         },
-        'exists' => function (File $avatar) {
-            return $avatar->exists();
+        'exists' => function (File $file) {
+            return $file->exists();
         },
         'extension' => function (File $file) {
             return $file->extension();
@@ -64,6 +64,12 @@ return [
         },
         'niceSize' => function (File $file) {
             return $file->niceSize();
+        },
+        'panelIcon' => function (File $file) {
+            return $file->panelIcon();
+        },
+        'panelImage' => function (File $file) {
+            return $file->panelImage();
         },
         'parent' => function (File $file) {
             return $file->parent();
@@ -143,6 +149,8 @@ return [
             'nextWithTemplate' => 'compact',
             'niceSize',
             'options',
+            'panelIcon',
+            'panelImage',
             'parent' => 'compact',
             'parents' => ['id', 'slug', 'title'],
             'prevWithTemplate' => 'compact',

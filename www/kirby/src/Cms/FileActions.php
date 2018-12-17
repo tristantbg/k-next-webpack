@@ -34,7 +34,7 @@ trait FileActions
 
         return $this->commit('changeName', [$this, $name], function ($oldFile, $name) {
             $newFile = $oldFile->clone([
-                'filename' => $name . '.' . $oldFile->extension()
+                'filename' => $name . '.' . $oldFile->extension(),
             ]);
 
             if ($oldFile->exists() === false) {
@@ -135,7 +135,7 @@ trait FileActions
         ]);
 
         // inject the content
-        $file = $file->clone(['content' => $form->data(true)]);
+        $file = $file->clone(['content' => $form->strings(true)]);
 
         // run the hook
         return $file->commit('create', [$file, $upload], function ($file, $upload) {
@@ -177,7 +177,14 @@ trait FileActions
         return $this->commit('delete', [$this], function ($file) {
             $file->unpublish();
 
-            F::remove($file->contentFile());
+            if ($file->kirby()->multilang() === true) {
+                foreach ($file->translations() as $translation) {
+                    F::remove($file->contentFile($translation->code()));
+                }
+            } else {
+                F::remove($file->contentFile());
+            }
+
             F::remove($file->root());
 
             return true;

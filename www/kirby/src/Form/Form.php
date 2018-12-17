@@ -90,7 +90,7 @@ class Form
 
         foreach ($this->fields as $field) {
             if ($field->save() === false || $field->unset() === true) {
-                unset($data[$field->name()]);
+                $data[$field->name()] = null;
             } else {
                 $data[$field->name()] = $field->data($defaults);
             }
@@ -134,12 +134,14 @@ class Form
         return empty($this->errors()) === true;
     }
 
-    public function strings(): array
+    public function strings($defaults = false): array
     {
         $strings = [];
 
-        foreach ($this->data() as $key => $value) {
-            if (is_array($value) === true) {
+        foreach ($this->data($defaults) as $key => $value) {
+            if ($value === null) {
+                $strings[$key] = null;
+            } elseif (is_array($value) === true) {
                 $strings[$key] = Yaml::encode($value);
             } else {
                 $strings[$key] = (string)$value;

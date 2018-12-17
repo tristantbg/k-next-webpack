@@ -1,0 +1,276 @@
+title: Project
+tabs:
+  infos:
+    label: Infos
+    icon: text
+    columns:
+      - width: 3/4
+        sections:
+          infos:
+            type: fields
+            fields:
+              subtitle:
+                label: Subtitle
+                type: text
+              text:
+                label: Description
+                type: textarea
+                size: medium
+              credits:
+                label: Credits
+                type: textarea
+                size: medium
+      - width: 1/4
+        sections:
+          thumbnail:
+            type: fields
+            fields:
+              featured:
+                label: Featured image
+                type: files
+                multiple: false
+                # layout: cards
+                template: image
+              featuredRelated:
+                label: Featured related
+                type: files
+                multiple: false
+                # layout: cards
+                template: image
+              featuredLoop:
+                label: Featured loop
+                type: files
+                multiple: false
+                # layout: cards
+                template: vimeo
+              thumbOverlay:
+                label: Thumbnail overlay
+                type: toggle
+                text:
+                  - Inactive
+                  - Active
+              thumbOverlayOpacity:
+                label: Overlay opacity
+                type: range
+                step: 1
+                min: 0
+                max: 100
+                default: 100
+                tooltip:
+                  after: %
+              thumbOpacity:
+                label: Thumbnail opacity
+                type: range
+                step: 1
+                min: 0
+                max: 100
+                default: 100
+                tooltip:
+                  after: %
+              passwordProtect:
+                label: Password protected
+                type: text
+                icon: lock
+                pattern: "/[a-zA-Z0-9]/"
+  content:
+    label: Content
+    sections:
+      content:
+        type: fields
+        fields:
+          builder:
+            label: Page Content
+            type: builder
+            columns: 1
+            fieldsets:
+              image:
+                label: Image
+                snippet: blocks/image
+                fields:
+                  file:
+                    type: files
+                    template: image
+                    multiple: false
+                    layout: cards
+                    width: 3/4
+                  position:
+                    label: Position
+                    type: radio
+                    default: left
+                    required: true
+                    width: 1/2
+                    options:
+                      left: Left
+                      center: Center
+                      # right: Right
+                    width: 1/4
+              videoexternal:
+                label: Video External
+                snippet: blocks/video.external
+                fields:
+                  file:
+                    type: files
+                    template: vimeo
+                    multiple: false
+                    layout: cards
+                  controls:
+                    label: Video controls
+                    type: toggle
+                    text: ['Hide', 'Show']
+                    default: true
+                    required: true
+                    width: 1/4
+                  muted:
+                    label: Mute video
+                    type: toggle
+                    text: ['No', 'Yes']
+                    default: false
+                    required: true
+                    width: 1/4
+                  padding:
+                    label: Padding
+                    type: range
+                    step: 1
+                    min: 0
+                    default: 0
+                    tooltip:
+                      after: rem
+                    width: 1/2
+              # videoexternal:
+              #   label: Video External
+              #   snippet: blocks/video.external
+              #   fields:
+              #     thumbnail:
+              #       label: Thumbnail
+              #       type: files
+              #       multiple: false
+              #       layout: cards
+              #       width: 1/2
+              #     url:
+              #       label: URL
+              #       type: url
+              #       width: 1/2
+              #     mp4:
+              #       label: Video File URL (.MP4)
+              #       type: url
+              #     stream:
+              #       label: Video Stream URL (.M3U8)
+              #       type: url
+              text:
+                label: Text
+                snippet: blocks/text
+                fields:
+                  text:
+                    label: Text
+                    type: textarea
+                  position:
+                    label: Position
+                    type: radio
+                    default: left
+                    required: true
+                    width: 1/2
+                    options:
+                      left: Left
+                      center: Center
+                      right: Right
+                  fontsize:
+                    label: Font Size
+                    type: radio
+                    default: normal
+                    required: true
+                    width: 1/2
+                    options:
+                      small: Small
+                      normal: Normal
+                      large: Large
+              dualcontent:
+                label: Dual Content
+                # preview:
+                #   snippet: blocks/events
+                #   css: /assets/css/blocks/events.css
+                fields:
+                  blocks:
+                    type: builder
+                    label: Blocks
+                    columns: 2
+                    max: 2
+                    fieldsets:
+                      image:
+                        label: Image
+                        snippet: blocks/image
+                        fields:
+                          file:
+                            type: files
+                            multiple: false
+                            layout: cards
+                      videoexternal:
+                        label: Video External
+                        snippet: blocks/video.external
+                        fields:
+                          file:
+                            type: files
+                            template: vimeo
+                            multiple: false
+                            layout: cards
+                          controls:
+                            label: Video controls
+                            type: toggle
+                            text: ['Hide', 'Show']
+                            default: true
+                            required: true
+                            width: 1/2
+                          muted:
+                            label: Mute video
+                            type: toggle
+                            text: ['No', 'Yes']
+                            default: false
+                            required: true
+                            width: 1/2
+                      # videoexternal:
+                      #   label: Video External
+                      #   snippet: blocks/video.external
+                      #   fields:
+                      #     thumbnail:
+                      #       label: Thumbnail
+                      #       type: files
+                      #       multiple: false
+                      #       layout: cards
+                      #     url:
+                      #       label: URL
+                      #       type: url
+                      #     mp4:
+                      #       label: Video File URL (.MP4)
+                      #       type: url
+                      #     stream:
+                      #       label: Video Stream URL (.M3U8)
+                      #       type: url
+              # quote:
+              #   label: Quote
+              #   preview:
+              #     snippet: blocks/quote
+              #     css: /assets/css/blocks/quote.css
+              #   fields:
+              #     text:
+              #       label: Quote Text
+              #       type: textarea
+              #     citation:
+              #       label: Citation
+              #       type: text
+  files:
+    icon: file
+    sections:
+      images:
+        type: files
+        layout: cards
+        template: image
+      vimeoIDs:
+        type: fields
+        fields:
+          vimeoIDs:
+            label: Add Vimeo videos by ID
+            type: tags
+            split: ,
+      vimeoVideos:
+        headline: Vimeo Videos
+        type: files
+        template: vimeo

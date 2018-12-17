@@ -1,3 +1,5 @@
+<?php snippet('partials/footer-menu') ?>
+
 </div>
 
 </div>
@@ -26,7 +28,7 @@
 <?php endif ?>
 
 <script>
-  var $sitetitle = '<?= $site->title()->escape() ?>';
+	window.csrf = "<?= csrf() ?>"
 </script>
 
 <?php if($kirby->option('environnement') == 'dev'): ?>

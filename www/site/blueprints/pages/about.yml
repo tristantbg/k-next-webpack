@@ -1,0 +1,24 @@
+title: About
+preset: page
+pages: false
+files:
+  template: vimeo
+fields:
+  text:
+    label: Description
+    type: textarea
+    size: medium
+  contact:
+    label: Contact
+    type: textarea
+    size: medium
+  story:
+    label: Story
+    type: files
+    template: vimeo
+    multiple: false
+    layout: cards
+  storyLink:
+    label: Story Link
+    type: url
+

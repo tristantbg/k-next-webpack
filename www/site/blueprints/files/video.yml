@@ -1,0 +1,12 @@
+title: Video
+
+accept:
+  mime: video/mp4, video/webm
+
+fields:
+  alt:
+    label: Alt Text
+    type: text
+  caption:
+    label: Caption
+    type: textarea

@@ -1,0 +1,12 @@
+.block--text
+  padding $padding $space ($padding*2) ($space+$padding)
+  &.text--position-left
+    .block--content
+      span(1/4)
+  &.text--position-center
+    .block--content
+      span(1/4, $offset: 2/4)
+  &.text--position-right
+    .block--content
+      span(1/4, $offset: 3/4)
+

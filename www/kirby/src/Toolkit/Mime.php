@@ -9,6 +9,11 @@ use SimpleXMLElement;
  */
 class Mime
 {
+    /**
+     * Extension to mime type map
+     *
+     * @var array
+     */
     public static $types = [
         'ai'    => 'application/postscript',
         'aif'   => 'audio/x-aiff',
@@ -67,6 +72,7 @@ class Mime
         'ps'    => 'application/postscript',
         'psd'   => 'application/x-photoshop',
         'qt'    => 'video/quicktime',
+        'rss'   => 'application/rss+xml',
         'rtf'   => 'text/rtf',
         'rtx'   => 'text/richtext',
         'shtml' => 'text/html',
@@ -94,6 +100,14 @@ class Mime
         'zip'   => ['application/x-zip', 'application/zip', 'application/x-zip-compressed'],
     ];
 
+    /**
+     * Fixes an invalid mime type guess for the given file
+     *
+     * @param string $file
+     * @param string $mime
+     * @param string $extension
+     * @return string|null
+     */
     public static function fix(string $file, string $mime = null, string $extension = null)
     {
         // fixing map
@@ -126,6 +140,12 @@ class Mime
         return $mime;
     }
 
+    /**
+     * Guesses a mime type by extension
+     *
+     * @param string $extension
+     * @return string|null
+     */
     public static function fromExtension(string $extension)
     {
         $mime = static::$types[$extension] ?? null;
@@ -165,6 +185,12 @@ class Mime
         return false;
     }
 
+    /**
+     * Tries to detect a valid SVG and returns the mime type accordingly
+     *
+     * @param string $file
+     * @return string|false
+     */
     public static function fromSvg(string $file)
     {
         if (file_exists($file) === true) {
@@ -180,6 +206,30 @@ class Mime
         return false;
     }
 
+    /**
+     * Undocumented function
+     *
+     * @return boolean
+     */
+    public static function isAccepted(string $mime, string $pattern): bool
+    {
+        $accepted = Str::accepted($pattern);
+
+        foreach ($accepted as $m) {
+            if (fnmatch($m['value'], $mime, FNM_PATHNAME) === true) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the extension for a given mime type
+     *
+     * @param string|null $mime
+     * @return string|false
+     */
     public static function toExtension(string $mime = null)
     {
         foreach (static::$types as $key => $value) {

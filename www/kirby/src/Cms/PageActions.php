@@ -320,7 +320,7 @@ trait PageActions
         ]);
 
         // inject the content
-        $page = $page->clone(['content' => $form->data(true)]);
+        $page = $page->clone(['content' => $form->strings(true)]);
 
         // run the hooks and creation action
         $page = $page->commit('create', [$page, $props], function ($page, $props) {
@@ -367,16 +367,6 @@ trait PageActions
         return static::create($props);
     }
 
-    public function createFile(array $props)
-    {
-        $props = array_merge($props, [
-            'parent' => $this,
-            'url'    => null
-        ]);
-
-        return File::create($props);
-    }
-
     /**
      * Create the sorting number for the page
      * depending on the blueprint settings
@@ -393,9 +383,9 @@ trait PageActions
                 return 0;
             case 'date':
             case 'datetime':
-                $format = 'date' ? 'Ymd': 'YmdHi';
+                $format = 'date' ? 'Ymd' : 'YmdHi';
                 $date   = $this->content()->get('date')->value();
-                $time   = empty($date) === true ? time(): strtotime($date);
+                $time   = empty($date) === true ? time() : strtotime($date);
 
                 return date($format, $time);
                 break;

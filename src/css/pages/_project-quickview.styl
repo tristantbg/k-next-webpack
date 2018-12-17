@@ -1,0 +1,49 @@
+#project-quickview
+	position fixed
+	top 0
+	left 0
+	width 100%
+	height 65vh
+	pointer-events none
+	z-index 200
+	background $primary
+	visibility hidden
+	&::after
+		content ''
+		position fixed
+		top 0
+		left 0
+		width 100%
+		height 100%
+		z-index 50
+	&.visible
+		visibility visible
+		&::after
+			transition background 300ms ease
+			background alpha($primary, 0.8)
+	.project-hover
+		position absolute
+		top 0
+		left 0
+		width 100%
+		height 65vh
+		overflow hidden
+		z-index 51
+		transition opacity 200ms ease, visibility 200ms ease
+		&:not(.visible)
+			opacity 0
+			visibility hidden
+	.responsive-image
+		.ph
+			display none
+	.plyr__poster
+		display none
+		background-size cover
+	img, video
+		opacity 1
+		transition none
+		object-fit cover
+		font-family 'object-fit: cover'
+	*
+		width 100%
+		height 100%

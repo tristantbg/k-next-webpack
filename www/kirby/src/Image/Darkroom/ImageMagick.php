@@ -62,7 +62,7 @@ class ImageMagick extends Darkroom
         $command = [];
 
         $command[] = $this->convert($file, $options);
-        // $command[] = $this->strip($file, $options);
+        $command[] = $this->strip($file, $options);
         $command[] = $this->interlace($file, $options);
         $command[] = $this->coalesce($file, $options);
         $command[] = $this->grayscale($file, $options);

@@ -406,6 +406,33 @@ class Blueprint
     }
 
     /**
+     * Normalize field props for a single field
+     *
+     * @param string $name
+     * @param string $type
+     * @param array $props
+     * @return array
+     */
+    protected function normalizeField(string $name, string $type, array $props): array
+    {
+        if (isset(Field::$types[$type]) === false) {
+            return [
+                'name'  => $name,
+                'label' => 'Invalid field type ("' . $type . '")',
+                'type'  => 'info',
+                'text'  => 'The following field types are available: ' . $this->helpList(array_keys(Field::$types))
+            ];
+        }
+
+        return array_merge($props, [
+            'label' => $props['label'] ?? ucfirst($name),
+            'name'  => $name,
+            'type'  => $type,
+            'width' => $props['width'] ?? '1/1',
+        ]);
+    }
+
+    /**
      * Normalizes all fields and adds automatic labels,
      * types and widths.
      *
@@ -417,17 +444,6 @@ class Blueprint
     {
         if (is_array($fields) === false) {
             $fields = [];
-        }
-
-        // inject guide
-        if (empty($fields) === true) {
-            $fields = [
-                $tabName . '-info' => [
-                    'label' => 'Fields',
-                    'text'  => 'No fields yet',
-                    'type'  => 'info'
-                ]
-            ];
         }
 
         foreach ($fields as $fieldName => $fieldProps) {
@@ -443,20 +459,21 @@ class Blueprint
                 $fieldProps['fields'] = $this->normalizeFields($tabName, $fieldProps['fields'], $level + 1);
             }
 
-            $fields[$fieldName] = $fieldProps = array_merge($fieldProps, [
-                'label' => $fieldProps['label'] ?? ucfirst($fieldName),
-                'name'  => $fieldName,
-                'type'  => $type = $fieldProps['type'] ?? $fieldName,
-                'width' => $fieldProps['width'] ?? '1/1',
-            ]);
+            // inject the name as field type if it does not exist
+            $fieldType = $fieldProps['type'] ?? $fieldName;
 
-            if (isset(Field::$types[$type]) === false) {
-                $fields[$fieldName] = [
-                    'name' => $fieldName,
-                    'label' => 'Invalid field type ("' . $type . '")',
-                    'type' => 'info',
-                    'text' => 'The following field types are available: ' . $this->helpList(array_keys(Field::$types))
-                ];
+            // resolve field groups
+            if ($fieldType === 'group') {
+                if (empty($fieldProps['fields']) === false && is_array($fieldProps['fields']) === true) {
+                    $index  = array_search($fieldName, array_keys($fields));
+                    $before = array_slice($fields, 0, $index);
+                    $after  = array_slice($fields, $index + 1);
+                    $fields = array_merge($before, $fieldProps['fields'] ?? []);
+                } else {
+                    unset($fields[$fieldName]);
+                }
+            } else {
+                $fields[$fieldName] = $this->normalizeField($fieldName, $fieldType, $fieldProps);
             }
         }
 
@@ -532,7 +549,20 @@ class Blueprint
             }
 
             if ($sectionProps['type'] === 'fields') {
-                $sections[$sectionName]['fields'] = $this->normalizeFields($tabName, $sectionProps['fields'] ?? []);
+                $fields = $this->normalizeFields($tabName, $sectionProps['fields'] ?? []);
+
+                // inject guide fields guide
+                if (empty($fields) === true) {
+                    $fields = [
+                        $tabName . '-info' => [
+                            'label' => 'Fields',
+                            'text'  => 'No fields yet',
+                            'type'  => 'info'
+                        ]
+                    ];
+                }
+
+                $sections[$sectionName]['fields'] = $fields;
             }
         }
 

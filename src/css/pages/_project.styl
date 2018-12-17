@@ -1,52 +1,38 @@
-[page-content=project]
-	#description
-		//
+[page-type=project]
+	&.idle
+		header:not(:hover) *
+			opacity 0
+	header *
+		transition opacity 200ms ease
+	footer
+		position absolute
+		bottom 15rem
+		#about-title
+			bullet()
+		&:not(.opened)
+			pointer-events none
+			#about-header
+				pointer-events auto
 
-#project-medias
-	span(1)
-
-	.portrait
-		span(1/2)
-		float none
-
-	.landscape
-		span(1)
-		float none
-
-	.project-image
-		margin-top ($space * 2)
-
-	.project-image:first-child
-		margin-top 0
-
-	.caption
-		margin-top $space
-
-
-#project-description
-	span(3/4)
-	margin-top ($space * 5)
-	margin-bottom $space
-
-#right-nav
-	position fixed
-	padding $space
-	right 0
-	top 0
-
-#audio-control
-	display inline
-	padding-right $space
-
-audio
-	display none
-
-
-
-.play
-	visibility hidden
-
-.play a&:after
-	visibilty visible
-	content 'Play'
-
+.project-header
+	#menu-categories, #project-title, #project-description, #project-credits
+		span(1/4)
+		&:not(:first-child)
+			padding-left ($content-space/2)
+	#menu-categories:hover
+		.bullet.active:not(:hover)
+			&::after
+				background transparent
+	.nav-page
+		position absolute
+		top $padding
+		right $padding
+		.close-page
+			// display block
+			display none
+			clear both
+			text-align right
+		.previous-page, .next-page
+			margin 0 .1em
+			&:last-child
+				margin-right 0

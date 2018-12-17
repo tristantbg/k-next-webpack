@@ -53,11 +53,6 @@ class Page extends ModelWithContent
     protected $blueprint;
 
     /**
-     * @var string
-     */
-    protected $contentFile;
-
-    /**
      * Sorting number + slug
      *
      * @var string
@@ -285,34 +280,6 @@ class Page extends ModelWithContent
     }
 
     /**
-     * Returns the content text file
-     * which is found by the inventory method
-     *
-     * @param string $languageCode
-     * @return string
-     */
-    public function contentFile(string $languageCode = null): string
-    {
-        // get the current language code if no code is passed
-        if ($languageCode === null) {
-            $languageCode = $this->kirby()->languageCode();
-        }
-
-        // build a multi-lang file path
-        if ($languageCode !== null && $languageCode !== '') {
-            return $this->root() . '/' . $this->intendedTemplate() . '.' . $languageCode . '.' . $this->kirby()->contentExtension();
-        }
-
-        // use the cached version
-        if ($this->contentFile !== null) {
-            return $this->contentFile;
-        }
-
-        // create from template
-        return $this->contentFile = $this->root() . '/' . $this->intendedTemplate() . '.' . $this->kirby()->contentExtension();
-    }
-
-    /**
      * Prepares the content for the write method
      *
      * @return array
@@ -323,6 +290,18 @@ class Page extends ModelWithContent
             'title' => $data['title'] ?? null,
             'slug'  => $data['slug']  ?? null
         ]);
+    }
+
+    /**
+     * Returns the content text file
+     * which is found by the inventory method
+     *
+     * @param string $languageCode
+     * @return string
+     */
+    public function contentFileName(string $languageCode = null): string
+    {
+        return $this->intendedTemplate()->name();
     }
 
     /**
@@ -755,7 +734,7 @@ class Page extends ModelWithContent
      */
     public function isVerified(string $token = null)
     {
-        if (!$draft = $this->parents()->findBy('status', 'draft')) {
+        if ($this->isDraft() === false && !$draft = $this->parents()->findBy('status', 'draft')) {
             return true;
         }
 
@@ -913,11 +892,19 @@ class Page extends ModelWithContent
             $settings['url'] = $image->thumb($thumbSettings)->url(true) . '?t=' . $image->modified();
 
             unset($settings['query']);
-
-            return array_merge($defaults, $settings);
         }
 
-        return null;
+        return array_merge($defaults, $settings);
+    }
+
+    /**
+     * Returns the full path without leading slash
+     *
+     * @return string
+     */
+    public function panelPath(): string
+    {
+        return 'pages/' . $this->panelId();
     }
 
     /**
@@ -929,9 +916,9 @@ class Page extends ModelWithContent
     public function panelUrl(bool $relative = false): string
     {
         if ($relative === true) {
-            return '/pages/' . $this->panelId();
+            return '/' . $this->panelPath();
         } else {
-            return $this->kirby()->url('panel') . '/pages/' . $this->panelId();
+            return $this->kirby()->url('panel') . '/' . $this->panelPath();
         }
     }
 
@@ -1061,22 +1048,29 @@ class Page extends ModelWithContent
      * @param array $data
      * @param string $contentType
      * @param integer $code
-     * @return Response
+     * @return string
      */
-    public function render(array $data = [], $contentType = 'html', int $code = 200): Response
+    public function render(array $data = [], $contentType = 'html'): string
     {
         $kirby = $this->kirby();
-        $cache = $cacheId = $result = null;
+        $cache = $cacheId = $html = null;
 
         // try to get the page from cache
         if (empty($data) === true && $this->isCacheable() === true) {
-            $cache   = $kirby->cache('pages');
-            $cacheId = $this->cacheId($contentType);
-            $result  = $cache->get($cacheId);
+            $cache    = $kirby->cache('pages');
+            $cacheId  = $this->cacheId($contentType);
+            $result   = $cache->get($cacheId);
+            $html     = $result['html'] ?? null;
+            $response = $result['response'] ?? [];
+
+            // reconstruct the response configuration
+            if (empty($html) === false && empty($response) === false) {
+                $kirby->response()->fromArray($response);
+            }
         }
 
         // fetch the page regularly
-        if ($result === null) {
+        if ($html === null) {
             $kirby->data = $this->controller($data, $contentType);
 
             if ($contentType === 'html') {
@@ -1092,15 +1086,21 @@ class Page extends ModelWithContent
             }
 
             // render the page
-            $result = $template->render($kirby->data);
+            $html = $template->render($kirby->data);
+
+            // convert the response configuration to an array
+            $response = $kirby->response()->toArray();
 
             // cache the result
             if ($cache !== null) {
-                $cache->set($cacheId, $result);
+                $cache->set($cacheId, [
+                    'html'     => $html,
+                    'response' => $response
+                ]);
             }
         }
 
-        return new Response($result, $contentType, $code);
+        return $html;
     }
 
     /**
@@ -1140,6 +1140,18 @@ class Page extends ModelWithContent
     protected function rules()
     {
         return new PageRules();
+    }
+
+    /**
+     * Search all pages within the current page
+     *
+     * @param string $query
+     * @param array $params
+     * @return Pages
+     */
+    public function search(string $query = null, $params = [])
+    {
+        return $this->index()->search($query, $params);
     }
 
     /**
@@ -1456,6 +1468,13 @@ class Page extends ModelWithContent
         return $this->url = $this->kirby()->url('base') . '/' . $this->uid();
     }
 
+    /**
+     * Builds the Url for a specific language
+     *
+     * @param string $language
+     * @param array $options
+     * @return string
+     */
     public function urlForLanguage($language = null, array $options = null): string
     {
         if ($options !== null) {

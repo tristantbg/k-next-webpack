@@ -2,10 +2,13 @@
 
 namespace Kirby\Http;
 
+use Kirby\Http\Request\Auth\BasicAuth;
+use Kirby\Http\Request\Auth\BearerAuth;
 use Kirby\Http\Request\Body;
-use Kirby\Http\Request\Query;
-use Kirby\Http\Request\Method;
 use Kirby\Http\Request\Files;
+use Kirby\Http\Request\Method;
+use Kirby\Http\Request\Query;
+use Kirby\Toolkit\Str;
 
 /**
  * The Request class provides
@@ -22,34 +25,11 @@ class Request
 {
 
     /**
-     * The Method object is a tiny
-     * wrapper around the request method
-     * name, which will validate and sanitize
-     * the given name and always return
-     * its uppercase version.
+     * The auth object if available
      *
-     * Examples:
-     *
-     * `$request->method()->name()`
-     * `$request->method()->is('post')`
-     *
-     * @var Method
+     * @var BearerAuth|BasicAuth|false|null
      */
-    protected $method;
-
-    /**
-     * The Query object is a wrapper around
-     * the URL query string, which parses the
-     * string and provides a clean API to fetch
-     * particular parts of the query
-     *
-     * Examples:
-     *
-     * `$request->query()->get('foo')`
-     *
-     * @var Query
-     */
-    protected $query;
+    protected $auth;
 
     /**
      * The Body object is a wrapper around
@@ -81,6 +61,44 @@ class Request
     protected $files;
 
     /**
+     * The Method object is a tiny
+     * wrapper around the request method
+     * name, which will validate and sanitize
+     * the given name and always return
+     * its uppercase version.
+     *
+     * Examples:
+     *
+     * `$request->method()->name()`
+     * `$request->method()->is('post')`
+     *
+     * @var Method
+     */
+    protected $method;
+
+    /**
+     * All options that have been passed to
+     * the request in the constructor
+     *
+     * @var array
+     */
+    protected $options;
+
+    /**
+     * The Query object is a wrapper around
+     * the URL query string, which parses the
+     * string and provides a clean API to fetch
+     * particular parts of the query
+     *
+     * Examples:
+     *
+     * `$request->query()->get('foo')`
+     *
+     * @var Query
+     */
+    protected $query;
+
+    /**
      * Request URL object
      *
      * @var Uri
@@ -97,11 +115,8 @@ class Request
      */
     public function __construct(array $options = [])
     {
-        $this->method = $options['method'] ?? $_SERVER['REQUEST_METHOD'] ?? 'GET';
-
-        if (isset($options['query']) === true) {
-            $this->query = new Query($options['query']);
-        }
+        $this->options = $options;
+        $this->method  = $options['method'] ?? $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
         if (isset($options['body']) === true) {
             $this->body = new Body($options['body']);
@@ -109,6 +124,10 @@ class Request
 
         if (isset($options['files']) === true) {
             $this->files = new Files($options['files']);
+        }
+
+        if (isset($options['query']) === true) {
+            $this->query = new Query($options['query']);
         }
 
         if (isset($options['url']) === true) {
@@ -143,56 +162,29 @@ class Request
     }
 
     /**
-     * Checks if the request has been made from the command line
+     * Returns the Auth object if authentication is set
      *
-     * @return boolean
+     * @return BasicAuth|BearerAuth|null
      */
-    public function cli(): bool
+    public function auth()
     {
-        return Server::cli();
-    }
+        if ($this->auth !== null) {
+            return $this->auth;
+        }
 
-    /**
-     * Returns the request method
-     *
-     * @return string
-     */
-    public function method(): string
-    {
-        return $this->method;
-    }
+        if ($auth = $this->options['auth'] ?? $this->header('authorization')) {
+            $type  = Str::before($auth, ' ');
+            $token = Str::after($auth, ' ');
+            $class = 'Kirby\\Http\\Request\\Auth\\' . ucfirst($type) . 'Auth';
 
-    /**
-     * Returns the Query object
-     *
-     * @return Query
-     */
-    public function query(): Query
-    {
-        return $this->query = $this->query ?? new Query();
-    }
+            if (class_exists($class) === false) {
+                return $this->auth = false;
+            }
 
-    /**
-     * Returns the request input as array
-     *
-     * @return array
-     */
-    public function data(): array
-    {
-        return array_merge($this->body()->toArray(), $this->query()->toArray());
-    }
+            return $this->auth = new $class($token);
+        }
 
-    /**
-     * Returns any data field from the request
-     * if it exists
-     *
-     * @param string $key
-     * @param mixed $fallback
-     * @return mixed
-     */
-    public function get(string $key, $fallback = null)
-    {
-        return $this->data()[$key] ?? $fallback;
+        return $this->auth = false;
     }
 
     /**
@@ -206,13 +198,33 @@ class Request
     }
 
     /**
-     * Returns the Files object
+     * Checks if the request has been made from the command line
      *
-     * @return Files
+     * @return boolean
      */
-    public function files(): Files
+    public function cli(): bool
     {
-        return $this->files = $this->files ?? new Files();
+        return Server::cli();
+    }
+
+    /**
+     * Returns a CSRF token if stored in a header or the query
+     *
+     * @return string|null
+     */
+    public function csrf(): ?string
+    {
+        return $this->header('x-csrf') ?? $this->query()->get('csrf');
+    }
+
+    /**
+     * Returns the request input as array
+     *
+     * @return array
+     */
+    public function data(): array
+    {
+        return array_merge($this->body()->toArray(), $this->query()->toArray());
     }
 
     /**
@@ -228,15 +240,43 @@ class Request
     }
 
     /**
-     * Checks if the given method name
-     * matches the name of the request method.
+     * Returns the Files object
      *
-     * @param  string  $method
-     * @return boolean
+     * @return Files
      */
-    public function is(string $method): bool
+    public function files(): Files
     {
-        return $this->method === $method;
+        return $this->files = $this->files ?? new Files();
+    }
+
+    /**
+     * Returns any data field from the request
+     * if it exists
+     *
+     * @param string|null $key
+^     * @param mixed $fallback
+     * @return mixed
+     */
+    public function get(string $key = null, $fallback = null)
+    {
+        if ($key === null) {
+            return $this->data();
+        }
+
+        return $this->data()[$key] ?? $fallback;
+    }
+
+    /**
+     * Returns a header by key if it exists
+     *
+     * @param string $key
+     * @param mixed $fallback
+     * @return mixed
+     */
+    public function header(string $key, $fallback = null)
+    {
+        $headers = array_change_key_case($this->headers());
+        return $headers[strtolower($key)] ?? $fallback;
     }
 
     /**
@@ -273,6 +313,56 @@ class Request
         }
 
         return $headers;
+    }
+
+    /**
+     * Checks if the given method name
+     * matches the name of the request method.
+     *
+     * @param  string  $method
+     * @return boolean
+     */
+    public function is(string $method): bool
+    {
+        return strtoupper($this->method) === strtoupper($method);
+    }
+
+    /**
+     * Returns the request method
+     *
+     * @return string
+     */
+    public function method(): string
+    {
+        return $this->method;
+    }
+
+    /**
+     * Shortcut to the Params object
+     */
+    public function params()
+    {
+        return $this->url()->params();
+    }
+
+    /**
+     * Returns the Query object
+     *
+     * @return Query
+     */
+    public function query(): Query
+    {
+        return $this->query = $this->query ?? new Query();
+    }
+
+    /**
+     * Checks for a valid SSL connection
+     *
+     * @return boolean
+     */
+    public function ssl(): bool
+    {
+        return $this->url()->scheme() === 'https';
     }
 
     /**

@@ -8,6 +8,7 @@ const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const ModernizrWebpackPlugin = require('modernizr-webpack-plugin');
+const SvgStore = require('webpack-svgstore-plugin');
 
 const modernizrConfig = {
   filename: 'vendor/modernizr-bundle.js',
@@ -67,6 +68,14 @@ module.exports = {
         }
       }
     }),
+    new SvgStore({
+      svgoOptions: {
+        plugins: [
+          { removeTitle: true }
+        ]
+      },
+      prefix: ''
+    }),
     new ModernizrWebpackPlugin(modernizrConfig)
   ],
   module: {
@@ -77,11 +86,15 @@ module.exports = {
         use: { loader: "babel-loader" }
       },
       {
+        test: /\.scss$/,
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
+      },
+      {
         test: /\.styl(us)?$/,
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'stylus-loader']
       },
       {
-        test: /\.(woff|eot|ttf)$/,
+        test: /\.(woff|woff2|eot|ttf)$/,
         use: { loader: "url-loader" }
       },
       {

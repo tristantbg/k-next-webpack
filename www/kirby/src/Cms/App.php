@@ -348,6 +348,31 @@ class App
     }
 
     /**
+     * Detect the prefered language from the visitor object
+     *
+     * @return Language
+     */
+    public function detectedLanguage()
+    {
+        $languages = $this->languages();
+        $visitor   = $this->visitor();
+
+        foreach ($visitor->acceptedLanguages() as $lang) {
+            if ($language = $languages->findBy('locale', $lang->locale())) {
+                return $language;
+            }
+        }
+
+        foreach ($visitor->acceptedLanguages() as $lang) {
+            if ($language = $languages->findBy('code', $lang->code())) {
+                return $language;
+            }
+        }
+
+        return $this->defaultLanguage();
+    }
+
+    /**
      * Returns the Email singleton
      *
      * @return Email
@@ -398,6 +423,87 @@ class App
         }
 
         return static::$instance = $instance;
+    }
+
+    /**
+     * Takes almost any kind of input and
+     * tries to convert it into a valid response
+     *
+     * @param mixed $input
+     * @return Response
+     */
+    public function io($input)
+    {
+        // use the current response configuration
+        $response = $this->response();
+
+        // any direct exception will be turned into an error page
+        if (is_a($input, 'Throwable') === true) {
+            $code    = $input->getCode();
+            $message = $input->getMessage();
+
+            if ($code < 400 || $code > 599) {
+                $code = 500;
+            }
+
+            if ($errorPage = $this->site()->errorPage()) {
+                return $response->code($code)->send($errorPage->render([
+                    'errorCode'    => $code,
+                    'errorMessage' => $message,
+                    'errorType'    => get_class($e)
+                ]));
+            }
+
+            return $response
+                ->code($code)
+                ->type('text/html')
+                ->send($message);
+        }
+
+        // Empty input
+        if (empty($input) === true) {
+            return $this->io(new NotFoundException());
+        }
+
+        // Response Configuration
+        if (is_a($input, 'Kirby\Cms\Responder') === true) {
+            return $input->send();
+        }
+
+        // Responses
+        if (is_a($input, 'Kirby\Http\Response') === true) {
+            return $input;
+        }
+
+        // Pages
+        if (is_a($input, 'Kirby\Cms\Page')) {
+            $html = $input->render();
+
+            if ($input->isErrorPage() === true) {
+                if ($response->code() === null) {
+                    $response->code(404);
+                }
+            }
+
+            return $response->send($html);
+        }
+
+        // Files
+        if (is_a($input, 'Kirby\Cms\File')) {
+            return $response->redirect($input->mediaUrl(), 307)->send();
+        }
+
+        // Simple HTML response
+        if (is_string($input) === true) {
+            return $response->send($input);
+        }
+
+        // array to json conversion
+        if (is_array($input) === true) {
+            return $response->json($input)->send();
+        }
+
+        throw new InvalidArgumentException('Unexpected input');
     }
 
     /**
@@ -457,6 +563,14 @@ class App
      */
     public function language(string $code = null): ?Language
     {
+        if ($this->multilang() === false) {
+            return null;
+        }
+
+        if ($code === 'default') {
+            return $this->languages()->default();
+        }
+
         if ($code !== null) {
             return $this->languages()->find($code);
         }
@@ -469,9 +583,9 @@ class App
      *
      * @return string|null
      */
-    public function languageCode(): ?string
+    public function languageCode(string $languageCode = null): ?string
     {
-        if ($language = $this->language()) {
+        if ($language = $this->language($languageCode)) {
             return $language->code();
         }
 
@@ -618,7 +732,7 @@ class App
      */
     public function render(string $path = null, string $method = null)
     {
-        return $this->response($this->call($path, $method));
+        return $this->io($this->call($path, $method));
     }
 
     /**
@@ -677,7 +791,10 @@ class App
         // try to find the page for the representation
         if ($page = $site->find($path)) {
             try {
-                return Response::for($page, [], $extension);
+                return $this
+                    ->response()
+                    ->body($page->render([], $extension))
+                    ->type($extension);
             } catch (NotFoundException $e) {
                 return null;
             }
@@ -696,11 +813,13 @@ class App
     }
 
     /**
-     * @return Response
+     * Response configuration
+     *
+     * @return Responder
      */
-    public function response($input)
+    public function response()
     {
-        return $this->extensions['components']['response']($this, $input);
+        return $this->response = $this->response ?? new Responder;
     }
 
     /**
@@ -871,6 +990,8 @@ class App
     }
 
     /**
+     * Initializes and returns the Site object
+     *
      * @return Site
      */
     public function site(): Site
@@ -895,6 +1016,9 @@ class App
     }
 
     /**
+     * Uses the snippet component to create
+     * and return a template snippet
+     *
      * @return Snippet
      */
     public function snippet(string $name, array $data = []): ?string
@@ -913,11 +1037,14 @@ class App
     }
 
     /**
+     * Uses the template component to initialize
+     * and return the Template object
+     *
      * @return Template
      */
-    public function template(string $name, string $type = 'html'): Template
+    public function template(string $name, string $type = 'html', string $defaultType = 'html'): Template
     {
-        return $this->extensions['components']['template']($this, $name, $type);
+        return $this->extensions['components']['template']($this, $name, $type, $defaultType);
     }
 
     /**

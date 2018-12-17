@@ -1,10 +1,12 @@
 <?php
 
 use Kirby\Cms\File;
+use Kirby\Toolkit\A;
 use Kirby\Toolkit\Str;
 
 return [
     'mixins' => [
+        'empty',
         'headline',
         'layout',
         'min',
@@ -121,7 +123,7 @@ return [
                     'icon'     => $file->panelIcon($image),
                     'image'    => $image,
                     'link'     => $file->panelUrl(true),
-                    'parent'   => $file->parentId(),
+                    'parent'   => $file->parent()->panelPath(),
                     'url'      => $file->url(),
                 ];
             }
@@ -221,10 +223,12 @@ return [
             'errors'  => $this->errors,
             'options' => [
                 'accept'   => $this->accept,
+                'empty'    => $this->empty,
                 'headline' => $this->headline,
                 'layout'   => $this->layout,
                 'link'     => $this->link,
                 'max'      => $this->max,
+                'min'      => $this->min,
                 'size'     => $this->size,
                 'sortable' => $this->sortable,
                 'upload'   => $this->upload

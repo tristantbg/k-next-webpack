@@ -4,6 +4,7 @@ namespace Kirby\Cms;
 
 use Kirby\Data\Data;
 use Kirby\Exception\Exception;
+use Kirby\Exception\InvalidArgumentException;
 use Kirby\Image\Image;
 use Kirby\Toolkit\A;
 use Kirby\Toolkit\F;
@@ -25,9 +26,9 @@ use Throwable;
 class File extends ModelWithContent
 {
     use FileActions;
+    use FileFoundation;
     use HasMethods;
     use HasSiblings;
-    use HasThumbs;
 
     /**
      * The parent asset object
@@ -44,13 +45,6 @@ class File extends ModelWithContent
      * @var FileBlueprint
      */
     protected $blueprint;
-
-    /**
-     * Cache for the content file root
-     *
-     * @var string
-     */
-    protected $contentFile;
 
     /**
      * @var string
@@ -149,22 +143,6 @@ class File extends ModelWithContent
     }
 
     /**
-     * Converts the file object to a string
-     * In case of an image, it will create an image tag
-     * Otherwise it will return the url
-     *
-     * @return string
-     */
-    public function __toString(): string
-    {
-        if ($this->type() === 'image') {
-            return '<img src="' . $this->url() . '" alt="' . $this->alt() . '">';
-        }
-
-        return $this->url();
-    }
-
-    /**
      * Returns the url to api endpoint
      *
      * @param bool $relative
@@ -186,6 +164,8 @@ class File extends ModelWithContent
     }
 
     /**
+     * Returns the FileBlueprint object for the file
+     *
      * @return FileBlueprint
      */
     public function blueprint(): FileBlueprint
@@ -198,29 +178,24 @@ class File extends ModelWithContent
     }
 
     /**
-     * Absolute path to the meta text file
+     * Blurs the image by the given amount of pixels
      *
-     * @param string $languageCode
-     * @return string
+     * @param boolean $pixels
+     * @return self
      */
-    public function contentFile(string $languageCode = null): string
+    public function blur($pixels = true)
     {
-        // get the current language code if no code is passed
-        if ($languageCode === null) {
-            $languageCode = $this->kirby()->languageCode();
-        }
+        return $this->thumb(['blur' => $pixels]);
+    }
 
-        if ($languageCode !== null && $languageCode !== '') {
-            return $this->root() . '.' . $languageCode . '.' . $this->kirby()->contentExtension();
-        }
-
-        // use the cached version
-        if ($this->contentFile !== null) {
-            return $this->contentFile;
-        }
-
-        // create from template
-        return $this->contentFile = $this->root() . '.' . $this->kirby()->contentExtension();
+    /**
+     * Converts the image to black and white
+     *
+     * @return self
+     */
+    public function bw()
+    {
+        return $this->thumb(['grayscale' => true]);
     }
 
     /**
@@ -235,6 +210,59 @@ class File extends ModelWithContent
     {
         return A::append($data, [
             'template' => $this->template(),
+        ]);
+    }
+
+    /**
+     * Returns the directory in which
+     * the content file is located
+     *
+     * @return string
+     */
+    public function contentFileDirectory(): string
+    {
+        return dirname($this->root());
+    }
+
+    /**
+     * Filename for the content file
+     *
+     * @return string
+     */
+    public function contentFileName(): string
+    {
+        return $this->filename();
+    }
+
+    /**
+     * Crops the image by the given width and height
+     *
+     * @param integer $width
+     * @param integer $height
+     * @param string|array $options
+     * @return self
+     */
+    public function crop(int $width, int $height = null, $options = null)
+    {
+        $quality = null;
+        $crop    = 'center';
+
+        if (is_int($options) === true) {
+            $quality = $options;
+        } elseif (is_string($options)) {
+            $crop = $options;
+        } elseif (is_a($options, 'Kirby\Cms\Field') === true) {
+            $crop = $options->value();
+        } elseif (is_array($options)) {
+            $quality = $options['quality'] ?? $quality;
+            $crop    = $options['crop']    ?? $crop;
+        }
+
+        return $this->thumb([
+            'width'   => $width,
+            'height'  => $height,
+            'quality' => $quality,
+            'crop'    => $crop
         ]);
     }
 
@@ -292,16 +320,22 @@ class File extends ModelWithContent
      */
     public function files(): Files
     {
-        return $this->collection();
+        return $this->siblingsCollection();
     }
 
     /**
+     * Converts the file to html
+     *
      * @param  array  $attr
      * @return string
      */
     public function html(array $attr = []): string
     {
-        return Html::img($this->url(), $attr);
+        if ($this->type() === 'image') {
+            return Html::img($this->url(), array_merge(['alt' => $this->alt()], $attr));
+        } else {
+            return Html::a($this->url(), $attr);
+        }
     }
 
     /**
@@ -317,6 +351,8 @@ class File extends ModelWithContent
 
         if (is_a($this->parent(), 'Kirby\Cms\Page') === true) {
             return $this->id = $this->parent()->id() . '/' . $this->filename();
+        } elseif (is_a($this->parent(), 'Kirby\Cms\User') === true) {
+            return $this->id = $this->parent()->id() . '/' . $this->filename();
         }
 
         return $this->id = $this->filename();
@@ -331,24 +367,6 @@ class File extends ModelWithContent
     public function is(File $file): bool
     {
         return $this->id() === $file->id();
-    }
-
-    /**
-     * Checks if the file is a resizable image
-     *
-     * @return boolean
-     */
-    public function isResizable(): bool
-    {
-        $resizable = [
-            'jpg',
-            'jpeg',
-            'gif',
-            'png',
-            'webp'
-        ];
-
-        return in_array($this->extension(), $resizable) === true;
     }
 
     /**
@@ -435,11 +453,46 @@ class File extends ModelWithContent
      */
     public function panelIcon(array $params = null): array
     {
-        return [
-            'type'  => 'file',
-            'back'  => 'black',
-            'ratio' => $params['ratio'] ?? null
+        $colorBlue   = '#81a2be';
+        $colorPurple = '#b294bb';
+        $colorOrange = '#de935f';
+        $colorGreen  = '#a7bd68';
+        $colorAqua   = '#8abeb7';
+        $colorYellow = '#f0c674';
+        $colorRed    = '#d16464';
+        $colorWhite  = '#c5c9c6';
+
+        $types = [
+            'image'    => ['color' => $colorOrange, 'type' => 'file-image'],
+            'video'    => ['color' => $colorYellow, 'type' => 'file-video'],
+            'document' => ['color' => $colorRed, 'type' => 'file-document'],
+            'audio'    => ['color' => $colorAqua, 'type' => 'file-audio'],
+            'code'     => ['color' => $colorBlue, 'type' => 'file-code'],
+            'archive'  => ['color' => $colorWhite, 'type' => 'file-zip'],
         ];
+
+        $extensions = [
+            'indd'  => ['color' => $colorPurple],
+            'xls'   => ['color' => $colorGreen, 'type' => 'file-spreadsheet'],
+            'xlsx'  => ['color' => $colorGreen, 'type' => 'file-spreadsheet'],
+            'csv'   => ['color' => $colorGreen, 'type' => 'file-spreadsheet'],
+            'docx'  => ['color' => $colorBlue, 'type' => 'file-word'],
+            'doc'   => ['color' => $colorBlue, 'type' => 'file-word'],
+            'rtf'   => ['color' => $colorBlue, 'type' => 'file-word'],
+            'mdown' => ['type' => 'file-text'],
+            'md'    => ['type' => 'file-text']
+        ];
+
+        $definition = array_merge($types[$this->type()] ?? [], $extensions[$this->extension()] ?? []);
+
+        $settings = [
+            'type'  => $definition['type'] ?? 'file',
+            'back'  => 'pattern',
+            'color' => $definition['color'] ?? $colorWhite,
+            'ratio' => $params['ratio'] ?? null,
+        ];
+
+        return $settings;
     }
 
     /**
@@ -470,19 +523,26 @@ class File extends ModelWithContent
 
         $image = $this->query($settings['query'] ?? null, 'Kirby\Cms\File');
 
-        if ($image === null && $this->type() === 'image') {
+        if ($image === null && $this->isViewable() === true) {
             $image = $this;
         }
 
         if ($image) {
-            $settings['url'] = $image->thumb($thumbSettings)->url(true) . '?t=' . $image->modified();
-
+            $settings['url'] = $image->thumb($thumbSettings)->url(true);
             unset($settings['query']);
-
-            return array_merge($defaults, $settings);
         }
 
-        return null;
+        return array_merge($defaults, (array)$settings);
+    }
+
+    /**
+     * Returns the full path without leading slash
+     *
+     * @return string
+     */
+    public function panelPath(): string
+    {
+        return 'files/' . $this->filename();
     }
 
     /**
@@ -494,7 +554,7 @@ class File extends ModelWithContent
      */
     public function panelUrl(bool $relative = false): string
     {
-        return $this->parent()->panelUrl($relative) . '/files/' . $this->filename();
+        return $this->parent()->panelUrl($relative) . '/' . $this->panelPath();
     }
 
     /**
@@ -546,6 +606,17 @@ class File extends ModelWithContent
     }
 
     /**
+     * Sets the JPEG compression quality
+     *
+     * @param integer $quality
+     * @return self
+     */
+    public function quality(int $quality)
+    {
+        return $this->thumb(['quality' => $quality]);
+    }
+
+    /**
      * Creates a string query, starting from the model
      *
      * @param string|null $query
@@ -569,6 +640,24 @@ class File extends ModelWithContent
         }
 
         return $result;
+    }
+
+    /**
+     * Resizes the file with the given width and height
+     * while keeping the aspect ratio.
+     *
+     * @param integer $width
+     * @param integer $height
+     * @param integer $quality
+     * @return self
+     */
+    public function resize(int $width = null, int $height = null, int $quality = null)
+    {
+        return $this->thumb([
+            'width'   => $width,
+            'height'  => $height,
+            'quality' => $quality
+        ]);
     }
 
     /**
@@ -633,6 +722,19 @@ class File extends ModelWithContent
     }
 
     /**
+     * Always set the root to null, to invoke
+     * auto root detection
+     *
+     * @param string|null $root
+     * @return self
+     */
+    protected function setRoot(string $root = null)
+    {
+        $this->root = null;
+        return $this;
+    }
+
+    /**
      * @param string $template
      * @return self
      */
@@ -693,6 +795,33 @@ class File extends ModelWithContent
     public function templateSiblings(bool $self = true)
     {
         return $this->siblings($self)->filterBy('template', $this->template());
+    }
+
+    /**
+     * Creates a modified version of images
+     * The media manager takes care of generating
+     * those modified versions and putting them
+     * in the right place. This is normally the
+     * /media folder of your installation, but
+     * could potentially also be a CDN or any other
+     * place.
+     *
+     * @param array|null $options
+     * @return FileVersion|File
+     */
+    public function thumb(array $options = null)
+    {
+        if (empty($options) === true) {
+            return $this;
+        }
+
+        $result = $this->kirby()->component('file::version')($this->kirby(), $this, $options);
+
+        if (is_a($result, FileVersion::class) === false && is_a($result, File::class) === false) {
+            throw new InvalidArgumentException('The file::version component must return a File or FileVersion object');
+        }
+
+        return $result;
     }
 
     /**

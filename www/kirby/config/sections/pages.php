@@ -2,11 +2,13 @@
 
 use Kirby\Cms\App;
 use Kirby\Cms\Blueprint;
+use Kirby\Toolkit\A;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\Str;
 
 return [
     'mixins' => [
+        'empty',
         'headline',
         'layout',
         'min',
@@ -15,6 +17,12 @@ return [
         'parent'
     ],
     'props' => [
+        /**
+         * Optional array of templates that should only be allowed to add.
+         */
+        'create' => function ($add = null) {
+            return A::wrap($add);
+        },
         /**
          * Image options to control the source and look of page previews
          */
@@ -70,26 +78,10 @@ return [
     ],
     'computed' => [
         'dragTextType' => function () {
-            return (option('panel')['kirbytext'] ?? true) ? 'kirbytext' : 'markdown';
+            return option('panel.kirbytext', true) ? 'kirbytext' : 'markdown';
         },
         'templates' => function () {
-
-            $templates = $this->templates ?? $this->template;
-
-            if (is_string($templates) === true) {
-                $templates = [$templates];
-            }
-
-            if ($templates === null) {
-                $templates = [];
-            }
-
-            if (is_array($templates) === false) {
-                $templates = [];
-            }
-
-            return $templates;
-
+            return A::wrap($this->templates ?? $this->template);
         },
         'parent' => function () {
             return $this->parent();
@@ -267,7 +259,7 @@ return [
         'blueprints' => function () {
 
             $blueprints = [];
-            $templates  = $this->templates;
+            $templates  = empty($this->create) === false ? $this->create : $this->templates;
 
             if (empty($templates) === true) {
                 foreach (glob(App::instance()->root('blueprints') . '/pages/*.yml') as $blueprint) {
@@ -303,6 +295,7 @@ return [
             'errors'  => $this->errors,
             'options' => [
                 'add'      => $this->add,
+                'empty'    => $this->empty,
                 'headline' => $this->headline,
                 'layout'   => $this->layout,
                 'link'     => $this->link,

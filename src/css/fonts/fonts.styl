@@ -1,7 +1,7 @@
-// webfont('Genath', 'GenathRegular')
+webfont('UniversLTStdLight', 'UniversLTStdLight')
 
 text()
-	font-family Genath, Times New Roman, serif
+	font-family UniversLTStdLight, sans-serif
 
 // Main font styles
 
@@ -15,7 +15,9 @@ body,html
 	-webkit-text-size-adjust 100%
 
 html
-	font-size 16px
+	font-size 12px
+	+above($xxl + 1)
+		font-size 0.6vw
 	+below($md)
 		font-size 12px
 
@@ -23,7 +25,6 @@ body
 	text()
 	font-size $normal
 	line-height 1
-	// text-rendering optimizeLegibility
 	font-smoothing()
 
 p
@@ -37,8 +38,27 @@ p
 .text-center
 	text-align center
 
-nav#menu a, #project-description, #about-description
-	line-height 1.2
+bullet()
+	padding-left 0.9em
+	position relative
+	&::after
+		content ''
+		width 0.4em
+		height 0.4em
+		left 0
+		top 0.2em
+		border 1px solid currentColor
+		border-radius 100%
+		position absolute
+	&:hover, &.active
+		&::after
+			background currentColor
+	&.blink:not(:hover)::after
+		animation bullet-blink 1.3s linear infinite
 
-#project-medias .caption, #contact, #credits, #right-nav
-	font-size $normal
+blink()
+	&::after
+		animation bullet-blink 1.3s linear infinite
+
+.bullet
+	bullet()

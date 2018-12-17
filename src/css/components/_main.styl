@@ -1,9 +1,12 @@
 body, html
 	span(1)
+	background $primary
+	color $secondary
 
 *
-	hideselect()
 	box-sizing(border-box)
+	&:not(input)
+		hideselect()
 
 video::-webkit-media-controls
 	display none
@@ -30,29 +33,39 @@ a, a:hover, a:visited, a:focus
 	transition opacity 100ms ease
 	opacity 0
 
-.lazy.lazyloaded, .lazy.flickity-lazyloaded
-	opacity 1
+.lazy-blur
+	transition filter 100ms ease
+	filter: blur(5px)
+
+.lazy, .lazy-blur
+	&.lazyloaded, &.flickity-lazyloaded
+		opacity 1
+		filter: none
 
 .responsive-image
 	hideselect()
 	position relative
 	overflow hidden
+	.ph
+		display none
 	img
-		position absolute
-		top 0
-		left 0
+		display block
+		// position absolute
+		// top 0
+		// left 0
+
+#container
+	position relative
 
 #main, #container, #page-content
 	span(1)
 
-#container
-	span(8/12, $offset: 3/12)
-	padding $space
-	padding-top ($space + $normal * 2)
-	font-size $medium
+[event-target]
+	cursor pointer
 
 body.is-loading
-	#page-content
-		opacity 0
-		transition opacity 100ms ease
+	overflow hidden
+	cursor wait
+	#container
+		pointer-events none
 

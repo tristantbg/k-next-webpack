@@ -3,20 +3,24 @@
 @import '_mixins.styl'
 
 // Media queries
+$xxl = 1900px
 $xl = 1600px
 $lg = 1260px
 $md = 1023px
 $sm = 767px
 
 // Colors
-$primary ?= #fff
-$secondary ?= #000
+$primary ?= #000
+$secondary ?= #fff
 $accent ?= #ff0000
+$gray ?= #424242
 
 // Metrics
-$space = 1rem
-$padding = 1rem
+$space = 2rem
+$padding = 0.8rem
+$content-space = 0.7rem
 $kinetic = cubic-bezier(0.77, 0, 0.175, 1)
+$kinetic-smooth = cubic-bezier(0.7, 0, 0.3, 1)
 
 //font size
 $normal = 1rem
@@ -35,11 +39,13 @@ global-reset()
 // @import 'components/_utils'
 @import 'components/_animations'
 @import 'fonts/fonts'
-// @import 'plyr/scss/plyr'
 @import 'components/_main'
 @import 'components/_outdated'
 @import 'components/_loader'
 @import 'components/_header'
+@import 'components/_password'
+@import 'components/_footer'
+@import 'components/_expand'
 @import 'components/_pages'
 @import 'pages/index'
-// @import 'components/_project-slider'
+@import 'blocks/index'

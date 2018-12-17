@@ -46,14 +46,14 @@
             <k-dropdown-content :ref="'blockActions' + block.uniqueKey">
               <k-dropdown-item 
                 icon="copy" 
-                @click="$emit('cloneBlock', index)"
-              >Clone</k-dropdown-item>
+                @click="$emit('clone', index)"
+              >{{ $t('builder.clone') }}</k-dropdown-item>
               <k-dropdown-item 
                 icon="trash" 
-                @click="$emit('deleteBlock', index)"
-              >Delete</k-dropdown-item>
+                @click="$emit('delete', index)"
+              >{{ $t('delete') }}</k-dropdown-item>
             </k-dropdown-content>
-          </k-dropdown>	
+          </k-dropdown>
         </div>
       </div>
     </div>
@@ -143,7 +143,7 @@ export default {
     },
     previewUrl() {
       if (this.previewStored) {
-        return '/kirby-builder-preview/' + this.extendedUid + '?' + this.objectToGetParams(this.block.preview) + '&pageid=' + this.pageId
+        return 'kirby-builder-preview/' + this.extendedUid + '?' + this.objectToGetParams(this.block.preview) + '&pageid=' + this.pageId
       } else {
         return null
       }
@@ -154,12 +154,11 @@ export default {
         for (const tabKey in this.block.tabs) {
           if (this.block.tabs.hasOwnProperty(tabKey)) {
             const tab = this.block.tabs[tabKey];
-            fieldSets.push(this.newFieldSet(tab, tabKey, this.block.content[tabKey]))
-            // fieldSets.push(this.newFieldSet(tab, tabKey, this.block.content))
+            fieldSets.push(this.newFieldSet(tab, tabKey, this.block.content))
           }
         }
       } else if (this.block.fields) {
-        fieldSets.push(this.newFieldSet(this.block, 'content', this.block.content, 'edit', 'Edit'))
+        fieldSets.push(this.newFieldSet(this.block, 'content', this.block.content, 'edit', this.$t('edit')))
       }
       return fieldSets
     },

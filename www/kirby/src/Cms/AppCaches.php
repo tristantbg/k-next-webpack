@@ -10,6 +10,12 @@ trait AppCaches
 {
     protected $caches = [];
 
+    /**
+     * Returns a cache instance by key
+     *
+     * @param string $key
+     * @return Kirby\Cache\Cache
+     */
     public function cache(string $key)
     {
         if (isset($this->caches[$key]) === true) {
@@ -44,6 +50,12 @@ trait AppCaches
         return $this->caches[$key] = new $className($options);
     }
 
+    /**
+     * Returns the cache options by key
+     *
+     * @param string $key
+     * @return array
+     */
     protected function cacheOptions(string $key): array
     {
         $options = $this->option($cacheKey = $this->cacheOptionsKey($key), false);
@@ -55,9 +67,10 @@ trait AppCaches
         }
 
         $defaults = [
-            'active' => true,
-            'type'   => 'file',
-            'root'   => $this->root('cache') . '/' . str_replace('.', '/', $key)
+            'active'    => true,
+            'type'      => 'file',
+            'extension' => 'cache',
+            'root'      => $this->root('cache') . '/' . str_replace('.', '/', $key)
         ];
 
         if ($options === true) {

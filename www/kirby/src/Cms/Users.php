@@ -45,6 +45,13 @@ class Users extends Collection
         return $this;
     }
 
+    /**
+     * Takes an array of user props and creates a nice and clean user collection from it
+     *
+     * @param array $users
+     * @param array $inject
+     * @return self
+     */
     public static function factory(array $users, array $inject = []): self
     {
         $collection = new static;
@@ -58,15 +65,28 @@ class Users extends Collection
         return $collection;
     }
 
+    /**
+     * Finds a user in the collection by id or email address
+     *
+     * @param string $key
+     * @return User|null
+     */
     public function findByKey($key)
     {
         if (Str::contains($key, '@') === true) {
-            $key = sha1($key);
+            return parent::findBy('email', $key);
         }
 
         return parent::findByKey($key);
     }
 
+    /**
+     * Loads a user from disk by passing the absolute path (root)
+     *
+     * @param string $root
+     * @param array $inject
+     * @return self
+     */
     public static function load(string $root, array $inject = []): self
     {
         $users = new static;
@@ -77,7 +97,7 @@ class Users extends Collection
             }
 
             $user = new User([
-                'email' => $userDirectory,
+                'id' => $userDirectory,
             ] + $inject);
 
             $users->set($user->id(), $user);

@@ -1,0 +1,75 @@
+$transition = 0.5s
+
+footer
+	position fixed
+	width 100%
+	bottom 0
+	left 0
+	padding ($padding*1.5) $space ($padding*2) ($space+$padding)
+	z-index 100
+	max-height auto
+	transition height ($transition/2) ease, background ($transition/2) ease
+	overflow hidden
+	&:not(.opened)
+		cursor pointer
+		height 4rem !important
+	#about-content, #about-follow, #about-social
+		opacity 0
+		visibility hidden
+	a[href^="mailto"]
+		bullet()
+	#about-content, #about-follow, #about-social
+		transition opacity ($transition/2) ease, visibility ($transition/2) ease
+	#about-header
+		float left
+		width 100%
+		#site-title
+			span(1/2)
+			h1, h2
+				display inline
+		#about-title
+			span(1/2)
+	#about-follow
+		width 30rem
+		position absolute
+		top ($padding*1.5 + 2rem)
+		left 'calc(50% + %s)' % ($content-space/2)
+		a
+			display block
+			width 100%
+			float left
+	#about
+		span(1/2)
+	#about-social
+		span(1/2)
+	&.opened, &.force-open
+		transition height $transition $kinetic 0ms, background ($transition/2) ease 0ms
+		background alpha($primary, 0.7)
+		#about-content, #about-follow, #about-social
+			opacity 1
+			visibility visible
+	#about-content
+		display block
+		float left
+		width 100%
+		overflow hidden
+		.inner
+			span(1)
+			padding-top 1em
+			padding-bottom ($padding*3)
+			& > *
+				span(1/2)
+			// #about-contact
+			// 	span(3/6)
+			#about-description
+				padding-right ($padding*2)
+			// #about-follow
+			// 	span(1/6)
+	#about-social
+		height 35rem
+		width auto
+		float right
+		bottom $padding
+		right $padding
+		overflow hidden
+		border-radius 3rem

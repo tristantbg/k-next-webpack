@@ -1,7 +1,61 @@
 title: Site
-
-sections:
+tabs:
   pages:
-    headline: Pages
-    type: pages
-
+    sections:
+      pages:
+        headline: Pages
+        type: pages
+  settings:
+    label: Settings
+    icon: cog
+    sections:
+      infos:
+        type: fields
+        fields:
+          tagline:
+            label: Tagline
+            type: text
+          description:
+            label: Description
+            type:  textarea
+          keywords:
+            label: Keywords
+            type:  tags
+            width: 1/2
+          follow:
+            label: Follow
+            type: structure
+            fields:
+              title:
+                label: Title
+                type: text
+                required: true
+              url:
+                label: URL
+                type: url
+                required: true
+            width: 1/2
+          customcss:
+            label: Custom CSS
+            type: textarea
+            buttons: false
+          googleAnalytics:
+            label: Google Analytics ID
+            type: text
+            icon: code
+            help: Tracking ID in the form UA-XXXXXXXX-X. Keep this field empty if you are not using it.
+            width: 1/2
+          ogimage:
+            label: Facebook OpenGraph image
+            type: files
+            multiple: false
+            layout: cards
+            help: 1200x630px minimum
+            width: 1/2
+  files:
+    icon: file
+    sections:
+      images:
+        type: files
+        layout: cards
+        template: image

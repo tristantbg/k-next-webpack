@@ -337,7 +337,11 @@ class Collection extends Iterator
     public function find(...$keys)
     {
         if (count($keys) === 1) {
-            return $this->findByKey($keys[0]);
+            if (is_array($keys[0]) === true) {
+                $keys = $keys[0];
+            } else {
+                return $this->findByKey($keys[0]);
+            }
         }
 
         $result = [];
@@ -827,12 +831,12 @@ class Collection extends Iterator
     /**
      * Sorts the object by any number of fields
      *
-     * @param   $field      string
-     * @param   $direction  string  asc or desc
-     * @param   $method     int     The sort flag, SORT_REGULAR, SORT_NUMERIC etc.
-     * @return  self
+     * @param   $field      string|callable  Field name or value callback to sort by
+     * @param   $direction  string           asc or desc
+     * @param   $method     int              The sort flag, SORT_REGULAR, SORT_NUMERIC etc.
+     * @return  Collection
      */
-    public function sortBy()
+    public function sortBy(): self
     {
         // there is no need to sort empty collections
         if (empty($this->data) === true) {
@@ -853,14 +857,14 @@ class Collection extends Iterator
 
             // detect the type of argument
             // sorting direction
-            $argLower = strtolower($arg);
+            $argLower = is_string($arg) ? strtolower($arg) : null;
 
             if ($arg === SORT_ASC || $argLower === 'asc') {
                 $fields[$currentField]['direction'] = SORT_ASC;
             } elseif ($arg === SORT_DESC || $argLower === 'desc') {
                 $fields[$currentField]['direction'] = SORT_DESC;
 
-            // other string: The field name
+            // other string: the field name
             } elseif (is_string($arg) === true) {
                 $values = [];
 
@@ -873,6 +877,20 @@ class Collection extends Iterator
                 }
 
                 $fields[] = ['field' => $arg, 'values' => $values];
+
+            // callable: custom field values
+            } elseif (is_callable($arg) === true) {
+                $values = [];
+
+                foreach ($array as $key => $value) {
+                    $value = $arg($value);
+
+                    // make sure that we return something sortable
+                    // but don't convert other scalars (especially numbers) to strings!
+                    $values[$key] = is_scalar($value) === true ? $value : (string)$value;
+                }
+
+                $fields[] = ['field' => null, 'values' => $values];
 
             // flags
             } else {

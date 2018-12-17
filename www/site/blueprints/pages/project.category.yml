@@ -1,0 +1,6 @@
+title: Category
+sections:
+  projects:
+    headline: Projects
+    type: pages
+    templates: project

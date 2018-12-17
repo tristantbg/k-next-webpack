@@ -20,11 +20,12 @@ abstract class ModelWithContent extends Model
      *
      * @var Content
      */
-    protected $content;
+    public $content;
 
-    protected $contentFile;
-
-    protected $translations;
+    /**
+     * @var Translations
+     */
+    public $translations;
 
     /**
      * Returns the content
@@ -41,13 +42,7 @@ abstract class ModelWithContent extends Model
                 return $this->content;
             }
 
-            try {
-                $data = Data::read($this->contentFile());
-            } catch (Throwable $e) {
-                $data = [];
-            }
-
-            return $this->setContent($data)->content;
+            return $this->setContent($this->readContent())->content;
 
         // multi language support
         } else {
@@ -57,10 +52,14 @@ abstract class ModelWithContent extends Model
                 return $this->content;
             }
 
-            $data    = $this->translationData($languageCode);
-            $content = new Content($data, $this);
+            // get the translation by code
+            if ($translation = $this->translation($languageCode)) {
+                $content = new Content($translation->content(), $this);
+            } else {
+                throw new InvalidArgumentException('Invalid language: ' . $languageCode);
+            }
 
-            // only store the content for the default language
+            // only store the content for the current language
             if ($languageCode === null) {
                 $this->content = $content;
             }
@@ -70,11 +69,38 @@ abstract class ModelWithContent extends Model
     }
 
     /**
-     * Needs to be declared by the final model
+     * Returns the absolute path to the content file
      *
+     * @param string|null $languageCode
+     * @param bool $force
      * @return string
      */
-    abstract public function contentFile(): string;
+    public function contentFile(string $languageCode = null, bool $force = false): string
+    {
+        $extension = $this->contentFileExtension();
+        $directory = $this->contentFileDirectory();
+        $filename  = $this->contentFileName();
+
+        // overwrite the language code
+        if ($force === true) {
+            if (empty($languageCode) === false) {
+                return $directory . '/' . $filename . '.' . $languageCode . '.' . $extension;
+            } else {
+                return $directory . '/' . $filename . '.' . $extension;
+            }
+        }
+
+        // add and validate the language code in multi language mode
+        if ($this->kirby()->multilang() === true) {
+            if ($language = $this->kirby()->languageCode($languageCode)) {
+                return $directory . '/' . $filename . '.' . $language . '.' . $extension;
+            } else {
+                throw new InvalidArgumentException('Invalid language: ' . $languageCode);
+            }
+        } else {
+            return $directory . '/' . $filename . '.' . $extension;
+        }
+    }
 
     /**
      * Prepares the content that should be written
@@ -90,16 +116,33 @@ abstract class ModelWithContent extends Model
     }
 
     /**
-     * Returns a formatted date field from the content
+     * Returns the absolute path to the
+     * folder in which the content file is
+     * located
      *
-     * @param string $format
-     * @param string $field
-     * @return Field
+     * @return string
      */
-    public function date(string $format = null, $field = 'date')
+    public function contentFileDirectory(): string
     {
-        return $this->content()->get($field)->toDate($format);
+        return $this->root();
     }
+
+    /**
+     * Returns the extension of the content file
+     *
+     * @return string
+     */
+    public function contentFileExtension(): string
+    {
+        return $this->kirby()->contentExtension();
+    }
+
+    /**
+     * Needs to be declared by the final model
+     *
+     * @return string
+     */
+    abstract public function contentFileName(): string;
 
     /**
      * Returns all content validation errors
@@ -127,6 +170,21 @@ abstract class ModelWithContent extends Model
     public function isValid(): bool
     {
         return Form::for($this)->hasErrors() === false;
+    }
+
+    /**
+     * Read the content from the content file
+     *
+     * @param string|null $languageCode
+     * @return array
+     */
+    public function readContent(string $languageCode = null): array
+    {
+        try {
+            return Data::read($this->contentFile($languageCode));
+        } catch (Throwable $e) {
+            return [];
+        }
     }
 
     /**
@@ -162,7 +220,7 @@ abstract class ModelWithContent extends Model
         $clone->content()->update($data, $overwrite);
 
         // send the full content array to the writer
-        $clone->write($clone->content()->toArray());
+        $clone->writeContent($clone->content()->toArray());
 
         return $clone;
     }
@@ -177,24 +235,21 @@ abstract class ModelWithContent extends Model
      */
     protected function saveTranslation(array $data = null, string $languageCode = null, bool $overwrite = false)
     {
-        // get the right language code
-        $languageCode = $languageCode ?? $this->kirby()->language()->code();
-
         // create a clone to not touch the original
         $clone = $this->clone();
 
         // fetch the matching translation and update all the strings
-        $translation = $clone->translations()->get($languageCode);
+        $translation = $clone->translation($languageCode);
 
         if ($translation === null) {
-            throw new InvalidArgument('The translation could not be found');
+            throw new InvalidArgument('Invalid language: ' . $languageCode);
         }
 
         // merge the translation with the new data
         $translation->update($data, $overwrite);
 
         // send the full translation array to the writer
-        $clone->write($translation->content(), $languageCode);
+        $clone->writeContent($translation->content(), $languageCode);
 
         // reset the content object
         $clone->content = null;
@@ -241,32 +296,15 @@ abstract class ModelWithContent extends Model
     }
 
     /**
-     * Fetch the content translation for the current language
+     * Returns a single translation by language code
+     * If no code is specified the current translation is returned
      *
-     * @param array
-     * @return array
+     * @param string $languageCode
+     * @return Translation|null
      */
-    public function translationData(string $languageCode = null): array
+    public function translation(string $languageCode = null)
     {
-        $language = $this->kirby()->language($languageCode);
-
-        if ($language === null) {
-            throw new InvalidArgumentException('Invalid language: ' . $languageCode);
-        }
-
-        $translation = $this->translations()->find($language->code());
-        $content     = $translation->content();
-
-        // inject the default translation as fallback
-        if ($language->isDefault() === false) {
-            $defaultLanguage    = $this->kirby()->defaultLanguage();
-            $defaultTranslation = $this->translations()->find($defaultLanguage->code());
-
-            // fill missing content with the default translation
-            $content = array_merge($defaultTranslation->content(), $content);
-        }
-
-        return $content;
+        return $this->translations()->find($languageCode ?? $this->kirby()->language()->code());
     }
 
     /**
@@ -331,7 +369,7 @@ abstract class ModelWithContent extends Model
      * @param string $languageCode
      * @return boolean
      */
-    protected function write(array $data, string $languageCode = null): bool
+    public function writeContent(array $data, string $languageCode = null): bool
     {
         return Data::write(
             $this->contentFile($languageCode),

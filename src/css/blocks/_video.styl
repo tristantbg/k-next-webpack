@@ -1,0 +1,59 @@
+[page-type=home]
+	.block--video-external, .block--video-local
+		.plyr__controls
+			display none !important
+
+.block--external-video, .block--local-video
+	position relative
+	.block--content
+		+below($md)
+			padding 0 !important
+	.plyr__video-wrapper
+		background $primary
+	.block--footer
+		position absolute
+		width auto
+		bottom 0
+		right 0
+		padding $padding
+		z-index 15
+		padding $text-padding 0 0
+	&:not(:hover)
+		.block--footer
+			opacity 0
+
+.video-player--controls
+	display flex
+	justify-content space-between
+	padding 0 $padding $padding 0
+	+below($md)
+		right ($padding/2)
+	.video-player-play, .video-player-pause, .video-player-unmute, .video-player-mute, .video-player-fullscreen
+		height 2.5rem
+		width 2.5rem
+		cursor pointer
+		&:not(:first-child)
+			margin-left 0.6rem
+		svg
+			display block
+			height 100%
+			width 100%
+			fill currentColor
+	.video-player-fullscreen
+		width 2.5rem
+	.video-player-pause
+		display none
+	.video-player-unmute
+		display none
+
+.video-is-muted
+	.video-player-unmute
+		display block
+	.video-player-mute
+		display none
+
+.video-is-playing
+	.video-player-play
+		display none
+	.video-player-pause
+		display block

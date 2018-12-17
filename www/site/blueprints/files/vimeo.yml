@@ -1,0 +1,53 @@
+title: Vimeo
+accept:
+  mime: image/jpeg, image/png
+fields:
+  vimeoID:
+    label: Vimeo ID
+    type: text
+    width: 1/2
+  focus:
+    label: Focus crop
+    type: focus
+    width: 1/2
+  vimeoName:
+    label: Vimeo Name
+    type: text
+    disabled: true
+    width: 1/2
+  vimeoDescription:
+    label: Vimeo Description
+    type: textarea
+    disabled: true
+    width: 1/2
+  vimeoURL:
+    label: Vimeo URL
+    type: url
+    disabled: true
+    width: 1/2
+  vimeoThumbnails:
+    label: Vimeo Thumbnails
+    type: structure
+    fields:
+      width:
+        type: number
+      height:
+        type: number
+      link:
+        type: url
+    disabled: true
+  vimeoFiles:
+    label: Vimeo Files
+    type: structure
+    fields:
+      quality:
+        type: text
+      type:
+        type: text
+      width:
+        type: number
+      height:
+        type: number
+      link:
+        type: url
+    disabled: true

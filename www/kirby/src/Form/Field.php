@@ -5,6 +5,7 @@ namespace Kirby\Form;
 use Exception;
 use Kirby\Data\Yaml;
 use Kirby\Exception\InvalidArgumentException;
+use Kirby\Http\Router;
 use Kirby\Toolkit\Component;
 use Kirby\Toolkit\I18n;
 use Kirby\Toolkit\V;
@@ -53,23 +54,30 @@ class Field extends Component
         $this->validate();
     }
 
+    public function api()
+    {
+        if (isset($this->options['api']) === true && is_callable($this->options['api']) === true) {
+            return $this->options['api']->call($this);
+        }
+    }
+
     public function data($default = false)
     {
         $save = $this->options['save'] ?? true;
 
-        if ($save === false) {
-            $value = null;
-        } elseif (is_callable($save) === true) {
-            $value = $save->call($this, $this->value);
+        if ($default === true && $this->isEmpty($this->value)) {
+            $value = $this->default();
         } else {
             $value = $this->value;
         }
 
-        if ($default === true && $this->isEmpty($value)) {
-            $value = $this->default();
+        if ($save === false) {
+            return null;
+        } elseif (is_callable($save) === true) {
+            return $save->call($this, $value);
+        } else {
+            return $value;
         }
-
-        return $value;
     }
 
     public static function defaults(): array

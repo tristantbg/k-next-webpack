@@ -1,5 +1,52 @@
-#page-content #intro.landscape .responsive-image
-  span(1/2)
+.projects-header
+	#menu-categories, #menu-projects, #current-project-category, #current-project-title
+		span(1/4)
+		&:not(:first-child)
+			padding-left ($content-space/2)
+	#current-project-category:not(:first-child)
+		padding-left 0
+	[event-target=explore]
+		position absolute
+		top $padding
+		right $padding
+		&::after
+			content 'explore'
+	&:not(.expanded):not(:hover), &:not(:hover)
+		#menu-categories, #menu-projects
+			display none
+	&.expanded, &:hover
+		#current-project-category
+			display none
+		#menu-categories:hover
+			.bullet.active:not(:hover)
+				&::after
+					background transparent
+		[event-target=explore]::after
+			content 'index'
+	+below($md)
+		#current-project-title
+			br, .subtitle
+				display none
 
-#page-content #intro.portrait .responsive-image
-  span(2/6)
+#project-sections
+	float left
+	width 100%
+	min-height 100vh
+
+.project-section
+	span(1)
+	position relative
+
+.link-overlay
+	position absolute
+	top 0
+	left 0
+	width 100%
+	height 100%
+	z-index 1
+
+body.with-intro
+	overflow hidden
+	header, #page-content
+		visility hidden
+		opacity 0
