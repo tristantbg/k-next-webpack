@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import './src/css/app.styl';
 import App from './src/js';
 
