@@ -396,7 +396,13 @@ class App
         $filename = basename($path);
 
         if ($id === '.') {
-            return $parent->file($filename);
+            if ($file = $parent->file($filename)) {
+                return $file;
+            } elseif ($file = $this->site()->file($filename)) {
+                return $file;
+            } else {
+                return null;
+            }
         }
 
         if ($page = $this->page($id, $parent, $drafts)) {
@@ -450,7 +456,7 @@ class App
                 return $response->code($code)->send($errorPage->render([
                     'errorCode'    => $code,
                     'errorMessage' => $message,
-                    'errorType'    => get_class($e)
+                    'errorType'    => get_class($input)
                 ]));
             }
 

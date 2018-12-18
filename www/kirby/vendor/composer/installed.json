@@ -142,17 +142,17 @@
     },
     {
         "name": "filp/whoops",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "2.3.1",
+        "version_normalized": "2.3.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/filp/whoops.git",
-            "reference": "700d20a51ef35f4082b1ab7f6202087dcda0ef8b"
+            "reference": "bc0fd11bc455cc20ee4b5edabc63ebbf859324c7"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/filp/whoops/zipball/700d20a51ef35f4082b1ab7f6202087dcda0ef8b",
-            "reference": "700d20a51ef35f4082b1ab7f6202087dcda0ef8b",
+            "url": "https://api.github.com/repos/filp/whoops/zipball/bc0fd11bc455cc20ee4b5edabc63ebbf859324c7",
+            "reference": "bc0fd11bc455cc20ee4b5edabc63ebbf859324c7",
             "shasum": ""
         },
         "require": {
@@ -168,7 +168,7 @@
             "symfony/var-dumper": "Pretty print complex values better with var-dumper available",
             "whoops/soap": "Formats errors as SOAP responses"
         },
-        "time": "2018-11-22T10:02:34+00:00",
+        "time": "2018-10-23T09:00:00+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -365,27 +365,29 @@
     },
     {
         "name": "phpmailer/phpmailer",
-        "version": "6.0.x-dev",
-        "version_normalized": "6.0.9999999.9999999-dev",
+        "version": "v6.0.6",
+        "version_normalized": "6.0.6.0",
         "source": {
             "type": "git",
             "url": "https://github.com/PHPMailer/PHPMailer.git",
-            "reference": "ea25dc122d22966b7dd4ca1083c63afeeb50dfcd"
+            "reference": "8190d73eb5def11a43cfb020b7f36db65330698c"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/ea25dc122d22966b7dd4ca1083c63afeeb50dfcd",
-            "reference": "ea25dc122d22966b7dd4ca1083c63afeeb50dfcd",
+            "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/8190d73eb5def11a43cfb020b7f36db65330698c",
+            "reference": "8190d73eb5def11a43cfb020b7f36db65330698c",
             "shasum": ""
         },
         "require": {
             "ext-ctype": "*",
+            "ext-filter": "*",
             "php": ">=5.5.0"
         },
         "require-dev": {
             "doctrine/annotations": "1.2.*",
+            "friendsofphp/php-cs-fixer": "^2.2",
             "phpdocumentor/phpdocumentor": "2.*",
-            "phpunit/phpunit": "4.*",
+            "phpunit/phpunit": "^4.8 || ^5.7",
             "zendframework/zend-eventmanager": "3.0.*",
             "zendframework/zend-i18n": "2.7.3",
             "zendframework/zend-serializer": "2.7.*"
@@ -398,7 +400,7 @@
             "stevenmaguire/oauth2-microsoft": "Needed for Microsoft XOAUTH2 authentication",
             "symfony/polyfill-mbstring": "To support UTF-8 if the Mbstring PHP extension is not enabled (^1.2)"
         },
-        "time": "2017-08-28T11:42:41+00:00",
+        "time": "2018-11-16T00:41:32+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -431,27 +433,27 @@
     },
     {
         "name": "psr/log",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "1.1.0",
+        "version_normalized": "1.1.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/php-fig/log.git",
-            "reference": "c4421fcac1edd5a324fda73e589a5cf96e52ffd0"
+            "reference": "6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/php-fig/log/zipball/c4421fcac1edd5a324fda73e589a5cf96e52ffd0",
-            "reference": "c4421fcac1edd5a324fda73e589a5cf96e52ffd0",
+            "url": "https://api.github.com/repos/php-fig/log/zipball/6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd",
+            "reference": "6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd",
             "shasum": ""
         },
         "require": {
             "php": ">=5.3.0"
         },
-        "time": "2018-11-21T13:42:00+00:00",
+        "time": "2018-11-20T15:27:04+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "1.1.x-dev"
+                "dev-master": "1.0.x-dev"
             }
         },
         "installation-source": "source",
@@ -589,17 +591,17 @@
     },
     {
         "name": "zendframework/zend-escaper",
-        "version": "dev-develop",
-        "version_normalized": "dev-develop",
+        "version": "2.6.0",
+        "version_normalized": "2.6.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/zendframework/zend-escaper.git",
-            "reference": "c9e7e54dac46175e93cd08111dc5963bfb9f2f7e"
+            "reference": "31d8aafae982f9568287cb4dce987e6aff8fd074"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/zendframework/zend-escaper/zipball/c9e7e54dac46175e93cd08111dc5963bfb9f2f7e",
-            "reference": "c9e7e54dac46175e93cd08111dc5963bfb9f2f7e",
+            "url": "https://api.github.com/repos/zendframework/zend-escaper/zipball/31d8aafae982f9568287cb4dce987e6aff8fd074",
+            "reference": "31d8aafae982f9568287cb4dce987e6aff8fd074",
             "shasum": ""
         },
         "require": {
@@ -609,7 +611,7 @@
             "phpunit/phpunit": "^5.7.27 || ^6.5.8 || ^7.1.2",
             "zendframework/zend-coding-standard": "~1.0.0"
         },
-        "time": "2018-04-25T15:50:09+00:00",
+        "time": "2018-04-25T15:48:53+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {

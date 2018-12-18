@@ -14,4 +14,3 @@ www/site/sessions
 www/site/config/cloudinary.php
 www/site/config/licence.php
 www/assets/avatars
-www/thumbs/*
