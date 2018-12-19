@@ -2,15 +2,16 @@
 Thumbs.db
 yarn.lock
 yarn-error.log
-www/media/*
 /lib
 www/assets/fonts/*
 www/assets/build/*
 /node_modules
 /npm-debug.log
-www/site/accounts
 www/site/cache
-www/site/sessions
 www/site/config/cloudinary.php
 www/site/config/licence.php
-www/assets/avatars
+
+# Ignored by file in folder
+# www/media/*
+# www/site/accounts
+# www/site/sessions
