@@ -45,6 +45,7 @@
     "lazysizes": "^4.0.4",
     "modernizr-webpack-plugin": "^1.0.7",
     "nib": "^1.1.2",
+    "nodelist-foreach-polyfill": "^1.2.0",
     "optimize-css-assets-webpack-plugin": "^4.0.3",
     "rupture": "^0.7.1",
     "style-loader": "^0.21.0",

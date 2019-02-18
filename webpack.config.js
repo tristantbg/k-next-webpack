@@ -86,6 +86,10 @@ module.exports = {
         use: { loader: "babel-loader" }
       },
       {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, 'css-loader']
+      },
+      {
         test: /\.scss$/,
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
       },
@@ -94,7 +98,7 @@ module.exports = {
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'stylus-loader']
       },
       {
-        test: /\.(woff|woff2|eot|ttf)$/,
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
         use: { loader: "url-loader" }
       },
       {
