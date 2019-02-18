@@ -3,16 +3,6 @@ preset: page
 pages: false
 files: false
 fields:
-  featuredProjects:
-    label: Featured projects
-    type: structure
-    fields:
-      project:
-        label: Project
-        type: select
-        options: query
-        required: true
-        query:
-          fetch: site.index.template("project")
-          text: "{{ page.title }} ({{ page.parent.title }})"
-          value: "{{ page.id }}"
+  title:
+    label: Title
+    type: title

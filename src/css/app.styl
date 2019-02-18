@@ -10,14 +10,14 @@ $md = 1023px
 $sm = 767px
 
 // Colors
-$primary ?= #000
-$secondary ?= #fff
+$primary ?= #fff
+$secondary ?= #000
 $accent ?= #ff0000
 $gray ?= #424242
 
 // Metrics
-$space = 2rem
-$padding = 0.8rem
+$padding = 1rem
+$padding-y = 0.5rem
 $content-space = 0.7rem
 $kinetic = cubic-bezier(0.77, 0, 0.175, 1)
 $kinetic-smooth = cubic-bezier(0.7, 0, 0.3, 1)
@@ -43,9 +43,7 @@ global-reset()
 @import 'components/_outdated'
 @import 'components/_loader'
 @import 'components/_header'
-@import 'components/_password'
 @import 'components/_footer'
-@import 'components/_expand'
 @import 'components/_pages'
 @import 'pages/index'
 @import 'blocks/index'

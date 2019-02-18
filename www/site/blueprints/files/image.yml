@@ -4,14 +4,14 @@ accept:
   mime: image/jpeg, image/png, image/gif, image/svg+xml
 
 fields:
-  focus:
-    label: Focus crop
-    type: focus
-    width: 1/2
   alt:
     label: Alt Text
     type: text
-    width: 1/2
+    width: 3/4
+  color:
+    label: Color
+    type: color
+    width: 1/4
   caption:
     label: Caption
-    type: textarea
+    type: text

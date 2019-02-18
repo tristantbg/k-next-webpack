@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="no-js">
+<html lang="en" class="no-js" data-theme="<?php if($page->theme()->isNotEmpty()) { echo $page->theme()->yaml()['name']; } ?>">
 <head>
 
   <meta charset="UTF-8" />

@@ -1,38 +1,74 @@
 [page-type=project]
-	&.idle
-		header:not(:hover) *
-			opacity 0
-	header *
-		transition opacity 200ms ease
-	footer
-		position absolute
-		bottom 15rem
-		#about-title
-			bullet()
-		&:not(.opened)
-			pointer-events none
-			#about-header
-				pointer-events auto
-
-.project-header
-	#menu-categories, #project-title, #project-description, #project-credits
-		span(1/4)
-		&:not(:first-child)
-			padding-left ($content-space/2)
-	#menu-categories:hover
-		.bullet.active:not(:hover)
-			&::after
-				background transparent
-	.nav-page
-		position absolute
-		top $padding
-		right $padding
-		.close-page
-			// display block
-			display none
-			clear both
-			text-align right
-		.previous-page, .next-page
-			margin 0 .1em
-			&:last-child
-				margin-right 0
+  header
+    display none
+  #project-header
+    position fixed
+    top 0
+    left 0
+    width 100%
+    padding $padding-y $padding
+    display flex
+    flex-wrap wrap
+    h1
+      display inline
+    .caption:not(:empty)
+      &::before
+        content ',\0000A0'
+  .medias.flickity-enabled
+    display block
+    hideselect()
+    position fixed
+    top 0
+    left 0
+    width 100%
+    height 100%
+    .flickity-viewport
+      // pointer-events none
+      height 100%
+      width 100%
+    .flickity-slider
+      transform none !important
+    section
+      height 100%
+      width 100%
+      padding $padding
+      padding-top 'calc(%s * 2 + 1em)' % $padding-y
+      left 0 !important
+      visibility hidden
+      .responsive-image
+        width 100%
+        height 100%
+      img
+        width 100%
+        height 100%
+        object-fit contain
+        object-position top center
+        font-family 'object-fit: contain'
+    section.is-selected
+      visibility visible
+      z-index 1
+    .flickity-prev-next-button
+      cursor pointer !important
+      top 0
+      height 100%
+      width 50%
+      margin-top 0
+      background transparent
+      padding 0
+      transform none
+      border none
+      border-radius 0
+      z-index 10
+      +below($md)
+        display none
+      svg
+        display none
+      &.previous
+        left 0
+      &.next
+        right 0
+      &[disabled]
+        display none
+      &:focus
+        outline 0
+        box-shadow none

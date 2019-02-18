@@ -1,7 +1,10 @@
-// webfont('UniversLTStdLight', 'UniversLTStdLight')
+webfont('UR', 'UR')
+webfont('URI', 'URI')
 
 text()
-	font-family UniversLTStdLight, sans-serif
+	font-family UR, sans-serif
+	.italic, em, i
+		font-family URI, sans-serif
 
 // Main font styles
 
@@ -17,7 +20,7 @@ body,html
 html
 	font-size 12px
 	+above($xxl + 1)
-		font-size 0.6vw
+		font-size 0.8vw
 	+below($md)
 		font-size 12px
 
@@ -37,28 +40,3 @@ p
 
 .text-center
 	text-align center
-
-bullet()
-	padding-left 0.9em
-	position relative
-	&::after
-		content ''
-		width 0.4em
-		height 0.4em
-		left 0
-		top 0.2em
-		border 1px solid currentColor
-		border-radius 100%
-		position absolute
-	&:hover, &.active
-		&::after
-			background currentColor
-	&.blink:not(:hover)::after
-		animation bullet-blink 1.3s linear infinite
-
-blink()
-	&::after
-		animation bullet-blink 1.3s linear infinite
-
-.bullet
-	bullet()

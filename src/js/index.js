@@ -7,7 +7,7 @@ import Links from './components/links';
 // import Embeds from './components/embeds';
 // import Players from './components/players';
 // import Projects from './components/projects';
-// import Related from './components/related';
+// import Sliders from './components/sliders';
 // import Idle from './components/idle';
 // import Pjax from './components/pjax';
 import debounce from 'lodash.debounce'
@@ -18,10 +18,10 @@ const App = {
     App.pageType = document.body.getAttribute('page-type')
     await Loader.init();
     await App.sizeSet();
-    if(Loader.isLoaded) await App.interact();
+    await App.interact();
     // await Pjax.init();
     window.addEventListener('resize', debounce(App.sizeSet, 300), false)
-    Loader.loaded();
+    await Loader.loaded();
   },
   sizeSet: () => {
     App.width = (window.innerWidth || document.documentElement.clientWidth)
@@ -35,7 +35,7 @@ const App = {
     // await Expandables.init();
     // await Players.init();
     // await Projects.init();
-    // await Related.init();
+    // await Sliders.init();
     // await Idle.init();
   }
 };

@@ -5,6 +5,10 @@ tabs:
       pages:
         headline: Pages
         type: pages
+        create:
+          - default
+          - about
+          - contact
   settings:
     label: Settings
     icon: cog
@@ -12,28 +16,28 @@ tabs:
       infos:
         type: fields
         fields:
+          shortTitle:
+            label: Short title
+            type: text
           tagline:
             label: Tagline
             type: text
+          menuPage1:
+            label: Menu Page 1
+            type: pages
+            multiple: false
+            width: 1/2
+          menuPage2:
+            label: Menu Page 2
+            type: pages
+            multiple: false
+            width: 1/2
           description:
             label: Description
             type:  textarea
           keywords:
             label: Keywords
             type:  tags
-            width: 1/2
-          follow:
-            label: Follow
-            type: structure
-            fields:
-              title:
-                label: Title
-                type: text
-                required: true
-              url:
-                label: URL
-                type: url
-                required: true
             width: 1/2
           customcss:
             label: Custom CSS

@@ -1,6 +1,16 @@
 title: Projects
+options:
+  delete: false
+  changeTemplate: false
+  changeStatus: false
 sections:
-  categories:
-    headline: Categories
+  projects:
+    headline: Projects
     type: pages
-    templates: project.category
+    templates: project
+    layout: cards
+    image:
+      cover: false
+      ratio: 3/2
+      back: black
+      query: page.featured.toFile

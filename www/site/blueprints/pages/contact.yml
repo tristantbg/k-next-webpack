@@ -1,17 +1,17 @@
-title: About
+title: Contact
 preset: page
 pages: false
 files:
   template: image
 fields:
   text:
-    label: Biography EN
+    label: Description
     type: markdown
     size: medium
-  textFr:
-    label: Biography FR
-    type: markdown
-    size: medium
+  # textFr:
+  #   label: Biography FR
+  #   type: markdown
+  #   size: medium
   additionalInfosTitle:
     label: Additional Infos Title
     type: text
