@@ -1,15 +1,15 @@
 // Example: webfont('Franklin Gothic', 'franklingothic', true, 'bold')
 
 font-url(file)
-	return 'fonts/' + file
+	return '../fonts/' + file
 
 webfont(family, file, hack-chrome-windows = false, weight = 'normal', style = 'normal')
 	@font-face
 		font-family family
 		src url(font-url(file + '.eot')) format("eot"),
 			url(font-url(file + '.eot?#iefix')) format('embedded-opentype'),
-			url(font-url(file + '.woff')) format('woff'), 
-			url(font-url(file + '.woff2')) format('woff2'), 
+			url(font-url(file + '.woff')) format('woff'),
+			url(font-url(file + '.woff2')) format('woff2'),
 			url(font-url(file + '.svg#'+ family)) format('svg')
 		font-weight weight
 		font-style normal
@@ -19,9 +19,9 @@ webfont(family, file, hack-chrome-windows = false, weight = 'normal', style = 'n
 				font-family family
 				src url(font-url(file + '.svg#'+ family)) format('svg')
 
- 
+
  // First paragraph is flush, all paragraphs after are indented
- // Example: .paragraph 
+ // Example: .paragraph
  // 			flowing-paragraph(0.5em)
 
 flowing-paragraph(n)
