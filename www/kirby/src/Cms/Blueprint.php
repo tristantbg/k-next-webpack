@@ -7,9 +7,11 @@ use Kirby\Exception\InvalidArgumentException;
 use Kirby\Exception\NotFoundException;
 use Kirby\Data\Data;
 use Kirby\Form\Field;
+use Kirby\Toolkit\A;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\I18n;
 use Kirby\Toolkit\Obj;
+use Throwable;
 
 /**
  * The Blueprint class normalizes an array from a
@@ -177,7 +179,7 @@ class Blueprint
      * @param array|string $props
      * @return array
      */
-    public function extend($props): array
+    public static function extend($props): array
     {
         if (is_string($props) === true) {
             $props = [
@@ -194,18 +196,20 @@ class Blueprint
         $mixin = static::find($extends);
 
         if ($mixin === null) {
-            return $props;
+            $props = $props;
+        } elseif (is_array($mixin) === true) {
+            $props = A::merge($mixin, $props, A::MERGE_REPLACE);
+        } else {
+            try {
+                $props = A::merge(Data::read($mixin), $props, A::MERGE_REPLACE);
+            } catch (Exception $e) {
+                $props = $props;
+            }
         }
 
-        if (is_array($mixin) === true) {
-            return array_replace_recursive($mixin, $props);
-        }
-
-        try {
-            return array_replace_recursive(Data::read($mixin), $props);
-        } catch (Exception $e) {
-            return $props;
-        }
+        // remove the extends flag
+        unset($props['extends']);
+        return $props;
     }
 
     /**
@@ -394,7 +398,7 @@ class Blueprint
         return $columns;
     }
 
-    protected function helpList(array $items)
+    public static function helpList(array $items)
     {
         $md = [];
 
@@ -408,22 +412,39 @@ class Blueprint
     /**
      * Normalize field props for a single field
      *
-     * @param string $name
-     * @param string $type
-     * @param array $props
+     * @param array|string $props
      * @return array
      */
-    protected function normalizeField(string $name, string $type, array $props): array
+    public static function fieldProps($props): array
     {
-        if (isset(Field::$types[$type]) === false) {
+        $props = static::extend($props);
+
+        if (isset($props['name']) === false) {
+            throw new InvalidArgumentException('The field name is missing');
+        }
+
+        $name = $props['name'];
+        $type = $props['type'] ?? $name;
+
+        if ($type !== 'group' && isset(Field::$types[$type]) === false) {
+            throw new InvalidArgumentException('Invalid field type ("' . $type . '")');
+        }
+
+        // support for nested fields
+        if (isset($props['fields']) === true) {
+            $props['fields'] = static::fieldsProps($props['fields']);
+        }
+
+        // groups don't need all the crap
+        if ($type === 'group') {
             return [
-                'name'  => $name,
-                'label' => 'Invalid field type ("' . $type . '")',
-                'type'  => 'info',
-                'text'  => 'The following field types are available: ' . $this->helpList(array_keys(Field::$types))
+                'fields' => $props['fields'],
+                'name'   => $name,
+                'type'   => $type,
             ];
         }
 
+        // add some useful defaults
         return array_merge($props, [
             'label' => $props['label'] ?? ucfirst($name),
             'name'  => $name,
@@ -433,53 +454,74 @@ class Blueprint
     }
 
     /**
+     * Creates an error field with the given error message
+     *
+     * @param string $name
+     * @param string $message
+     * @return array
+     */
+    public static function fieldError(string $name, string $message): array
+    {
+        return [
+            'label' => 'Error',
+            'name'  => $name,
+            'text'  => $message,
+            'theme' => 'negative',
+            'type'  => 'info',
+        ];
+    }
+
+    /**
      * Normalizes all fields and adds automatic labels,
      * types and widths.
      *
-     * @param string $tabName
      * @param array $fields
      * @return array
      */
-    protected function normalizeFields(string $tabName, $fields, int $level = 0): array
+    public static function fieldsProps($fields): array
     {
         if (is_array($fields) === false) {
             $fields = [];
         }
 
         foreach ($fields as $fieldName => $fieldProps) {
+
+            // extend field from string
+            if (is_string($fieldProps) === true) {
+                $fieldProps = [
+                    'extends' => $fieldProps,
+                    'name'    => $fieldName
+                ];
+            }
+
+            // use the name as type definition
             if ($fieldProps === true) {
                 $fieldProps = [];
             }
 
-            // inject all field extensions
-            $fieldProps = $this->extend($fieldProps);
+            // inject the name
+            $fieldProps['name'] = $fieldName;
 
-            // support for nested fields
-            if (isset($fieldProps['fields']) === true) {
-                $fieldProps['fields'] = $this->normalizeFields($tabName, $fieldProps['fields'], $level + 1);
+            // create all props
+            try {
+                $fieldProps = static::fieldProps($fieldProps);
+            } catch (Throwable $e) {
+                $fieldProps = static::fieldError($fieldName, $e->getMessage());
             }
 
-            // inject the name as field type if it does not exist
-            $fieldType = $fieldProps['type'] ?? $fieldName;
-
             // resolve field groups
-            if ($fieldType === 'group') {
+            if ($fieldProps['type'] === 'group') {
                 if (empty($fieldProps['fields']) === false && is_array($fieldProps['fields']) === true) {
                     $index  = array_search($fieldName, array_keys($fields));
                     $before = array_slice($fields, 0, $index);
                     $after  = array_slice($fields, $index + 1);
-                    $fields = array_merge($before, $fieldProps['fields'] ?? []);
+                    $fields = array_merge($before, $fieldProps['fields'] ?? [], $after);
                 } else {
                     unset($fields[$fieldName]);
                 }
             } else {
-                $fields[$fieldName] = $this->normalizeField($fieldName, $fieldType, $fieldProps);
+                $fields[$fieldName] = $fieldProps;
             }
-        }
-
-        // store all normalized fields if not in nested fields
-        if ($level === 0) {
-            $this->fields = array_merge($this->fields, $fields);
         }
 
         return $fields;
@@ -489,7 +531,7 @@ class Blueprint
      * Normalizes blueprint options. This must be used in the
      * constructor of an extended class, if you want to make use of it.
      *
-     * @param array|true|false|null $options
+     * @param array|true|false|null|string $options
      * @param array $defaults
      * @param array $aliases
      * @return array
@@ -507,6 +549,9 @@ class Blueprint
                 return false;
             }, $defaults);
         }
+
+        // extend options if possible
+        $options = $this->extend($options);
 
         foreach ($options as $key => $value) {
             $alias = $aliases[$key] ?? null;
@@ -549,7 +594,7 @@ class Blueprint
             }
 
             if ($sectionProps['type'] === 'fields') {
-                $fields = $this->normalizeFields($tabName, $sectionProps['fields'] ?? []);
+                $fields = Blueprint::fieldsProps($sectionProps['fields'] ?? []);
 
                 // inject guide fields guide
                 if (empty($fields) === true) {
@@ -560,6 +605,19 @@ class Blueprint
                             'type'  => 'info'
                         ]
                     ];
+                } else {
+                    foreach ($fields as $fieldName => $fieldProps) {
+                        if (isset($this->fields[$fieldName]) === true) {
+                            $this->fields[$fieldName] = $fields[$fieldName] = [
+                                'type'  => 'info',
+                                'label' => $fieldProps['label'] ?? 'Error',
+                                'text'  => 'The field name <strong>"' . $fieldName . '"</strong> already exists in your blueprint.',
+                                'theme' => 'negative'
+                            ];
+                        } else {
+                            $this->fields[$fieldName] = $fieldProps;
+                        }
+                    }
                 }
 
                 $sections[$sectionName]['fields'] = $fields;

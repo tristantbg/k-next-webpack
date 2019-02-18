@@ -1,24 +1,28 @@
 <?php
 
-use Kirby\Form\Form;
 use Kirby\Cms\Blueprint;
+use Kirby\Cms\Api;
+use Kirby\Cms\Form;
 use Kirby\Form\Field;
 use Kirby\Form\Fields;
 
-Kirby::plugin('timoetting/testfield', [
+Kirby::plugin('timoetting/kirbybuilder', [
   'fields' => [
     'builder' => [
       'props' => [
         'value' => function ($value = null) {
-            return $value;
+          return $value;
         }
       ],
       'computed' => [
+        'pageId' => function () {
+          return $this->model()->id();
+        },
         'pageUid' => function () {
           return $this->model()->uid();
         },
-        'pageId' => function () {
-          return $this->model()->id();
+        'encodedPageId' => function () {
+          return str_replace('/', '+', $this->model()->id());
         },
         'fieldsets' => function () {
           $fieldSets = Yaml::decode($this->fieldsets);
@@ -26,26 +30,52 @@ Kirby::plugin('timoetting/testfield', [
           return $fieldSets;
         },
         'value' => function () {
-          $values = Yaml::decode($this->value);
+          $values = $this->value != null ? Yaml::decode($this->value) : Yaml::decode($this->default);
           $vals = [];
           foreach ($values as $key => $value) {
-            if (array_key_exists('fields', $this->fieldsets[$value['_key']])) {
+            $blockKey = $value['_key'];
+            if (array_key_exists('fields', $this->fieldsets[$blockKey])) {
+              $fields = $this->fieldsets[$blockKey]['fields'];
               $form = new Form([
-                'fields' => $this->fieldsets[$value['_key']]['fields'],
+                'fields' => $this->fieldsets[$blockKey]['fields'],
                 'values' => $value,
                 'model'  => $this->model() ?? null
               ]);
-              $vals[] = $form->values();
+            } 
+            else if (array_key_exists('tabs', $this->fieldsets[$blockKey])) {
+              $fields = [];
+              $tabs = $this->fieldsets[$blockKey]['tabs'];
+              foreach ( $tabs as $tabKey => $tab) {
+                $field = array_merge($fields, $tab['fields']);
+              }
+              $form = new Form([
+                'fields' => $fields,
+                'values' => $value,
+                'model'  => $this->model() ?? null
+              ]);
             }
+            $vals[] = $form->values();
           }
           return $vals;
         },
-        'pageUid' => function () {
-          return $this->model()->uid();
+        'cssUrls' => function() {
+          $cssUrls = array_map(function($arr) {
+            if(array_key_exists('preview', $arr)) {
+              return array_key_exists('css', $arr['preview']) ? $arr['preview']['css'] : '';
+            }
+          }, $this->fieldsets);
+          $cssUrls = array_filter($cssUrls);
+          return $cssUrls;
         },
-        'pageId' => function () {
-          return $this->model()->id();
-        }
+        'jsUrls' => function() {
+          $jsUrls = array_map(function($arr) {
+            if(array_key_exists('preview', $arr)) {
+              return array_key_exists('js', $arr['preview']) ? $arr['preview']['js'] : '';
+            }
+          }, $this->fieldsets);
+          $jsUrls = array_filter($jsUrls);
+          return $jsUrls;
+        }	        
       ],
       'methods' => [
         'extendRecursively' => function ($properties, $currentPropertiesName = null) {
@@ -67,15 +97,31 @@ Kirby::plugin('timoetting/testfield', [
       ],
       'save' => function ($values = null) {
         $vals = [];
+        if ($values == null) {
+          return $vals;
+        }
         foreach ($values as $key => $value) {
-          if (array_key_exists('fields', $this->fieldsets[$value['_key']])) {
+          $blockKey = $value['_key'];
+          if (array_key_exists('fields', $this->fieldsets[$blockKey])) {
+            $fields = $this->fieldsets[$blockKey]['fields'];
             $form = new Form([
-              'fields' => $this->fieldsets[$value['_key']]['fields'],
+              'fields' => $fields,
               'values' => $value,
               'model'  => $this->model() ?? null
             ]);
-            $vals[] = $form->data();
+          } else if (array_key_exists('tabs', $this->fieldsets[$blockKey])) {
+            $fields = [];
+            $tabs = $this->fieldsets[$blockKey]['tabs'];
+            foreach ( $tabs as $tabKey => $tab) {
+              $field = array_merge($fields, $tab['fields']);
+            }
+            $form = new Form([
+              'fields' => $fields,
+              'values' => $value,
+              'model'  => $this->model() ?? null
+            ]);
           }
+          $vals[] = $form->data();
         }
         return $vals;
       },
@@ -103,6 +149,54 @@ Kirby::plugin('timoetting/testfield', [
           ];
         }
       ],
+      [
+        'pattern' => 'kirby-builder/rendered-preview',
+        'method' => 'POST',
+        'action'  => function () {
+          $kirby            = kirby();
+          $blockUid         = get('blockUid');
+          $blockContent     = get('blockContent');
+          $previewOptions   = get('preview');
+          $cache            = $kirby->cache('timoetting.builder');
+          $existingPreviews = $cache->get('previews');
+          if(isset($existingPreviews)) {
+            $updatedPreviews            = $existingPreviews;
+            $updatedPreviews[$blockUid] = $blockContent;
+            $cache->set('previews', $updatedPreviews);
+          } else {
+            $newPreview = [$blockUid => $blockContent];
+            $cache->set('previews', $newPreview);
+          }
+          $snippet      = $previewOptions['snippet'] ?? null;
+          $modelName    = $previewOptions['modelname'] ?? 'data';
+          $originalPage = $kirby->page(get('pageid'));
+          $page = new Page([
+            'slug'     => 'builder-preview',
+            'template' => 'builder-preview',
+            'content'  => $blockContent,
+          ]);
+          return array(
+            'preview' => snippet($snippet, ['page' => $originalPage, $modelName => $page->content()], true) ,
+            'content' => get('blockContent')
+          );
+        }
+      ],
+      [
+        'pattern' => 'kirby-builder/pages/(:any)/fields/(:any)/(:all?)',
+        'method' => 'ALL',
+        'action'  => function (string $id, string $fieldPath, string $path = null) {            
+          if ($page = $this->page($id)) {
+            $fieldPath = Str::split($fieldPath, '+');
+            $form = Form::for($page);
+            $field = fieldFromPath($fieldPath, $page, $form->fields()->toArray());
+            $fieldApi = $this->clone([
+              'routes' => $field->api(),
+              'data'   => array_merge($this->data(), ['field' => $field])
+            ]);
+            return $fieldApi->call($path, $this->requestMethod(), $this->requestData());
+          }
+        }
+      ],
     ],
   ],
   'routes' => [
@@ -124,7 +218,6 @@ Kirby::plugin('timoetting/testfield', [
           $content['_jspath'] = get('js');
         }
         $content['_modelname'] = (get('modelname')) ? get('modelname') : 'data';
-        $responsePage = page('projects/oceans-are-quite-nice');
         $responsePage = new Page([
           'slug' => 'virtual-reality',
           'template' => 'snippet-wrapper',
@@ -133,19 +226,73 @@ Kirby::plugin('timoetting/testfield', [
         return $responsePage;
       }
     ],
+    [
+      'pattern' => 'kirby-builder-frame',
+      'method' => 'GET',
+      'action'  => function () {
+        return '<!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="X-UA-Compatible" content="ie=edge">
+            <title>Document</title>
+          </head>
+          <body>
+            hey
+          </body>
+          </html>';
+      }
+    ],
   ], 
   'translations' => [
     'en' => [
       'builder.clone' => 'Clone',
+      'builder.preview' => 'Preview',
     ],
     'fr' => [
       'builder.clone' => 'Dupliquer',
+      'builder.preview' => 'Aperçu',
     ],
     'de' => [
       'builder.clone' => 'Duplizieren',
+      'builder.preview' => 'Vorschau',
     ],
   ],  
   'templates' => [
     'snippet-wrapper' => __DIR__ . '/templates/snippet-wrapper.php'
+  ],
+  'fieldMethods' => [
+      'toBuilderBlocks' => function ($field) {
+        return $field->toStructure();
+      },
+      'fieldSetKey' => function ($field) {
+        // return $field->_key();
+        return 'holla';
+      }
   ]
 ]);
+
+// example: http://localhost:8889/api/kirby-builder/pages/projects+trees-and-stars-and-stuff/fields/test+events+eventlist+event+downloads
+function fieldFromPath($fieldPath, $page, $fields) {
+  $fieldName = array_shift($fieldPath);
+  $fieldProps = $fields[$fieldName];
+  if ($fieldProps['type'] === 'builder' && count($fieldPath) > 0) {
+    $fieldsetKey = array_shift($fieldPath);
+    $fieldset = $fieldProps['fieldsets'][$fieldsetKey];
+    if (array_key_exists('tabs', $fieldset)) {
+      $fieldsetFields = [];
+      foreach ( $fieldset['tabs'] as $tabKey => $tab) {
+        $fieldsetFields = array_merge($fieldsetFields, $tab['fields']);
+      }
+    } else {
+      $fieldsetFields = $fieldset['fields'];
+    }
+    return fieldFromPath($fieldPath, $page, $fieldsetFields);
+  } else if ($fieldProps['type'] === 'structure' && count($fieldPath) > 0) {
+    return fieldFromPath($fieldPath, $page, $fieldProps['fields']);
+  } else {
+    $fieldProps['model'] = $page;
+    return new Field($fieldProps['type'], $fieldProps);
+  }
+}

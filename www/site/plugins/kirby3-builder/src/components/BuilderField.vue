@@ -6,12 +6,14 @@
   >
     <k-draggable 
       class="kBuilder__blocks k-grid" 
-      @end="drag=false" 
       v-model="blocks"
+      :end="onDragEnd" 
       @update="onBlockMoved"
       @add="onBlockAdded"
       @remove="onBlockRemoved"
+      @move="onMove"
       :move="onMove"
+      @start.native="onStartDrag"
       :options="draggableOptions"
     >
       <k-column 
@@ -28,20 +30,25 @@
         <builder-block 
           :page-id="pageId" 
           :page-uid="pageUid" 
+          :encoded-page-id="encodedPageId" 
           :block="block" 
           :index="index"
           :columns-count="columnsCount"
           :show-preview.sync="block.showPreview" 
+          :styles="cssContents[block.blockKey]"
+          :script="jsContents[block.blockKey]"
+          :parentPath="path"
           @input="onBlockInput" 
           @clone="cloneBlock"
-          @delete="deleteBlock"/>
+          @delete="deleteBlock"
+        />
         <div 
           v-if="(columnsCount % index == 0 && columnsCount > 1)"
           class="kBuilder__inlineAddButton kBuilder__inlineAddButton--vertical kBuilder__inlineAddButton--after"
           @click="onClickAddBlock(index + 1)"
         ></div>
       </k-column >
-      <k-column :width="columnWidth" v-if="!limit || blockCount < limit">
+      <k-column :width="columnWidth" v-if="!max || blockCount < max">
         <k-button 
           icon="add" 
           @click="onClickAddBlock()"
@@ -53,14 +60,17 @@
     </k-draggable>
     <k-dialog 
       ref="dialog" 
+      class="kBuilder__dialog"
+      @open="onOpenDialog"
+      @close="onCloseDialog"
     >
       <k-list>
         <k-list-item
           class="kBuilder__addBlockButton"
           v-for="(value, key) in fieldsets" 
           :key="key" 
-          @click="addBlock(key)"
           :text="value.label"   
+          @click="addBlock(key)"
         />
       </k-list>
     </k-dialog>
@@ -70,18 +80,48 @@
 <script>
 import BuilderBlock from "./BuilderBlock.vue";
 export default {
-  props: {
+  props: {    
+    counter: [Boolean, Object],
+    disabled: Boolean,
+    endpoints: Object,
+    help: String,
+    input: [String, Number],
+    name: [String, Number],
+    required: Boolean,
+    type: String,
     value: String,
     fieldsets: Object,
     columns: Number,
-    limit: Number,
+    max: Number,
     label: String,
     preview: Object,
     pageId: String,
     pageUid: String,
+    encodedPageId: String,
+    cssUrls: String,
+    jsUrls: String,
+    parentPath: String
   },
   components: { BuilderBlock },
   mounted() {
+    for (const [fieldSetKey, cssUrl] of Object.entries(this.cssUrls)) {
+      fetch(cssUrl.replace(/^\/+/g, ''))//regex removes leading slashes
+      .then((res) => {
+        return res.text();
+      })
+      .then((res) => {
+        this.$set(this.cssContents, fieldSetKey, res)
+      })
+    }
+    for (const [fieldSetKey, jsUrls] of Object.entries(this.jsUrls)) {
+      fetch(jsUrls.replace(/^\/+/g, ''))//regex removes leading slashes
+      .then((res) => {
+        return res.text();
+      })
+      .then((res) => {
+        this.$set(this.jsContents, fieldSetKey, res)
+      })
+    }
     if (this.value) {
       this.value.forEach((block, index) => {
         let fieldSet = this.fieldsets[block._key]
@@ -96,16 +136,17 @@ export default {
       toggle: true,
       targetPosition: null,
       lastUniqueKey: 0,
-      dataField: {
-        label: 'date label',
-        type: 'date'
-      },
-      dateValue: null
+      cssContents: {},
+      jsContents: {},
+      dialogOpen: false
     }
   },
   computed: {
     val() {
       return this.blocks.map(block => block.content)
+    },
+    path() {
+      return (this.parentPath) ? `${this.parentPath}+${this.name}` : this.name
     },
     columnsCount() {
       return this.columns ? this.columns : '1'
@@ -114,14 +155,15 @@ export default {
       return this.columns ? '1/' + this.columns : '1/1'
     },
     draggableOptions(){
-        return { 
-          group:'kirby-builder', 
-          put:'kirby-builder', 
-          clone: true, 
-          forceFallback: true, 
-          handle: '.kBuilder__dragDropHandle', 
-          scroll: true 
-        }
+      return { 
+        group:'kirby-builder', 
+        clone: true,
+        handle: '.kBuilder__dragDropHandle', 
+        forceFallback: true,
+        fallbackClass: "sortable-fallback",
+        fallbackOnBody: true,
+        scroll: document.querySelector(".k-panel-view"),
+      }
     },
     blockCount() {
       return this.blocks.length
@@ -133,11 +175,7 @@ export default {
       return Object.keys(this.fieldsets)
     },
     addBlockButtonLabel() {
-      if (this.fieldsetCount == 1) {
-        return `${this.$t('add')} ${this.fieldsets[Object.keys(this.fieldsets)[0]].label}`
-      } else {
-        return this.$t('add')
-      }
+      return this.$t('add')
     },
     supportedBlockTypes() {
       return Object.keys(this.fieldsets)
@@ -156,12 +194,31 @@ export default {
     onBlockRemoved(event) {
       this.$emit("input", this.val);
     },
+    onDragEnd(event) {
+      this.drag = false
+    },
     onMove(event) {
-      //Prevent sorting behind last element that contains the add button
+      this.$root.$emit('blockMoved')
       const isNotLastIndex = event.relatedContext.index != this.blocks.length + 1
+      const isNotSameIndex = event.draggedContext.futureIndex == event.draggedContext.index
       const isEmptyList = (this.blocks.length == 0)
       const isSupportedBlockType = this.supportedBlockTypes.includes(event.relatedContext.element.blockKey)
-      return (isEmptyList || isNotLastIndex) && isSupportedBlockType
+      return (isEmptyList || isNotLastIndex || isNotSameIndex) && isSupportedBlockType
+    },
+    onStartDrag(event) {
+      const draggedBlockPreviewFrame = event.item.getElementsByClassName('kBuilderPreview__frame')[0]
+      if (draggedBlockPreviewFrame) {
+        window.requestAnimationFrame(() => {
+          const originalBlockPreviewFrameDocument = draggedBlockPreviewFrame.contentWindow.document
+          const clonedBlockPreviewFrameDocument = document.getElementsByClassName('sortable-drag')[0]
+                                      .getElementsByClassName('kBuilderPreview__frame')[0]
+                                      .contentWindow
+                                      .document
+          clonedBlockPreviewFrameDocument.open();
+          clonedBlockPreviewFrameDocument.write(originalBlockPreviewFrameDocument.documentElement.innerHTML);
+          clonedBlockPreviewFrameDocument.close();
+        });
+      }
     },
     onClickAddBlock(position) {
       this.targetPosition = position
@@ -171,15 +228,23 @@ export default {
         this.$refs.dialog.open()
       }
     },
+    onOpenDialog() {
+      this.dialogOpen = true
+    },
+    onCloseDialog() {
+      this.dialogOpen = false
+    },
     addBlock(key) {
       let position = this.targetPosition == null ? this.blocks.length : this.targetPosition
       let fieldSet = this.fieldsets[key]
       let newBlock = this.newBlock(fieldSet, key, this.getBlankContent(key, fieldSet), this.lastUniqueKey++)
       newBlock.isNew = true
       this.blocks.splice(position, 0, JSON.parse(JSON.stringify(newBlock)))
-      this.$refs.dialog.close()
       this.targetPosition = null
       this.$emit("input", this.val);
+      if (this.dialogOpen) {
+        this.$refs.dialog.close()
+      }
     },
     getBlankContent(key, fieldSet) {
       let content = { '_key': key }
@@ -334,10 +399,6 @@ kBuilder__block:hover .kBuilder__dragDropHandle--col-1{
   border-right-width: 2px;
 }
 
-/* .blocklist-item {
-  display: inline-block;
-  margin-right: 10px;
-} */
 .blocklist-enter-active, .blocklist-leave-active {
   transition: all .5s;
 }
@@ -354,13 +415,8 @@ kBuilder__block:hover .kBuilder__dragDropHandle--col-1{
   position: relative;
 }
 
-.kBuilder__previewFrame{
-  width: 100%;
-  height: 30px;
-  border: none;
-  display: block;
-}
-.kBuilder__previewFrame--hidden{
+.kBuilder__dialog .k-list-item-image,
+.kBuilder__dialog .k-dialog-button-submit{
   display: none;
 }
 
@@ -368,7 +424,7 @@ kBuilder__block:hover .kBuilder__dragDropHandle--col-1{
   display: none;
 }
 
-.sortable-ghost .kBuilder__previewFrame{
+.sortable-ghost .kBuilderPreview__frame{
   pointer-events: none;
 }
 </style>

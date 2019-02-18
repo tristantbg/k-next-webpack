@@ -6,6 +6,15 @@ trait PageSiblings
 {
 
     /**
+     * @deprecated Use Page::hasNextUnlisted instead
+     * @return boolean
+     */
+    public function hasNextInvisible(): bool
+    {
+        return $this->hasNextUnlisted();
+    }
+
+    /**
      * Checks if there's a next listed
      * page in the siblings collection
      *
@@ -17,6 +26,15 @@ trait PageSiblings
     }
 
     /**
+     * @deprecated Use Page::hasNextListed instead
+     * @return boolean
+     */
+    public function hasNextVisible(): bool
+    {
+        return $this->hasNextListed();
+    }
+
+    /**
      * Checks if there's a next unlisted
      * page in the siblings collection
      *
@@ -25,6 +43,15 @@ trait PageSiblings
     public function hasNextUnlisted(): bool
     {
         return $this->nextUnlisted() !== null;
+    }
+
+    /**
+     * @deprecated Use Page::hasPrevUnlisted instead
+     * @return boolean
+     */
+    public function hasPrevInvisible(): bool
+    {
+        return $this->hasPrevUnlisted();
     }
 
     /**
@@ -50,6 +77,24 @@ trait PageSiblings
     }
 
     /**
+     * @deprecated Use Page::hasPrevListed instead
+     * @return boolean
+     */
+    public function hasPrevVisible(): bool
+    {
+        return $this->hasPrevListed();
+    }
+
+    /**
+     * @deprecated Use Page::nextUnlisted() instead
+     * @return self|null
+     */
+    public function nextInvisible()
+    {
+        return $this->nextUnlisted();
+    }
+
+    /**
      * Returns the next listed page if it exists
      *
      * @return self|null
@@ -67,6 +112,24 @@ trait PageSiblings
     public function nextUnlisted()
     {
         return $this->nextAll()->unlisted()->first();
+    }
+
+    /**
+     * @deprecated Use Page::prevListed() instead
+     * @return self|null
+     */
+    public function nextVisible()
+    {
+        return $this->nextListed();
+    }
+
+    /**
+     * @deprecated Use Page::prevUnlisted() instead
+     * @return self|null
+     */
+    public function prevInvisible()
+    {
+        return $this->prevUnlisted();
     }
 
     /**
@@ -90,13 +153,26 @@ trait PageSiblings
     }
 
     /**
+     * @deprecated Use Page::prevListed() instead
+     * @return self|null
+     */
+    public function prevVisible()
+    {
+        return $this->prevListed();
+    }
+
+    /**
      * Private siblings collector
      *
      * @return Collection
      */
     protected function siblingsCollection()
     {
-        return $this->parentModel()->children();
+        if ($this->isDraft() === true) {
+            return $this->parentModel()->drafts();
+        } else {
+            return $this->parentModel()->children();
+        }
     }
 
     /**

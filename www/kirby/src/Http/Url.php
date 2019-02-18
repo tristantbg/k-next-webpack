@@ -154,11 +154,11 @@ class Url
      * Returns the path for the given url
      *
      * @param string|array|null $url
-     * @param bool|null $leadingSlash
-     * @param bool|null $trailingSlash
+     * @param bool $leadingSlash
+     * @param bool $trailingSlash
      * @return mixed
      */
-    public static function path($url = null, bool $leadingSlash = null, bool $trailingSlash = null): string
+    public static function path($url = null, bool $leadingSlash = false, bool $trailingSlash = false): string
     {
         return Url::toObject($url)->path()->toString($leadingSlash, $trailingSlash);
     }
@@ -250,10 +250,10 @@ class Url
      * Smart resolver for internal and external urls
      *
      * @param string $path
-     * @param array $options
+     * @param $options
      * @return string
      */
-    public static function to(string $path = null, array $options = null): string
+    public static function to(string $path = null, $options = null): string
     {
         // keep relative urls
         if (substr($path, 0, 2) === './' || substr($path, 0, 3) === '../') {

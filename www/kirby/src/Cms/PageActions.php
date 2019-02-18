@@ -287,14 +287,7 @@ trait PageActions
         $this->kirby()->trigger('page.' . $action . ':before', ...$arguments);
         $result = $callback(...$arguments);
         $this->kirby()->trigger('page.' . $action . ':after', $result, $old);
-
-        // flush the pages cache, except the changeNum action is run
-        // flushing it there, would be triggered way too often.
-        // triggering it on sort and hide is absolutely enough
-        if ($action !== 'changeNum') {
-            $this->kirby()->cache('pages')->flush();
-        }
-
+        $this->kirby()->cache('pages')->flush();
         return $result;
     }
 
@@ -309,7 +302,7 @@ trait PageActions
         // clean up the slug
         $props['slug']     = Str::slug($props['slug'] ?? $props['content']['title'] ?? null);
         $props['template'] = $props['model'] = strtolower($props['template'] ?? 'default');
-        $props['isDraft']  = true;
+        $props['isDraft']  = ($props['draft'] ?? true);
 
         // create a temporary page object
         $page = Page::factory($props);
@@ -336,7 +329,11 @@ trait PageActions
             $page = $page->save($page->content()->toArray(), $languageCode);
 
             // flush the parent cache to get children and drafts right
-            $page->parentModel()->drafts()->append($page->id(), $page);
+            if ($page->isDraft() === true) {
+                $page->parentModel()->drafts()->append($page->id(), $page);
+            } else {
+                $page->parentModel()->children()->append($page->id(), $page);
+            }
 
             return $page;
         });
@@ -469,9 +466,8 @@ trait PageActions
                 $page->parentModel()->drafts()->remove($page);
             } else {
                 $page->parentModel()->children()->remove($page);
+                $page->resortSiblingsAfterUnlisting();
             }
-
-            $page->resortSiblingsAfterUnlisting();
 
             return true;
         });
@@ -483,7 +479,10 @@ trait PageActions
             return $this;
         }
 
-        $page = $this->clone(['isDraft' => false]);
+        $page = $this->clone([
+            'isDraft' => false,
+            'root'    => null
+        ]);
 
         // actually do it on disk
         if ($this->exists() === true) {

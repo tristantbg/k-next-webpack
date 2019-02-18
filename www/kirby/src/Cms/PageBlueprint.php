@@ -102,15 +102,19 @@ class PageBlueprint extends Blueprint
         ];
 
         // use the defaults, when the status is not defined
-        if (is_array($status) === false) {
+        if (empty($status) === true) {
             $status = $defaults;
         }
+
+        // extend the status definition
+        $status = $this->extend($status);
 
         // clean up and translate each status
         foreach ($status as $key => $options) {
 
             // skip invalid status definitions
             if (in_array($key, ['draft', 'listed', 'unlisted']) === false || $options === false) {
+                unset($status[$key]);
                 continue;
             }
 
@@ -145,6 +149,11 @@ class PageBlueprint extends Blueprint
         // the draft status is required
         if (isset($status['draft']) === false) {
             $status = ['draft' => $defaults['draft']] + $status;
+        }
+
+        // remove the draft status for the home and error pages
+        if ($this->model->isHomeOrErrorPage() === true) {
+            unset($status['draft']);
         }
 
         return $status;

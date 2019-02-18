@@ -21,6 +21,13 @@ return [
         },
 
         /**
+         * The placeholder text if no pages have been selected yet
+         */
+        'empty' => function ($empty = null) {
+            return I18n::translate($empty, $empty);
+        },
+
+        /**
          * Image settings for each item
          */
         'image' => function (array $image = null) {
@@ -65,7 +72,7 @@ return [
         /**
          * Query for the files to be included
          */
-        'query' => function (string $query = 'page.files') {
+        'query' => function (string $query = null) {
             return $query;
         },
 
@@ -98,6 +105,9 @@ return [
         'parent' => function () {
             return $this->parentModel->apiUrl(true);
         },
+        'query' => function () {
+            return $this->query ?? $this->parentModel::CLASS_ALIAS . '.files';
+        },
         'default' => function () {
             return $this->toFiles($this->default);
         },
@@ -107,7 +117,6 @@ return [
     ],
     'methods' => [
         'fileResponse' => function ($file) {
-
             if ($this->layout === 'list') {
                 $thumb = [
                     'width'  => 100,
@@ -138,12 +147,10 @@ return [
             ];
         },
         'toFiles' => function ($value = null) {
-
             $files = [];
             $kirby = kirby();
 
             foreach (Yaml::decode($value) as $id) {
-
                 if (is_array($id) === true) {
                     $id = $id['id'] ?? null;
                 }
@@ -154,7 +161,6 @@ return [
             }
 
             return $files;
-
         }
     ],
     'api' => function () {

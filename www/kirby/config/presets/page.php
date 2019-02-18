@@ -1,7 +1,6 @@
 <?php
 
 return function ($props) {
-
     $section = function ($defaults, $props) {
         if ($props === true) {
             $props = [];
@@ -26,7 +25,7 @@ return function ($props) {
 
         if ($pages !== false) {
             $sidebar['pages'] = $section([
-                'headline' => 'Pages',
+                'headline' => t('pages'),
                 'type'     => 'pages',
                 'status'   => 'all',
                 'layout'   => 'list',
@@ -35,7 +34,7 @@ return function ($props) {
 
         if ($files !== false) {
             $sidebar['files'] = $section([
-                'headline' => 'Files',
+                'headline' => t('files'),
                 'type'     => 'files',
                 'layout'   => 'list'
             ], $files);
@@ -43,16 +42,13 @@ return function ($props) {
     }
 
     if (empty($sidebar) === true) {
-
         $props['fields'] = $props['fields'] ?? [];
 
         unset(
             $props['files'],
             $props['pages']
         );
-
     } else {
-
         $props['columns'] = [
             [
                 'width'  => '2/3',
@@ -70,9 +66,7 @@ return function ($props) {
             $props['pages'],
             $props['sidebar']
         );
-
     }
 
     return $props;
-
 };

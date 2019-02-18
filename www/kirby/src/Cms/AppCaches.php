@@ -3,7 +3,6 @@
 namespace Kirby\Cms;
 
 use Kirby\Cache\Cache;
-
 use Kirby\Exception\InvalidArgumentException;
 
 trait AppCaches
@@ -14,7 +13,7 @@ trait AppCaches
      * Returns a cache instance by key
      *
      * @param string $key
-     * @return Kirby\Cache\Cache
+     * @return Cache
      */
     public function cache(string $key)
     {
@@ -29,13 +28,8 @@ trait AppCaches
             return $this->caches[$key] = new Cache;
         }
 
-        // TODO: make this configurable
         $type  = strtolower($options['type']);
-        $types = [
-            'apcu'      => 'Kirby\Cache\ApcuCache',
-            'file'      => 'Kirby\Cache\FileCache',
-            'memcached' => 'Kirby\Cache\MemCache',
-        ];
+        $types = $this->extensions['cacheTypes'] ?? [];
 
         if (array_key_exists($type, $types) === false) {
             throw new InvalidArgumentException([

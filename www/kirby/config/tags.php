@@ -46,7 +46,6 @@ return [
             'title'
         ],
         'html' => function ($tag) {
-
             if (!$file = $tag->file($tag->value)) {
                 return $tag->text;
             }
@@ -94,7 +93,6 @@ return [
             'width'
         ],
         'html' => function ($tag) {
-
             if ($tag->file = $tag->file($tag->value)) {
                 $tag->src     = $tag->file->url();
                 $tag->alt     = $tag->alt     ?? $tag->file->alt()->or(' ')->value();
@@ -124,6 +122,10 @@ return [
                 'alt'    => $tag->alt ?? ' '
             ]);
 
+            if ($tag->kirby()->option('kirbytext.image.figure', true) === false) {
+                return $link($image);
+            }
+
             return Html::figure([ $link($image) ], $tag->caption, [
                 'class' => $tag->class
             ]);
@@ -134,6 +136,7 @@ return [
     'link' => [
         'attr' => [
             'class',
+            'lang',
             'rel',
             'role',
             'target',
@@ -141,6 +144,10 @@ return [
             'text',
         ],
         'html' => function ($tag) {
+            if (empty($tag->lang) === false) {
+                $tag->value = Url::to($tag->value, $tag->lang);
+            }
+
             return Html::a($tag->value, $tag->text, [
                 'rel'    => $tag->rel,
                 'class'  => $tag->class,
@@ -159,7 +166,7 @@ return [
             'text',
             'title'
         ],
-        'html' => function($tag) {
+        'html' => function ($tag) {
             return Html::tel($tag->value, $tag->text, [
                 'class' => $tag->class,
                 'rel'   => $tag->rel,
@@ -207,18 +214,16 @@ return [
             'width'
         ],
         'html' => function ($tag) {
-
             $video = Html::video(
                 $tag->value,
-                $tag->option('kirbytext.video.options', [])
+                $tag->kirby()->option('kirbytext.video.options', [])
             );
 
             return Html::figure([$video], $tag->caption, [
-                'class'  => $tag->class  ?? $tag->option('kirbytext.video.class', 'video'),
-                'height' => $tag->height ?? $tag->option('kirbytext.video.height'),
-                'width'  => $tag->width  ?? $tag->option('kirbytext.video.width'),
+                'class'  => $tag->class  ?? $tag->kirby()->option('kirbytext.video.class', 'video'),
+                'height' => $tag->height ?? $tag->kirby()->option('kirbytext.video.height'),
+                'width'  => $tag->width  ?? $tag->kirby()->option('kirbytext.video.width'),
             ]);
-
         }
     ],
 

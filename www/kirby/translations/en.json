@@ -209,6 +209,7 @@
   "file.delete.confirm":
     "Do you really want to delete <br><strong>{filename}</strong>?",
 
+  "files": "Files",
   "files.empty": "No files yet",
 
   "hour": "Hour",
@@ -217,6 +218,7 @@
 
   "installation": "Installation",
   "installation.completed": "The panel has been installed",
+  "installation.disabled": "The panel installer is disabled on public servers by default. Please run the installer on a local machine or enable it with the <code>panel.install</code> option.",
   "installation.issues.accounts":
     "The <code>/site/accounts</code> folder does not exist or is not writable",
   "installation.issues.content":
@@ -230,6 +232,7 @@
   "installation.issues.php": "Make sure to use <code>PHP 7+</code>",
   "installation.issues.server":
     "Kirby requires <code>Apache</code>, <code>Nginx</code> or <code>Caddy</code>",
+  "installation.issues.sessions": "The <code>/site/sessions</code> folder does not exist or is not writable",
 
   "language": "Language",
   "language.code": "Code",
@@ -323,7 +326,11 @@
   "page.status.unlisted": "Unlisted",
   "page.status.unlisted.description": "The page is only accessible via URL",
 
+  "pages": "Pages",
   "pages.empty": "No pages yet",
+  "pages.status.draft": "Drafts",
+  "pages.status.listed": "Published",
+  "pages.status.unlisted": "Unlisted",
 
   "password": "Password",
   "pixel": "Pixel",

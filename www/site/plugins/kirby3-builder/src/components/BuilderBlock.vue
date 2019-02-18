@@ -1,5 +1,13 @@
 <template>
-  <div :class="['kBuilderBlock', 'kBuilderBlock--col-' + columnsCount, {'kBuilderBlock--pending': pending }]">
+  <div :class="[
+    'kBuilderBlock', 
+    'kBuilderBlock--col-' + columnsCount, 
+    {'kBuilderBlock--pending': pending }, 
+    {'kBuilderBlock--previewMode': showPreview && expanded }, 
+    {'kBuilderBlock--expanded': expanded },
+    {'kBuilderBlock--collapsed': !expanded },
+    {'kBuilderBlock--editMode': !showPreview && expanded }
+  ]">
     <div :class="'kBuilderBlock__header kBuilderBlock__header--col-' + columnsCount" >
       <k-icon 
         type="sort" 
@@ -30,11 +38,11 @@
           >{{fieldSet.label}}</k-button>
           <k-button 
             v-if="block.preview"
-            icon="preview" 
+            icon="preview"
             @click="displayPreview()"
             class="kBuilderBlock__actionsButton" 
             :class="{'kBuilderBlock__actionsButton--active': showPreview && expanded}"
-          ></k-button>
+          >{{ $t('builder.preview') }}</k-button>
         </k-button-group>
         <div class="kBuilderBlock__control">
           <k-dropdown class="kBuilderBlock__actionsDropDown">
@@ -61,37 +69,48 @@
       class="kBuilderBlock__content"
       v-show="expanded"
     >
-      <iframe 
-        v-if="block.preview && showPreview && previewUrl"
-        class="kBuilder__previewFrame" 
-        @loaded="onPreviewLoaded"
-        :style="{height: previewHeight + 'px'}"
-        :src="previewUrl"
-      ></iframe>
+      <builder-preview
+        v-if="block.preview"
+        v-show="showPreview"
+        :markup="previewMarkup"
+        :styles="styles"
+        :index="index"
+        :script="script"
+      >
+      </builder-preview>
       <k-fieldset 
         v-if="(activeFieldSet === fieldSet.key)" 
         v-for="fieldSet in fieldSets"
         class="kBuilderBlock__form"
         v-model="fieldSet.model" 
         :value="{}" 
-        :fields="fieldSet.fields" 
+        :fields="fieldSet.fields"
         :validate="true"
         v-on="$listeners"
-        :key="fieldSet.key + _uid" 
+        :key="fieldSet.key + _uid"
       />
     </div>
   </div>
 </template>
 
 <script>
+import BuilderPreview from "./BuilderPreview.vue";
 export default {
-  props: [
-    'block',
-    'index',
-    'columnsCount',
-    'pageUid',
-    'pageId',
-  ],
+  props: {
+    endpoints: Object,
+    block: Object,
+    index: Number,
+    columnsCount: Number,
+    pageUid: String,
+    pageId: String,
+    encodedPageId: String,
+    styles: String,
+    script: String,
+    parentPath: String
+  },
+  components: {
+    BuilderPreview
+  },
   mounted() {
     if (this.block.isNew) {
       this.$nextTick(function () {
@@ -131,6 +150,7 @@ export default {
       previewFrameContent: null,
       previewHeight: 0,
       previewStored: false,
+      previewMarkup: '',
       showPreview: false,
     }
   },
@@ -147,6 +167,9 @@ export default {
       } else {
         return null
       }
+    },
+    blockPath() {
+      return this.parentPath + '+' + this.block.blockKey
     },
     fieldSets() {
       let fieldSets = []
@@ -172,13 +195,15 @@ export default {
       this.expanded = true
       let previewData = {
         preview: this.block.preview,
-        blockcontent: this.block.content,
-        blockUid: this.extendedUid
+        blockContent: this.block.content,
+        blockUid: this.extendedUid,
+        pageid: this.pageId
       }
-      this.$api.post('kirby-builder/preview', previewData)
-        .then(() => {
-          this.previewStored = true
-        })
+      this.$api.post('kirby-builder/rendered-preview', previewData)
+      .then((res) => {
+        this.previewMarkup = res.preview
+        this.activeFieldSet = null
+      })
       this.storeLocalUiState()
     },
     displayFieldSet(fieldSetKey) {
@@ -200,6 +225,12 @@ export default {
       this.storeLocalUiState()
     },
     newFieldSet(fieldSet, key, model, icon, label) {
+      Object.keys(fieldSet.fields).forEach(fieldName => {
+        fieldSet.fields[fieldName].endpoints = {
+          field: `kirby-builder/pages/${this.encodedPageId}/fields/${this.blockPath}+${fieldSet.fields[fieldName].name}`
+        }
+        fieldSet.fields[fieldName].parentPath = this.blockPath
+      })
       let newFieldSet = {
         fields: fieldSet.fields,
         key: key,
@@ -273,6 +304,7 @@ export default {
       right: 0;
       top: 0;
       display: flex;
+      z-index 1
     &__actionsGroup
       margin-right 0
       &.k-button-group>.k-button
@@ -283,8 +315,9 @@ export default {
     &__actionsButton
       min-width 38px
       height 38px
-      opacity .5
+      opacity .4
       color rgb(22, 23, 26)
+      font-weight 500
       &:hover
         opacity .7
       &--active
@@ -297,9 +330,8 @@ export default {
       padding: .625rem .75rem 2.25rem .75rem ;
     .sortable-drag
       cursor: -webkit-grab;
-    &
     .kBuilderBlock
-    .k-structure
+    .k-structure-table
     .k-card
     .k-list-item
       box-shadow: 0 2px 5px rgba(22,23,26,.15), 0 0 0 1px rgba(22,23,26,.05)

@@ -62,14 +62,12 @@ function csrf(string $check = null)
         }
 
         return $token;
-
     } elseif (is_string($check) === true && is_string($session->get('csrf')) === true) {
         // argument has been passed, check the token
         return hash_equals($session->get('csrf'), $check) === true;
     }
 
     return false;
-
 }
 
 /**
@@ -89,20 +87,27 @@ function css($url, $options = null)
         return implode(PHP_EOL, $links);
     }
 
-    $href = $url === '@auto' ? Url::toTemplateAsset('css/templates', 'css') : Url::to($url);
-
-    $attr = [
-        'href' => $href,
-        'rel'  => 'stylesheet'
-    ];
-
     if (is_string($options) === true) {
-        $attr['media'] = $options;
+        $options = ['media' => $options];
     }
 
-    if (is_array($options) === true) {
-        $attr = array_merge($options, $attr);
+    $kirby = App::instance();
+
+    if ($component = $kirby->component('css')) {
+        $url = $component($kirby, $url, $options);
     }
+
+    if ($url === '@auto') {
+        if (!$url = Url::toTemplateAsset('css/templates', 'css')) {
+            return null;
+        }
+    }
+
+    $url  = Url::to($url);
+    $attr = array_merge((array)$options, [
+        'href' => $url,
+        'rel'  => 'stylesheet'
+    ]);
 
     return '<link ' . attr($attr) . '>';
 }
@@ -207,7 +212,8 @@ function go(string $url = null, int $code = 302)
  * @param bool $keepTags
  * @return string
  */
-function h(string $string = null, bool $keepTags = false) {
+function h(string $string = null, bool $keepTags = false)
+{
     return Html::encode($string, $keepTags);
 }
 
@@ -218,7 +224,8 @@ function h(string $string = null, bool $keepTags = false) {
  * @param bool $keepTags
  * @return string
  */
-function html(string $string = null, bool $keepTags = false) {
+function html(string $string = null, bool $keepTags = false)
+{
     return Html::encode($string, $keepTags);
 }
 
@@ -264,22 +271,20 @@ function image(string $path = null)
  */
 function invalid(array $data = [], array $rules = [], array $messages = [])
 {
-  $errors = [];
+    $errors = [];
 
-  foreach ($rules as $field => $validations) {
+    foreach ($rules as $field => $validations) {
+        $validationIndex = -1;
 
-    $validationIndex = -1;
+        // See: http://php.net/manual/en/types.comparisons.php
+        // only false for: null, undefined variable, '', []
+        $filled  = isset($data[$field]) && $data[$field] !== '' && $data[$field] !== [];
+        $message = $messages[$field] ?? $field;
 
-    // See: http://php.net/manual/en/types.comparisons.php
-    // only false for: null, undefined variable, '', []
-    $filled  = isset($data[$field]) && $data[$field] !== '' && $data[$field] !== [];
-    $message = $messages[$field] ?? $field;
+        // True if there is an error message for each validation method.
+        $messageArray = is_array($message);
 
-    // True if there is an error message for each validation method.
-    $messageArray = is_array($message);
-
-    foreach ($validations as $method => $options) {
-
+        foreach ($validations as $method => $options) {
             if (is_numeric($method) === true) {
                 $method = $options;
             }
@@ -287,14 +292,11 @@ function invalid(array $data = [], array $rules = [], array $messages = [])
             $validationIndex++;
 
             if ($method === 'required') {
-
                 if ($filled) {
                     // Field is required and filled.
                     continue;
                 }
-
             } elseif ($filled) {
-
                 if (is_array($options) === false) {
                     $options = [$options];
                 }
@@ -305,7 +307,6 @@ function invalid(array $data = [], array $rules = [], array $messages = [])
                     // Field is filled and passes validation method.
                     continue;
                 }
-
             } else {
                 // If a field is not required and not filled, no validation should be done.
                 continue;
@@ -317,9 +318,7 @@ function invalid(array $data = [], array $rules = [], array $messages = [])
             } else {
                 $errors[$field] = $message;
             }
-
         }
-
     }
 
     return $errors;
@@ -342,18 +341,24 @@ function js($url, $options = null)
         return implode(PHP_EOL, $scripts);
     }
 
-    $src  = $url === '@auto' ? Url::toTemplateAsset('js/templates', 'js') : Url::to($url);
-    $attr = [
-        'src' => $src,
-    ];
-
     if (is_bool($options) === true) {
-        $attr['async'] = $options;
+        $options = ['async' => $options];
     }
 
-    if (is_array($options) === true) {
-        $attr = array_merge($options, $attr);
+    $kirby = App::instance();
+
+    if ($component = $kirby->component('js')) {
+        $url = $component($kirby, $url, $options);
     }
+
+    if ($url === '@auto') {
+        if (!$url = Url::toTemplateAsset('js/templates', 'js')) {
+            return null;
+        }
+    }
+
+    $url  = Url::to($url);
+    $attr = array_merge((array)$options, ['src' => $url]);
 
     return '<script ' . attr($attr) . '></script>';
 }
@@ -418,9 +423,9 @@ function kirbytext(string $text = null, array $data = []): string
  * @param string $base
  * @return void
  */
-function load(array $classmap, string $base = null) {
+function load(array $classmap, string $base = null)
+{
     spl_autoload_register(function ($class) use ($classmap, $base) {
-
         $class = strtolower($class);
 
         if (!isset($classmap[$class])) {
@@ -432,7 +437,6 @@ function load(array $classmap, string $base = null) {
         } else {
             include $classmap[$class];
         }
-
     });
 }
 
@@ -453,7 +457,7 @@ function markdown(string $text = null): string
  *
  * @param string $key
  * @param mixed $default
- * @return void
+ * @return mixed
  */
 function option(string $key, $default = null)
 {
@@ -520,6 +524,35 @@ function params(): array
 function r($condition, $value, $alternative = null)
 {
     return $condition ? $value : $alternative;
+}
+
+/**
+ * Rounds the minutes of the given date
+ * by the defined step
+ *
+ * @param string $date
+ * @param integer $step
+ * @return string|null
+ */
+function timestamp(string $date = null, int $step = null): ?string
+{
+    if (V::date($date) === false) {
+        return null;
+    }
+
+    $date = strtotime($date);
+
+    if ($step === null) {
+        return $date;
+    }
+
+    $hours   = date('H', $date);
+    $minutes = date('i', $date);
+    $minutes = floor($minutes / $step) * $step;
+    $minutes = str_pad($minutes, 2, 0, STR_PAD_LEFT);
+    $date    = date('Y-m-d', $date) . ' ' . $hours . ':' . $minutes;
+
+    return strtotime($date);
 }
 
 /**
@@ -669,7 +702,7 @@ function twitter(string $username, string $text = null, string $title = null, st
  * Shortcut for url()
  *
  * @param string $path
- * @param array|null $options
+ * @param array|string|null $options
  * @return string
  */
 function u(string $path = null, $options = null): string
@@ -681,7 +714,7 @@ function u(string $path = null, $options = null): string
  * Builds an absolute URL for a given path
  *
  * @param string $path
- * @param array $options
+ * @param array|string|null $options
  * @return string
  */
 function url(string $path = null, $options = null): string

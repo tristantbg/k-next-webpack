@@ -42,4 +42,42 @@ class Url extends BaseUrl
 
         return file_exists($file) === true ? $url : null;
     }
+
+    /**
+     * Smart resolver for internal and external urls
+     *
+     * @param string $path
+     * @param array|string|null $options Either an array of options for the Uri class or a language string
+     * @return string
+     */
+    public static function to(string $path = null, $options = null): string
+    {
+        $kirby    = App::instance();
+        $language = null;
+
+        // get language from simple string option
+        if (is_string($options) === true) {
+            $language = $options;
+            $options  = null;
+        }
+
+        // get language from array
+        if (is_array($options) === true && isset($options['language']) === true) {
+            $language = $options['language'];
+            unset($options['language']);
+        }
+
+        // get a language url for the linked page, if the page can be found
+        if ($language !== null && $kirby->multilang() === true && $page = page($path)) {
+            $path = $page->url($language);
+        }
+
+        if ($handler = $kirby->component('url')) {
+            return $handler($kirby, $path, $options, function (string $path = null, $options = null) {
+                return parent::to($path, $options);
+            });
+        }
+
+        return parent::to($path, $options);
+    }
 }

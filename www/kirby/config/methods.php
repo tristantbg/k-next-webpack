@@ -18,7 +18,6 @@ use Kirby\Toolkit\Xml;
  * Field method setup
  */
 return function (App $app) {
-
     return [
 
         // states
@@ -120,8 +119,17 @@ return function (App $app) {
          *
          * @return Files
          */
-        'toFiles' => function (Field $field) {
-            return $field->parent()->files()->find(false, false, ...$field->toData('yaml'));
+        'toFiles' => function (Field $field, string $separator = 'yaml') {
+            $parent = $field->parent();
+            $files  = new Files([]);
+
+            foreach ($field->toData($separator) as $id) {
+                if ($file = $parent->kirby()->file($id, $parent)) {
+                    $files->add($file);
+                }
+            }
+
+            return $files;
         },
 
         /**
@@ -189,7 +197,7 @@ return function (App $app) {
          * @return Pages
          */
         'toPages' => function (Field $field, string $separator = 'yaml') use ($app) {
-            return $app->site()->find(false, false, ...$field->toData('yaml'));
+            return $app->site()->find(false, false, ...$field->toData($separator));
         },
 
         /**
@@ -227,8 +235,8 @@ return function (App $app) {
          *
          * @return Users
          */
-        'toUsers' => function (Field $field) use ($app) {
-            return $app->users()->find(false, false, ...$field->toData('yaml'));
+        'toUsers' => function (Field $field, string $separator = 'yaml') use ($app) {
+            return $app->users()->find(false, false, ...$field->toData($separator));
         },
 
         // inspectors
@@ -256,7 +264,7 @@ return function (App $app) {
          * @param Field $field
          * @param string $context html, attr, js or css
          */
-        'escape' => function(Field $field, string $context = 'html') {
+        'escape' => function (Field $field, string $context = 'html') {
             $field->value = esc($field->value, $context);
             return $field;
         },
@@ -387,5 +395,4 @@ return function (App $app) {
         },
 
     ];
-
 };

@@ -31,6 +31,7 @@ trait AppPlugins
     protected $extensions = [
         'api' => [],
         'blueprints' => [],
+        'cacheTypes' => [],
         'collections' => [],
         'components' => [],
         'controllers' => [],
@@ -93,6 +94,11 @@ trait AppPlugins
     protected function extendBlueprints(array $blueprints): array
     {
         return $this->extensions['blueprints'] = array_merge($this->extensions['blueprints'], $blueprints);
+    }
+
+    protected function extendCacheTypes(array $cacheTypes): array
+    {
+        return $this->extensions['cacheTypes'] = array_merge($this->extensions['cacheTypes'], $cacheTypes);
     }
 
     protected function extendCollectionFilters(array $filters): array
@@ -287,7 +293,7 @@ trait AppPlugins
 
         foreach (glob($this->root('models') . '/*.php') as $model) {
             $name  = F::name($model);
-            $class = str_replace('.', '', $name) . 'Page';
+            $class = str_replace(['.', '-', '_'], '', $name) . 'Page';
 
             // load the model class
             include_once $model;
@@ -377,6 +383,13 @@ trait AppPlugins
             'x'       => 'xml'
         ];
 
+        // default cache types
+        $this->extendCacheTypes([
+            'apcu'      => 'Kirby\Cache\ApcuCache',
+            'file'      => 'Kirby\Cache\FileCache',
+            'memcached' => 'Kirby\Cache\MemCached',
+        ]);
+
         $this->extendComponents(include static::$root . '/config/components.php');
         $this->extendBlueprints(include static::$root . '/config/blueprints.php');
         $this->extendFields(include static::$root . '/config/fields.php');
@@ -389,6 +402,7 @@ trait AppPlugins
         PageBlueprint::$presets['files']   = include static::$root . '/config/presets/files.php';
 
         // section mixins
+        Section::$mixins['empty']          = include static::$root . '/config/sections/mixins/empty.php';
         Section::$mixins['headline']       = include static::$root . '/config/sections/mixins/headline.php';
         Section::$mixins['layout']         = include static::$root . '/config/sections/mixins/layout.php';
         Section::$mixins['max']            = include static::$root . '/config/sections/mixins/max.php';

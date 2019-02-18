@@ -325,7 +325,14 @@ class Api
         }
 
         if (($result['status'] ?? 'ok') === 'error') {
-            return Response::json($result, $result['code'] ?? 400, $pretty);
+            $code = $result['code'] ?? 400;
+
+            // sanitize the error code
+            if ($code < 400 || $code > 599) {
+                $code = 500;
+            }
+
+            return Response::json($result, $code, $pretty);
         }
 
         return Response::json($result, 200, $pretty);

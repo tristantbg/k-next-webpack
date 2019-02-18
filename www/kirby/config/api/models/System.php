@@ -10,6 +10,9 @@ return [
         'isOk' => function (System $system) {
             return $system->isOk();
         },
+        'isInstallable' => function (System $system) {
+            return $system->isInstallable();
+        },
         'isInstalled' => function (System $system) {
             return $system->isInstalled();
         },
@@ -59,6 +62,21 @@ return [
     ],
     'type'   => System::class,
     'views'  => [
+        'login' => [
+            'isOk',
+            'isInstallable',
+            'isInstalled',
+            'title',
+            'translation'
+        ],
+        'troubleshooting' => [
+            'isOk',
+            'isInstallable',
+            'isInstalled',
+            'title',
+            'translation',
+            'requirements'
+        ],
         'panel' => [
             'breadcrumbTitle',
             'isOk',
@@ -72,7 +90,7 @@ return [
             'title',
             'translation',
             'user' => 'auth',
-            'version'
+                'version'
         ]
     ],
 ];

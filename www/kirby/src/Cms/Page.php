@@ -24,6 +24,8 @@ use Throwable;
  */
 class Page extends ModelWithContent
 {
+    const CLASS_ALIAS = 'page';
+
     use PageActions;
     use PageSiblings;
     use HasChildren;
@@ -51,6 +53,13 @@ class Page extends ModelWithContent
      * @var PageBlueprint
      */
     protected $blueprint;
+
+    /**
+     * Nesting level
+     *
+     * @var int
+     */
+    protected $depth;
 
     /**
      * Sorting number + slug
@@ -172,6 +181,10 @@ class Page extends ModelWithContent
      */
     public function __construct(array $props)
     {
+        // set the slug as the first property
+        $this->slug = $props['slug'] ?? null;
+
+        // add all other properties
         $this->setProperties($props);
     }
 
@@ -491,11 +504,19 @@ class Page extends ModelWithContent
     /**
      * Compares the current object with the given page object
      *
-     * @param Page $page
+     * @param Page|string $page
      * @return bool
      */
-    public function is(Page $page): bool
+    public function is($page): bool
     {
+        if (is_a($page, Page::class) === false) {
+            $page = $this->kirby()->page($page);
+        }
+
+        if (is_a($page, Page::class) === false) {
+            return false;
+        }
+
         return $this->id() === $page->id();
     }
 
@@ -572,11 +593,16 @@ class Page extends ModelWithContent
     /**
      * Checks if the page is a child of the given page
      *
+     * @param string|Page $parent
      * @return boolean
      */
-    public function isChildOf(Page $parent): bool
+    public function isChildOf($parent): bool
     {
-        return $this->parent()->is($parent);
+        if ($parent = $this->parent()) {
+            return $parent->is($parent);
+        }
+
+        return false;
     }
 
     /**
@@ -843,7 +869,7 @@ class Page extends ModelWithContent
             }
         } else {
             $options = [
-                'type' => 'file',
+                'type' => 'page',
                 'back' => 'black',
             ];
         }
@@ -894,7 +920,7 @@ class Page extends ModelWithContent
             unset($settings['query']);
         }
 
-        return array_merge($defaults, $settings);
+        return array_merge($defaults, (array)$settings);
     }
 
     /**
@@ -1462,7 +1488,11 @@ class Page extends ModelWithContent
         }
 
         if ($parent = $this->parent()) {
-            return $this->url = $this->parent()->url() . '/' . $this->uid();
+            if ($parent->isHomePage() === true) {
+                return $this->url = $this->kirby()->url('base') . '/' . $parent->uid() . '/' . $this->uid();
+            } else {
+                return $this->url = $this->parent()->url() . '/' . $this->uid();
+            }
         }
 
         return $this->url = $this->kirby()->url('base') . '/' . $this->uid();
@@ -1486,7 +1516,11 @@ class Page extends ModelWithContent
         }
 
         if ($parent = $this->parent()) {
-            return $this->url = $this->parent()->urlForLanguage($language) . '/' . $this->slug($language);
+            if ($parent->isHomePage() === true) {
+                return $this->url = $this->site()->urlForLanguage($language) . '/' . $parent->slug($language) . '/' . $this->slug($language);
+            } else {
+                return $this->url = $this->parent()->urlForLanguage($language) . '/' . $this->slug($language);
+            }
         }
 
         return $this->url = $this->site()->urlForLanguage($language) . '/' . $this->slug($language);

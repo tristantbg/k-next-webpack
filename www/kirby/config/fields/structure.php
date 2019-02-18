@@ -18,7 +18,9 @@ return [
          * Optional columns definition to only show selected fields in the structure table.
          */
         'columns' => function (array $columns = []) {
-            return $columns;
+            // lower case all keys, because field names will
+            // be lowercase as well.
+            return array_change_key_case($columns);
         },
         /**
          * Fields setup for the structure form. Works just like fields in regular forms.
@@ -69,7 +71,6 @@ return [
             return $this->form()->fields()->toArray();
         },
         'columns' => function () {
-
             $columns = [];
 
             if (empty($this->columns)) {
@@ -87,9 +88,7 @@ return [
                     ];
                 }
             } else {
-
                 foreach ($this->columns as $columnName => $columnProps) {
-
                     if (is_array($columnProps) === false) {
                         $columnProps = [];
                     }
@@ -105,11 +104,9 @@ return [
                         'label' => $field['label'] ?? $field['name']
                     ]);
                 }
-
             }
 
             return $columns;
-
         },
     ],
     'methods' => [
