@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="no-js" data-theme="<?php if($page->theme()->isNotEmpty()) { echo $page->theme()->yaml()['name']; } ?>">
+<html lang="en" class="no-js">
 <head>
 
   <meta charset="UTF-8" />
@@ -52,8 +52,6 @@
   <?php endif ?>
 
   <meta itemprop="description" content="<?= $site->description()->html() ?>">
-  <link rel="shortcut icon" href="<?= url('assets/images/favicon.ico') ?>">
-  <link rel="icon" href="<?= url('assets/images/favicon.ico') ?>" type="image/x-icon">
 
   <?php if($kirby->option('environnement') == 'dev'): ?>
     <link rel="stylesheet" media="all" href="http://localhost:8080/assets/index.css" />
@@ -74,14 +72,11 @@
 
 <body<?php e($page->isHomepage(), ' class="with-intro"') ?> page-type="<?= $page->intendedTemplate() ?>">
 
-<?php snippet('password-protect') ?>
-
 <div id="loader"></div>
 
 <div id="main">
 
   <div class="pjax">
-
 
   <?php snippet('partials/header-menu') ?>
 
