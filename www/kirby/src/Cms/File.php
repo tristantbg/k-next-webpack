@@ -12,6 +12,13 @@ use Kirby\Toolkit\Str;
 use Throwable;
 
 /**
+ * The `$file` object provides a set
+ * of methods that can be used when
+ * dealing with a single image or
+ * other media file, like getting the
+ * URL or resizing an image. It also
+ * handles file meta data.
+ *
  * The File class is a wrapper around
  * the Kirby\Image\Image class, which
  * is used to handle all file methods.
@@ -29,6 +36,7 @@ class File extends ModelWithContent
 
     use FileActions;
     use FileFoundation;
+    use FileModifications;
     use HasMethods;
     use HasSiblings;
 
@@ -147,6 +155,7 @@ class File extends ModelWithContent
     /**
      * Returns the url to api endpoint
      *
+     * @internal
      * @param bool $relative
      * @return string
      */
@@ -156,8 +165,9 @@ class File extends ModelWithContent
     }
 
     /**
-     * Returns the Asset object
+     * Returns the Image object
      *
+     * @internal
      * @return Image
      */
     public function asset(): Image
@@ -180,30 +190,10 @@ class File extends ModelWithContent
     }
 
     /**
-     * Blurs the image by the given amount of pixels
-     *
-     * @param boolean $pixels
-     * @return self
-     */
-    public function blur($pixels = true)
-    {
-        return $this->thumb(['blur' => $pixels]);
-    }
-
-    /**
-     * Converts the image to black and white
-     *
-     * @return self
-     */
-    public function bw()
-    {
-        return $this->thumb(['grayscale' => true]);
-    }
-
-    /**
      * Store the template in addition to the
      * other content.
-     *
+
+     * @internal
      * @param array $data
      * @param string|null $languageCode
      * @return array
@@ -219,6 +209,7 @@ class File extends ModelWithContent
      * Returns the directory in which
      * the content file is located
      *
+     * @internal
      * @return string
      */
     public function contentFileDirectory(): string
@@ -229,6 +220,7 @@ class File extends ModelWithContent
     /**
      * Filename for the content file
      *
+     * @internal
      * @return string
      */
     public function contentFileName(): string
@@ -237,72 +229,35 @@ class File extends ModelWithContent
     }
 
     /**
-     * Crops the image by the given width and height
-     *
-     * @param integer $width
-     * @param integer $height
-     * @param string|array $options
-     * @return self
-     */
-    public function crop(int $width, int $height = null, $options = null)
-    {
-        $quality = null;
-        $crop    = 'center';
-
-        if (is_int($options) === true) {
-            $quality = $options;
-        } elseif (is_string($options)) {
-            $crop = $options;
-        } elseif (is_a($options, 'Kirby\Cms\Field') === true) {
-            $crop = $options->value();
-        } elseif (is_array($options)) {
-            $quality = $options['quality'] ?? $quality;
-            $crop    = $options['crop']    ?? $crop;
-        }
-
-        return $this->thumb([
-            'width'   => $width,
-            'height'  => $height,
-            'quality' => $quality,
-            'crop'    => $crop
-        ]);
-    }
-
-    /**
      * Provides a kirbytag or markdown
      * tag for the file, which will be
      * used in the panel, when the file
      * gets dragged onto a textarea
      *
+     * @internal
+     * @param string $type
+     * @param bool $absolute
      * @return string
      */
-    public function dragText($type = 'kirbytext'): string
+    public function dragText($type = 'kirbytext', bool $absolute = false): string
     {
+        $url = $absolute ? $this->id() : $this->filename();
+
         switch ($type) {
             case 'kirbytext':
                 if ($this->type() === 'image') {
-                    return '(image: ' . $this->filename() . ')';
+                    return '(image: ' . $url . ')';
                 } else {
-                    return '(file: ' . $this->filename() . ')';
+                    return '(file: ' . $url . ')';
                 }
                 // no break
             case 'markdown':
                 if ($this->type() === 'image') {
-                    return '![' . $this->alt() . '](./' . $this->filename() . ')';
+                    return '![' . $this->alt() . '](' . $url . ')';
                 } else {
-                    return '[' . $this->filename() . '](./' . $this->filename() . ')';
+                    return '[' . $this->filename() . '](' . $url . ')';
                 }
         }
-    }
-
-    /**
-     * Checks if the file exists on disk
-     *
-     * @return boolean
-     */
-    public function exists(): bool
-    {
-        return is_file($this->root()) === true;
     }
 
     /**
@@ -323,21 +278,6 @@ class File extends ModelWithContent
     public function files(): Files
     {
         return $this->siblingsCollection();
-    }
-
-    /**
-     * Converts the file to html
-     *
-     * @param  array  $attr
-     * @return string
-     */
-    public function html(array $attr = []): string
-    {
-        if ($this->type() === 'image') {
-            return Html::img($this->url(), array_merge(['alt' => $this->alt()], $attr));
-        } else {
-            return Html::a($this->url(), $attr);
-        }
     }
 
     /**
@@ -374,6 +314,7 @@ class File extends ModelWithContent
     /**
      * Create a unique media hash
      *
+     * @internal
      * @return string
      */
     public function mediaHash(): string
@@ -384,6 +325,7 @@ class File extends ModelWithContent
     /**
      * Returns the absolute path to the file in the public media folder
      *
+     * @internal
      * @return string
      */
     public function mediaRoot(): string
@@ -394,6 +336,7 @@ class File extends ModelWithContent
     /**
      * Returns the absolute Url to the file in the public media folder
      *
+     * @internal
      * @return string
      */
     public function mediaUrl(): string
@@ -402,9 +345,7 @@ class File extends ModelWithContent
     }
 
     /**
-     * Alias for the old way of fetching File
-     * content. Nowadays `File::content()` should
-     * be used instead.
+     * @deprecated 3.0.0 Use `File::content()` instead
      *
      * @return Content
      */
@@ -418,23 +359,12 @@ class File extends ModelWithContent
      * This is normally the parent page
      * or the site object.
      *
+     * @internal
      * @return Site|Page
      */
     public function model()
     {
         return $this->parent();
-    }
-
-    /**
-     * Get the file's last modification time.
-     *
-     * @param  string $format
-     * @param  string|null $handler date or strftime
-     * @return mixed
-     */
-    public function modified(string $format = null, string $handler = null)
-    {
-        return F::modified($this->root(), $format, $handler ?? $this->kirby()->option('date.handler', 'date'));
     }
 
     /**
@@ -450,6 +380,7 @@ class File extends ModelWithContent
     /**
      * Panel icon definition
      *
+     * @internal
      * @param array $params
      * @return array
      */
@@ -500,6 +431,7 @@ class File extends ModelWithContent
     /**
      * Panel image definition
      *
+     * @internal
      * @param string|array|false $settings
      * @param array $thumbSettings
      * @return array
@@ -540,6 +472,7 @@ class File extends ModelWithContent
     /**
      * Returns the full path without leading slash
      *
+     * @internal
      * @return string
      */
     public function panelPath(): string
@@ -551,6 +484,7 @@ class File extends ModelWithContent
      * Returns the url to the editing view
      * in the panel
      *
+     * @internal
      * @param bool $relative
      * @return string
      */
@@ -572,6 +506,7 @@ class File extends ModelWithContent
     /**
      * Returns the parent id if a parent exists
      *
+     * @internal
      * @return string|null
      */
     public function parentId(): ?string
@@ -608,19 +543,9 @@ class File extends ModelWithContent
     }
 
     /**
-     * Sets the JPEG compression quality
-     *
-     * @param integer $quality
-     * @return self
-     */
-    public function quality(int $quality)
-    {
-        return $this->thumb(['quality' => $quality]);
-    }
-
-    /**
      * Creates a string query, starting from the model
      *
+     * @internal
      * @param string|null $query
      * @param string|null $expect
      * @return mixed
@@ -642,24 +567,6 @@ class File extends ModelWithContent
         }
 
         return $result;
-    }
-
-    /**
-     * Resizes the file with the given width and height
-     * while keeping the aspect ratio.
-     *
-     * @param integer $width
-     * @param integer $height
-     * @param integer $quality
-     * @return self
-     */
-    public function resize(int $width = null, int $height = null, int $quality = null)
-    {
-        return $this->thumb([
-            'width'   => $width,
-            'height'  => $height,
-            'quality' => $quality
-        ]);
     }
 
     /**
@@ -760,6 +667,7 @@ class File extends ModelWithContent
 
     /**
      * Returns the parent Files collection
+     * @internal
      *
      * @return Files
      */
@@ -797,33 +705,6 @@ class File extends ModelWithContent
     public function templateSiblings(bool $self = true)
     {
         return $this->siblings($self)->filterBy('template', $this->template());
-    }
-
-    /**
-     * Creates a modified version of images
-     * The media manager takes care of generating
-     * those modified versions and putting them
-     * in the right place. This is normally the
-     * /media folder of your installation, but
-     * could potentially also be a CDN or any other
-     * place.
-     *
-     * @param array|null $options
-     * @return FileVersion|File
-     */
-    public function thumb(array $options = null)
-    {
-        if (empty($options) === true) {
-            return $this;
-        }
-
-        $result = $this->kirby()->component('file::version')($this->kirby(), $this, $options);
-
-        if (is_a($result, FileVersion::class) === false && is_a($result, File::class) === false) {
-            throw new InvalidArgumentException('The file::version component must return a File or FileVersion object');
-        }
-
-        return $result;
     }
 
     /**

@@ -36,14 +36,11 @@ class ControllerTest extends TestCase
         $this->assertEquals($model, $controller->call($model));
     }
 
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage The "a" parameter is missing
-     *
-     * @return void
-     */
     public function testMissingParameter()
     {
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('The "a" parameter is missing');
+
         $controller = new Controller(function ($a) {
             return $a;
         });
@@ -61,5 +58,11 @@ class ControllerTest extends TestCase
     {
         $controller = Controller::load(__DIR__ . '/fixtures/controller/does-not-exist.php');
         $this->assertEquals(null, $controller);
+    }
+
+    public function testLoadInvalidController()
+    {
+        $controller = Controller::load(__DIR__ . '/fixtures/controller/invalid.php');
+        $this->assertNull($controller);
     }
 }

@@ -12,10 +12,10 @@ use Kirby\Toolkit\Str;
 use Throwable;
 
 /**
- * The Page class is the heart and soul of
- * Kirby. It is used to construct pages and
- * all their dependencies like children,
- * files, content, etc.
+ * The `$page` object is the heart and
+ * soul of Kirby. It is used to construct
+ * pages and all their dependencies like
+ * children, files, content, etc.
  *
  * @package   Kirby Cms
  * @author    Bastian Allgeier <bastian@getkirby.com>
@@ -207,6 +207,7 @@ class Page extends ModelWithContent
     /**
      * Returns the url to the api endpoint
      *
+     * @internal
      * @param bool $relative
      * @return string
      */
@@ -295,6 +296,7 @@ class Page extends ModelWithContent
     /**
      * Prepares the content for the write method
      *
+     * @internal
      * @return array
      */
     public function contentFileData(array $data, string $languageCode = null): array
@@ -309,6 +311,7 @@ class Page extends ModelWithContent
      * Returns the content text file
      * which is found by the inventory method
      *
+     * @internal
      * @param string $languageCode
      * @return string
      */
@@ -320,6 +323,7 @@ class Page extends ModelWithContent
     /**
      * Call the page controller
      *
+     * @internal
      * @param array $data
      * @param string $contentType
      * @return array
@@ -397,6 +401,7 @@ class Page extends ModelWithContent
      * used in the panel, when the page
      * gets dragged onto a textarea
      *
+     * @internal
      * @return string
      */
     public function dragText($type = 'kirbytext'): string
@@ -423,6 +428,7 @@ class Page extends ModelWithContent
      * Constructs a Page object and also
      * takes page models into account.
      *
+     * @internal
      * @return self
      */
     public static function factory($props): self
@@ -483,6 +489,7 @@ class Page extends ModelWithContent
      * Returns the inventory of files
      * children and content files
      *
+     * @internal
      * @return array
      */
     public function inventory(): array
@@ -510,6 +517,10 @@ class Page extends ModelWithContent
     public function is($page): bool
     {
         if (is_a($page, Page::class) === false) {
+            if (is_string($page) === false) {
+                return false;
+            }
+
             $page = $this->kirby()->page($page);
         }
 
@@ -608,10 +619,19 @@ class Page extends ModelWithContent
     /**
      * Checks if the page is a descendant of the given page
      *
+     * @param string|Page $parent
      * @return boolean
      */
-    public function isDescendantOf(Page $parent): bool
+    public function isDescendantOf($parent): bool
     {
+        if (is_string($parent) === true) {
+            $parent = $this->site()->find($parent);
+        }
+
+        if (!$parent) {
+            return false;
+        }
+
         return $this->parents()->has($parent->id()) === true;
     }
 
@@ -690,8 +710,7 @@ class Page extends ModelWithContent
     }
 
     /**
-     * Checks if the page is invisible
-     *
+     * @deprecated 3.0.0 Use `Page::isUnlisted()` intead
      * @return bool
      */
     public function isInvisible(): bool
@@ -748,13 +767,14 @@ class Page extends ModelWithContent
      */
     public function isUnlisted(): bool
     {
-        return $this->num() === null;
+        return $this->isListed() === false;
     }
 
     /**
      * Checks if the page access is verified.
      * This is only used for drafts so far.
      *
+     * @internal
      * @param string $token
      * @return boolean
      */
@@ -772,8 +792,7 @@ class Page extends ModelWithContent
     }
 
     /**
-     * Checks if the page is visible
-     *
+     * @deprecated 3.0.0 Use `Page::isListed()` intead
      * @return bool
      */
     public function isVisible(): bool
@@ -784,6 +803,7 @@ class Page extends ModelWithContent
     /**
      * Returns the root to the media folder for the page
      *
+     * @internal
      * @return string
      */
     public function mediaRoot(): string
@@ -792,8 +812,9 @@ class Page extends ModelWithContent
     }
 
     /**
-     * The page's base url for any files
+     * The page's base URL for any files
      *
+     * @internal
      * @return string
      */
     public function mediaUrl(): string
@@ -802,8 +823,9 @@ class Page extends ModelWithContent
     }
 
     /**
-     * Creates a Page model if it has been registered
+     * Creates a page model if it has been registered
      *
+     * @internal
      * @param string $name
      * @param array $props
      * @return Page
@@ -828,7 +850,7 @@ class Page extends ModelWithContent
      * @param string|null $handler
      * @return int|string
      */
-    public function modified(string $format = 'U', string $handler = null)
+    public function modified(string $format = null, string $handler = null)
     {
         return F::modified($this->contentFile(), $format, $handler ?? $this->kirby()->option('date.handler', 'date'));
     }
@@ -847,7 +869,8 @@ class Page extends ModelWithContent
      * Returns the panel icon definition
      * according to the blueprint settings
      *
-     * @params array $params
+     * @internal
+     * @param array $params
      * @return array
      */
     public function panelIcon(array $params = null): array
@@ -883,6 +906,7 @@ class Page extends ModelWithContent
      * Returns the escaped Id, which is
      * used in the panel to make routing work properly
      *
+     * @internal
      * @return string
      */
     public function panelId(): string
@@ -891,6 +915,7 @@ class Page extends ModelWithContent
     }
 
     /**
+     * @internal
      * @param string|array|false $settings
      * @param array|null $thumbSettings
      * @return array|null
@@ -926,6 +951,7 @@ class Page extends ModelWithContent
     /**
      * Returns the full path without leading slash
      *
+     * @internal
      * @return string
      */
     public function panelPath(): string
@@ -937,6 +963,7 @@ class Page extends ModelWithContent
      * Returns the url to the editing view
      * in the panel
      *
+     * @internal
      * @return string
      */
     public function panelUrl(bool $relative = false): string
@@ -961,6 +988,7 @@ class Page extends ModelWithContent
     /**
      * Returns the parent id, if a parent exists
      *
+     * @internal
      * @return string|null
      */
     public function parentId(): ?string
@@ -977,6 +1005,7 @@ class Page extends ModelWithContent
      * which can either be another Page
      * or the Site
      *
+     * @internal
      * @return Page|Site
      */
     public function parentModel()
@@ -1015,6 +1044,7 @@ class Page extends ModelWithContent
     /**
      * Draft preview Url
      *
+     * @internal
      * @return string|null
      */
     public function previewUrl(): ?string
@@ -1041,6 +1071,7 @@ class Page extends ModelWithContent
     /**
      * Creates a string query, starting from the model
      *
+     * @internal
      * @param string|null $query
      * @param string|null $expect
      * @return mixed
@@ -1130,6 +1161,7 @@ class Page extends ModelWithContent
     }
 
     /**
+     * @internal
      * @return Template
      */
     public function representation($type)
@@ -1501,6 +1533,7 @@ class Page extends ModelWithContent
     /**
      * Builds the Url for a specific language
      *
+     * @internal
      * @param string $language
      * @param array $options
      * @return string

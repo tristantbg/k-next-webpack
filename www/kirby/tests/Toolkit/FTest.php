@@ -4,7 +4,7 @@ namespace Kirby\Toolkit;
 
 class FTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->fixtures = __DIR__ . '/fixtures/f';
         $this->tmp      = $this->fixtures . '/test.txt';
@@ -14,7 +14,7 @@ class FTest extends TestCase
         Dir::make($this->fixtures);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Dir::remove($this->fixtures);
     }
@@ -93,6 +93,118 @@ class FTest extends TestCase
         F::write($this->tmp, 'test');
 
         $this->assertEquals(is_writable($this->tmp), F::isWritable($this->tmp));
+    }
+
+    public function testLink()
+    {
+        $src  = $this->fixtures . '/a.txt';
+        $link = $this->fixtures . '/b.txt';
+
+        F::write($src, 'test');
+
+        $this->assertTrue(F::link($src, $link));
+        $this->assertTrue(is_file($link));
+    }
+
+    public function testRealpath()
+    {
+        $path = F::realpath(__DIR__ . '/../Toolkit/FTest.php');
+        $this->assertEquals(__FILE__, $path);
+    }
+
+    public function testRealpathToMissingFile()
+    {
+        $path = __DIR__ . '/../does-not-exist.php';
+
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('The file does not exist at the given path: "' . $path . '"');
+
+        F::realpath($path);
+    }
+
+    public function testRealpathToParent()
+    {
+        $parent = __DIR__ . '/..';
+        $file   = $parent . '/Toolkit/FTest.php';
+        $path   = F::realpath($file, $parent);
+
+        $this->assertEquals(__FILE__, $path);
+    }
+
+    public function testRealpathToNonExistingParent()
+    {
+        $parent = __DIR__ . '/../does-not-exist';
+        $file   = __DIR__ . '/../Toolkit/FTest.php';
+
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('The parent directory does not exist: "' . $parent . '"');
+
+        F::realpath($file, $parent);
+    }
+
+    public function testRealpathToInvalidParent()
+    {
+        $parent = __DIR__ . '/../Cms';
+        $file   = __DIR__ . '/../Toolkit/FTest.php';
+
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('The file is not within the parent directory');
+
+        F::realpath($file, $parent);
+    }
+
+    public function testSymlink()
+    {
+        $src  = $this->fixtures . '/a.txt';
+        $link = $this->fixtures . '/b.txt';
+
+        F::write($src, 'test');
+
+        $this->assertTrue(F::link($src, $link, 'symlink'));
+        $this->assertTrue(is_link($link));
+    }
+
+    public function testLinkExistingLink()
+    {
+        $src  = $this->fixtures . '/a.txt';
+        $link = $this->fixtures . '/b.txt';
+
+        F::write($src, 'test');
+        F::link($src, $link);
+
+        $this->assertTrue(F::link($src, $link));
+    }
+
+    public function testLinkWithMissingSource()
+    {
+        $src  = $this->fixtures . '/a.txt';
+        $link = $this->fixtures . '/b.txt';
+
+        $this->expectExceptionMessage('Expection');
+        $this->expectExceptionMessage('The file "' . $src . '" does not exist and cannot be linked');
+
+        F::link($src, $link);
+    }
+
+    public function testLoad()
+    {
+        F::write($file = $this->fixtures . '/test.php', '<?php return "foo"; ?>');
+
+        $this->assertEquals('foo', F::load($file));
+    }
+
+    public function testLoadWithFallback()
+    {
+        $this->assertEquals('foo', F::load('does-not-exist.php', 'foo'));
+    }
+
+    public function testLoadWithTypeMismatch()
+    {
+        F::write($file = $this->fixtures . '/test.php', '<?php return "foo"; ?>');
+
+        $expected = ['a' => 'b'];
+
+        $this->assertEquals($expected, F::load($file, $expected));
     }
 
     public function testMove()
@@ -240,6 +352,26 @@ class FTest extends TestCase
     public function testWrite()
     {
         $this->assertTrue(F::write($this->tmp, 'my content'));
+    }
+
+    public function testWriteArray()
+    {
+        $input = ['a' => 'a'];
+
+        F::write($this->tmp, $input);
+
+        $result = unserialize(F::read($this->tmp));
+        $this->assertEquals($input, $result);
+    }
+
+    public function testWriteObject()
+    {
+        $input = new \stdClass;
+
+        F::write($this->tmp, $input);
+
+        $result = unserialize(F::read($this->tmp));
+        $this->assertEquals($input, $result);
     }
 
     public function testSimilar()

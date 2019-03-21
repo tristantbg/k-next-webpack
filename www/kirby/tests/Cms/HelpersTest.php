@@ -12,7 +12,7 @@ class HelpersTest extends TestCase
 {
     protected $kirby;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->kirby = new Kirby([
             'roots' => [
@@ -26,7 +26,7 @@ class HelpersTest extends TestCase
         Dir::make($this->fixtures . '/site');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Dir::remove($this->fixtures . '/site');
     }
@@ -373,6 +373,18 @@ class HelpersTest extends TestCase
         $this->assertEquals($expected, $tag);
     }
 
+    public function testKirbyTextHelper()
+    {
+        $text   = 'This is **just** a text.';
+        $normal = '<p>This is <strong>just</strong> a text.</p>';
+        $inline = 'This is <strong>just</strong> a text.';
+
+        $this->assertEquals($normal, kirbytext($text));
+        $this->assertEquals($normal, kt($text));
+        $this->assertEquals($inline, kirbytextinline($text));
+        $this->assertEquals($inline, kti($text));
+    }
+
     public function testMarkdownHelper()
     {
         $tag = markdown('# Kirby');
@@ -517,6 +529,22 @@ class HelpersTest extends TestCase
         $this->assertEquals('<svg>test</svg>', trim($result));
     }
 
+    public function testSvgWithAbsolutePath()
+    {
+        $result = svg(__DIR__ . '/fixtures/HelpersTest/test.svg');
+        $this->assertEquals('<svg>test</svg>', trim($result));
+    }
+
+    public function testSvgWithInvalidFileType()
+    {
+        $this->assertFalse(svg('somefile.jpg'));
+    }
+
+    public function testSvgWithMissingFile()
+    {
+        $this->assertFalse(svg('somefile.svg'));
+    }
+
     public function testTwitter()
     {
         // simple
@@ -569,5 +597,16 @@ class HelpersTest extends TestCase
         $expected = 'This is a&nbsp;headline';
 
         $this->assertEquals($expected, $result);
+    }
+
+    public function testLoad()
+    {
+        load([
+            'helperstest\\a' => __DIR__ . '/fixtures/HelpersTest/load/a/a.php',
+            'HelpersTest\\B' => __DIR__ . '/fixtures/HelpersTest/load/B/B.php',
+        ]);
+
+        $this->assertTrue(class_exists('HelpersTest\\A'));
+        $this->assertTrue(class_exists('HelpersTest\\B'));
     }
 }

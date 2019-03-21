@@ -65,24 +65,50 @@ class UserRulesTest extends TestCase
         $this->assertTrue(UserRules::{'change' . $key}($user, $value));
     }
 
+    public function missingPermissionProvider()
+    {
+        return [
+            ['Email', 'domain.com', 'You are not allowed to change the email for the user "test"'],
+            ['Language', 'english', 'You are not allowed to change the language for the user "test"'],
+            ['Password', '1234', 'You are not allowed to change the password for the user "test"'],
+        ];
+    }
+
     /**
-     * @expectedException Kirby\Exception\DuplicateException
-     * @expectedExceptionCode error.user.duplicate
+     * @dataProvider missingPermissionProvider
      */
+    public function testChangeWithoutPermission($key, $value, $message)
+    {
+        $permissions = $this->createMock(UserPermissions::class);
+        $permissions->method('__call')->with('change' . $key)->willReturn(false);
+
+        $user = $this->createMock(User::class);
+        $user->method('permissions')->willReturn($permissions);
+        $user->method('username')->willReturn('test');
+
+        $this->expectException('Kirby\Exception\PermissionException');
+        $this->expectExceptionMessage($message);
+
+        UserRules::{'change' . $key}($user, $value);
+    }
+
     public function testChangeEmailDuplicate()
     {
+        $this->expectException('Kirby\Exception\DuplicateException');
+        $this->expectExceptionCode('error.user.duplicate');
+
         $kirby = $this->appWithAdmin();
 
         UserRules::changeEmail($kirby->user('user@domain.com'), 'admin@domain.com');
     }
 
-    /**
-     * @expectedException Kirby\Exception\LogicException
-     * @expectedExceptionCode error.user.changeRole.lastAdmin
-     */
     public function testChangeRoleLastAdmin()
     {
+        $this->expectException('Kirby\Exception\LogicException');
+        $this->expectExceptionCode('error.user.changeRole.lastAdmin');
+
         $kirby = $this->appWithAdmin();
+        $kirby->impersonate('kirby');
 
         UserRules::changeRole($kirby->user('admin@domain.com'), 'editor');
     }
@@ -98,20 +124,6 @@ class UserRulesTest extends TestCase
 
         $this->assertTrue(UserRules::create($user, $props));
     }
-
-    // /**
-    //  * @expectedException Kirby\Exception\InvalidArgumentsException
-    //  * @expectedExceptionMessage Please enter a valid email address
-    //  */
-    // public function testCreateInvalidPassword()
-    // {
-    //     $user = new User([
-    //         'email' => 'user@domain.org',
-    //         'password' => '12'
-    //     ]);
-    //     $form = Form::for($user);
-    //     UserRules::create($user, $form);
-    // }
 
     public function testUpdate()
     {
@@ -129,22 +141,20 @@ class UserRulesTest extends TestCase
         $this->assertTrue(UserRules::delete($user));
     }
 
-    /**
-     * @expectedException Kirby\Exception\LogicException
-     * @expectedExceptionCode error.user.delete.lastAdmin
-     */
     public function testDeleteLastAdmin()
     {
+        $this->expectException('Kirby\Exception\LogicException');
+        $this->expectExceptionCode('error.user.delete.lastAdmin');
+
         $kirby = $this->appWithAdmin();
         UserRules::delete($kirby->user('admin@domain.com'));
     }
 
-    /**
-     * @expectedException Kirby\Exception\LogicException
-     * @expectedExceptionCode error.user.delete.lastAdmin
-     */
     public function testDeleteLastUser()
     {
+        $this->expectException('Kirby\Exception\LogicException');
+        $this->expectExceptionCode('error.user.delete.lastAdmin');
+
         $kirby = $this->appWithAdmin();
         UserRules::delete($kirby->user('user@domain.com'));
         UserRules::delete($kirby->user('admin@domain.com'));

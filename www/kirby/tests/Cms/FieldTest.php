@@ -29,6 +29,14 @@ class FieldTest extends TestCase
         $this->assertFalse($parent->b()->exists());
     }
 
+    public function testModel()
+    {
+        $model = new Page(['slug' => 'test']);
+        $field = new Field($model, 'title', 'Title');
+
+        $this->assertEquals($model, $field->model());
+    }
+
     public function testParent()
     {
         $parent = new Page(['slug' => 'test']);
@@ -76,12 +84,11 @@ class FieldTest extends TestCase
         $this->assertEquals('Modified', $field->value());
     }
 
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage Invalid field value type: object
-     */
     public function testInvalidValueSetter()
     {
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('Invalid field value type: object');
+
         $field = new Field(null, 'title', 'Title');
         $field->value(new Page(['slug' => 'yay']));
     }
@@ -100,5 +107,38 @@ class FieldTest extends TestCase
 
         $this->assertEquals('Title', $original->value);
         $this->assertEquals('Test', $modified->value);
+    }
+
+    public function emptyDataProvider()
+    {
+        return [
+            ['test', false],
+            ['0', false],
+            [0, false],
+            [true, false],
+            ['true', false],
+            [false, false],
+            ['false', false],
+            [null, true],
+            ['', true],
+        ];
+    }
+
+    /**
+     * @dataProvider emptyDataProvider
+     */
+    public function testIsEmpty($input, $expected)
+    {
+        $field = new Field(null, 'test', $input);
+        $this->assertEquals($expected, $field->isEmpty());
+    }
+
+    /**
+     * @dataProvider emptyDataProvider
+     */
+    public function testIsNotEmpty($input, $expected)
+    {
+        $field = new Field(null, 'test', $input);
+        $this->assertEquals(!$expected, $field->isNotEmpty());
     }
 }

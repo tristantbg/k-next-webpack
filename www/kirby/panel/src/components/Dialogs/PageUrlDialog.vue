@@ -23,7 +23,7 @@
 
 <script>
 import DialogMixin from "@/mixins/dialog.js";
-import slug from "@/ui/helpers/slug.js";
+import slug from "@/helpers/slug.js";
 
 export default {
   mixins: [DialogMixin],
@@ -47,6 +47,7 @@ export default {
         required: true,
         icon: "url",
         help: "/" + this.url,
+        counter: false,
         preselect: true
       };
     }

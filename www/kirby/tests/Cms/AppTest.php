@@ -3,9 +3,20 @@
 namespace Kirby\Cms;
 
 use Kirby\Http\Route;
+use Kirby\Toolkit\F;
 
 class AppTest extends TestCase
 {
+    public function setUp(): void
+    {
+        $this->fixtures = __DIR__ . '/fixtures/AppTest';
+    }
+
+    public function tearDown(): void
+    {
+        Dir::remove($this->fixtures);
+    }
+
     public function testDefaultRoles()
     {
         $app = new App([
@@ -114,5 +125,93 @@ class AppTest extends TestCase
         $this->assertEquals(json_encode($input), $result->body());
         $this->assertEquals(200, $result->code());
         $this->assertEquals('application/json', $result->type());
+    }
+
+    public function testFindPageFile()
+    {
+        $app = new App([
+            'roots' => [
+                'index' => '/dev/null'
+            ],
+            'site' => [
+                'children' => [
+                    [
+                        'slug'  => 'test',
+                        'files' => [
+                            ['filename' => 'test-a.jpg']
+                        ]
+                    ],
+                ]
+            ]
+        ]);
+
+        $page  = $app->page('test');
+        $fileA = $page->file('test-a.jpg');
+        $fileB = $page->file('test-b.jpg');
+
+        // plain
+        $this->assertEquals($fileA, $app->file('test/test-a.jpg'));
+
+        // with page parent
+        $this->assertEquals($fileA, $app->file('test-a.jpg', $page));
+
+        // with file parent
+        $this->assertEquals($fileB, $app->file('test-b.jpg', $fileA));
+    }
+
+    public function testFindSiteFile()
+    {
+        $app = new App([
+            'roots' => [
+                'index' => '/dev/null'
+            ],
+            'site' => [
+                'files' => [
+                    ['filename' => 'test-a.jpg'],
+                    ['filename' => 'test-b.jpg']
+                ]
+            ]
+        ]);
+
+        $site  = $app->site();
+        $fileA = $site->file('test-a.jpg');
+        $fileB = $site->file('test-b.jpg');
+
+        // plain
+        $this->assertEquals($fileA, $app->file('test-a.jpg'));
+
+        // with page parent
+        $this->assertEquals($fileA, $app->file('test-a.jpg', $site));
+
+        // with file parent
+        $this->assertEquals($fileB, $app->file('test-b.jpg', $fileA));
+    }
+
+    public function testFindUserFile()
+    {
+        $app = new App([
+            'roots' => [
+                'index' => '/dev/null'
+            ],
+            'users' => [
+                [
+                    'email' => 'test@getkirby.com',
+                    'files' => [
+                        ['filename' => 'test-a.jpg'],
+                        ['filename' => 'test-b.jpg']
+                    ]
+                ]
+            ]
+        ]);
+
+        $user  = $app->user('test@getkirby.com');
+        $fileA = $user->file('test-a.jpg');
+        $fileB = $user->file('test-b.jpg');
+
+        // with user parent
+        $this->assertEquals($fileA, $app->file('test-a.jpg', $user));
+
+        // with file parent
+        $this->assertEquals($fileB, $app->file('test-b.jpg', $fileA));
     }
 }

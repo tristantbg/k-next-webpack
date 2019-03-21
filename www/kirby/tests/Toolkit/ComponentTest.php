@@ -4,7 +4,7 @@ namespace Kirby\Toolkit;
 
 class ComponentTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         Component::$types  = [];
         Component::$mixins = [];
@@ -224,13 +224,11 @@ class ComponentTest extends TestCase
         $this->assertEquals(['foo' => 'bar'], $component->toArray());
     }
 
-    /**
-     * @expectedException Kirby\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Undefined component type: test
-     *
-     */
     public function testInvalidType()
     {
+        $this->expectException('Kirby\Exception\InvalidArgumentException');
+        $this->expectExceptionMessage('Undefined component type: test');
+
         $component = new Component('test');
     }
 

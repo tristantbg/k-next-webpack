@@ -15,22 +15,20 @@ class StructureObjectTest extends TestCase
         $this->assertEquals('test', $object->id());
     }
 
-    /**
-     * @expectedException TypeError
-     */
     public function testInvalidId()
     {
+        $this->expectException('TypeError');
+
         $object = new StructureObject([
             'id' => []
         ]);
     }
 
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage The property "id" is required
-     */
     public function testMissingId()
     {
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('The property "id" is required');
+
         $object = new StructureObject(['foo' => 'bar']);
     }
 
@@ -43,6 +41,18 @@ class StructureObjectTest extends TestCase
         ]);
 
         $this->assertEquals($content, $object->content()->toArray());
+    }
+
+    public function testToDate()
+    {
+        $object = new StructureObject([
+            'id'      => 'test',
+            'content' => [
+                'date' => '2012-12-12'
+            ]
+        ]);
+
+        $this->assertEquals('12.12.2012', $object->date()->toDate('d.m.Y'));
     }
 
     public function testDefaultContent()
@@ -98,11 +108,10 @@ class StructureObjectTest extends TestCase
         $this->assertEquals($parent, $object->parent());
     }
 
-    /**
-     * @expectedException TypeError
-     */
     public function testInvalidParent()
     {
+        $this->expectException('TypeError');
+
         $object = new StructureObject([
             'id'     => 'test',
             'parent' => false

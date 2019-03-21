@@ -7,7 +7,7 @@ use Kirby\Toolkit\Dir;
 
 class AppUsersTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->app = new App([
             'roots' => [
@@ -16,7 +16,7 @@ class AppUsersTest extends TestCase
         ]);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Dir::remove($this->fixtures);
     }
@@ -57,11 +57,9 @@ class AppUsersTest extends TestCase
         $this->assertEquals('homer@simpsons.com', $app->user()->email());
     }
 
-    /**
-     * @expectedException Kirby\Exception\NotFoundException
-     */
     public function testImpersonateAsMissingUser()
     {
+        $this->expectException('Kirby\Exception\NotFoundException');
         $this->app->impersonate('homer@simpsons.com');
     }
 
@@ -105,7 +103,7 @@ class AppUsersTest extends TestCase
             'users' => [
                 [
                     'email'    => 'test@getkirby.com',
-                    'password' => User::hashPassword('test')
+                    'password' => User::hashPassword('correct-horse-battery-staple')
                 ]
             ],
             'request' => [
@@ -117,19 +115,18 @@ class AppUsersTest extends TestCase
     public function testUserFromBasicAuth()
     {
         $app  = $this->basicAuthApp();
-        $auth = new BasicAuth(base64_encode('test@getkirby.com:test'));
+        $auth = new BasicAuth(base64_encode('test@getkirby.com:correct-horse-battery-staple'));
         $user = $app->auth()->currentUserFromBasicAuth($auth);
 
         $this->assertInstanceOf(User::class, $user);
         $this->assertEquals('test@getkirby.com', $user->email());
     }
 
-    /**
-     * @expectedException Kirby\Exception\PermissionException
-     * @expectedExceptionMessage Basic authentication is not activated
-     */
     public function testUserFromBasicAuthDisabled()
     {
+        $this->expectException('Kirby\Exception\PermissionException');
+        $this->expectExceptionMessage('Basic authentication is not activated');
+
         $app = $this->basicAuthApp()->clone([
             'options' => [
                 'api' => [
@@ -138,32 +135,30 @@ class AppUsersTest extends TestCase
             ]
         ]);
 
-        $auth = new BasicAuth(base64_encode('test@getkirby.com:test'));
+        $auth = new BasicAuth(base64_encode('test@getkirby.com:correct-horse-battery-staple'));
         $user = $app->auth()->currentUserFromBasicAuth($auth);
     }
 
-    /**
-     * @expectedException Kirby\Exception\PermissionException
-     * @expectedExceptionMessage Basic authentication is only allowed over HTTPS
-     */
     public function testUserFromBasicAuthOverHttp()
     {
+        $this->expectException('Kirby\Exception\PermissionException');
+        $this->expectExceptionMessage('Basic authentication is only allowed over HTTPS');
+
         $app = $this->basicAuthApp()->clone([
             'request' => [
                 'url' => 'http://getkirby.com/login'
             ]
         ]);
 
-        $auth = new BasicAuth(base64_encode('test@getkirby.com:test'));
+        $auth = new BasicAuth(base64_encode('test@getkirby.com:correct-horse-battery-staple'));
         $user = $app->auth()->currentUserFromBasicAuth($auth);
     }
 
-    /**
-     * @expectedException Kirby\Exception\InvalidArgumentException
-     * @expectedExceptionMessage Invalid authorization header
-     */
     public function testUserFromBasicAuthWithInvalidHeader()
     {
+        $this->expectException('Kirby\Exception\InvalidArgumentException');
+        $this->expectExceptionMessage('Invalid authorization header');
+
         $app = $this->basicAuthApp()->clone([
             'request' => [
                 'url' => 'http://getkirby.com/login'

@@ -1,6 +1,6 @@
 <?php
 
-use Kirby\Form\Form;
+use Kirby\Cms\Form;
 use Kirby\Cms\Blueprint;
 
 return [
@@ -21,6 +21,12 @@ return [
             // lower case all keys, because field names will
             // be lowercase as well.
             return array_change_key_case($columns);
+        },
+        /**
+         * The placeholder text if no items have been added yet
+         */
+        'empty' => function ($empty = null) {
+            return I18n::translate($empty, $empty);
         },
         /**
          * Fields setup for the structure form. Works just like fields in regular forms.

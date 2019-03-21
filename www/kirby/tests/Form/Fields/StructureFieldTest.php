@@ -2,6 +2,7 @@
 
 namespace Kirby\Form\Fields;
 
+use Kirby\Cms\App;
 use Kirby\Data\Yaml;
 use Kirby\Form\Field;
 
@@ -190,5 +191,86 @@ class StructureFieldTest extends TestCase
         $this->assertEquals('text', $childrenNameField->type());
         $this->assertEquals('test', $childrenNameField->model());
         $this->assertEquals(null, $childrenNameField->data());
+    }
+
+    public function testFloatsWithNonUsLocale()
+    {
+        $field = new Field('structure', [
+            'fields' => [
+                'number' => [
+                    'type' => 'number'
+                ]
+            ],
+            'value' => [
+                [
+                    'number' => 3.2
+                ]
+            ]
+        ]);
+
+        $this->assertTrue(is_float($field->data()[0]['number']));
+    }
+
+    public function testEmpty()
+    {
+        $field = new Field('structure', [
+            'fields' => [],
+            'empty' => 'Test'
+        ]);
+
+        $this->assertEquals('Test', $field->empty());
+    }
+
+    public function testTranslatedEmpty()
+    {
+        $field = new Field('structure', [
+            'fields' => [],
+            'empty' => ['en' => 'Test', 'de' => 'Töst']
+        ]);
+
+        $this->assertEquals('Test', $field->empty());
+    }
+
+    public function testTranslate()
+    {
+        $app = new App([
+            'roots' => [
+                'index' => '/dev/null'
+            ],
+            'options' => [
+                'languages' => true
+            ],
+            'languages' => [
+                [
+                    'code' => 'en',
+                    'default' => true
+                ],
+                [
+                    'code' => 'de',
+                ]
+            ]
+        ]);
+
+        $field = new Field('structure', [
+            'fields' => [
+                'a' => [
+                    'type' => 'text'
+                ],
+                'b' => [
+                    'type' => 'text',
+                    'translate' => false
+                ]
+            ]
+        ]);
+
+        $app->setCurrentLanguage('en');
+
+        $this->assertFalse($field->form()->fields()->a()->disabled());
+        $this->assertFalse($field->form()->fields()->b()->disabled());
+
+        $app->setCurrentLanguage('de');
+
+        $this->assertFalse($field->form()->fields()->a()->disabled());
+        $this->assertTrue($field->form()->fields()->b()->disabled());
     }
 }

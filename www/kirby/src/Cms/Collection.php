@@ -73,7 +73,7 @@ class Collection extends BaseCollection
      */
     public function __set(string $id, $object)
     {
-        $this->data[$object->id()] = $object;
+        $this->data[$id] = $object;
     }
 
     /**
@@ -81,14 +81,16 @@ class Collection extends BaseCollection
      * an entire second collection to the
      * current collection
      *
-     * @param mixed $item
+     * @param mixed $object
      */
     public function add($object)
     {
         if (is_a($object, static::class) === true) {
             $this->data = array_merge($this->data, $object->data);
-        } else {
+        } elseif (method_exists($object, 'id') === true) {
             $this->__set($object->id(), $object);
+        } else {
+            $this->append($object);
         }
 
         return $this;
@@ -226,6 +228,38 @@ class Collection extends BaseCollection
     public function parent()
     {
         return $this->parent;
+    }
+
+    /**
+     * Runs a combination of filterBy, sortBy, not
+     * offset, limit, search and paginate on the collection.
+     * Any part of the query is optional.
+     *
+     * @param array $query
+     * @return self
+     */
+    public function query(array $query = [])
+    {
+        $paginate = $query['paginate'] ?? null;
+        $search   = $query['search'] ?? null;
+
+        unset($query['paginate']);
+
+        $result = parent::query($query);
+
+        if (empty($search) === false) {
+            if (is_array($search) === true) {
+                $result = $result->search($search['query'] ?? null, $search['options'] ?? []);
+            } else {
+                $result = $result->search($search);
+            }
+        }
+
+        if (empty($paginate) === false) {
+            $result = $result->paginate($paginate);
+        }
+
+        return $result;
     }
 
     /**

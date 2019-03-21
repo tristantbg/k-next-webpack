@@ -10,6 +10,7 @@ return [
     'mixins' => [
         'empty',
         'headline',
+        'help',
         'layout',
         'min',
         'max',
@@ -68,6 +69,12 @@ return [
             return $status;
         },
         /**
+         * Filters the list by templates and sets template options when adding new pages to the section.
+         */
+        'templates' => function ($templates = null) {
+            return A::wrap($templates ?? $this->template);
+        },
+        /**
          * Setup for the main text in the list or cards. By default this will display the page title.
          */
         'text' => function (string $text = '{{ page.title }}') {
@@ -77,9 +84,6 @@ return [
     'computed' => [
         'dragTextType' => function () {
             return option('panel.kirbytext', true) ? 'kirbytext' : 'markdown';
-        },
-        'templates' => function () {
-            return A::wrap($this->templates ?? $this->template);
         },
         'parent' => function () {
             return $this->parentModel();

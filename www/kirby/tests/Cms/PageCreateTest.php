@@ -12,7 +12,7 @@ class PageCreateTest extends TestCase
     protected $app;
     protected $fixtures;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->app = new App([
             'roots' => [
@@ -25,7 +25,7 @@ class PageCreateTest extends TestCase
         Dir::make($this->fixtures);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Dir::remove($this->fixtures);
     }
@@ -110,11 +110,10 @@ class PageCreateTest extends TestCase
         $this->assertTrue($site->children()->has($page));
     }
 
-    /**
-     * @expectedException Kirby\Exception\DuplicateException
-     */
     public function testCreateDuplicate()
     {
+        $this->expectException('Kirby\Exception\DuplicateException');
+
         $page = Page::create([
             'slug' => 'new-page',
         ]);

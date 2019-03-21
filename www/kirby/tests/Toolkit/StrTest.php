@@ -105,6 +105,14 @@ class StrTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
+    public function testExcerptWithZeroLength()
+    {
+        $string = 'This is a long text with some html';
+        $result = Str::excerpt($string, 0);
+
+        $this->assertEquals($string, $result);
+    }
+
     public function testExcerptWithoutStripping()
     {
         $string   = 'This is a long text<br>with some html';
@@ -141,6 +149,31 @@ class StrTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
+    public function testFloat()
+    {
+        $this->assertEquals('0', Str::float(false));
+        $this->assertEquals('0', Str::float(null));
+        $this->assertEquals('0', Str::float(0));
+        $this->assertEquals('0', Str::float('0'));
+        $this->assertEquals('1', Str::float(true));
+        $this->assertEquals('1', Str::float(1));
+        $this->assertEquals('1', Str::float('1'));
+        $this->assertEquals('1.1', Str::float(1.1));
+        $this->assertEquals('1.1', Str::float('1.1'));
+        $this->assertEquals('1.1', Str::float('1,1'));
+        $this->assertEquals('1.11', Str::float('1,11'));
+        $this->assertEquals('1.111', Str::float('1,111'));
+        $this->assertEquals('-1', Str::float(-1));
+        $this->assertEquals('-1.1', Str::float(-1.1));
+        $this->assertEquals('-1.11', Str::float('-1.11'));
+        $this->assertEquals('-1.111', Str::float('-1,111'));
+        $this->assertEquals('1000', Str::float('1000'));
+        $this->assertEquals('1000.00', Str::float('1000.00'));
+        $this->assertEquals('1000.00', Str::float('1000,00'));
+        $this->assertEquals('1000', Str::float('1000'));
+        $this->assertEquals('1000000.00', Str::float('1000000.00'));
+    }
+
     public function testFrom()
     {
         $string = 'Hellö Wörld';
@@ -154,6 +187,15 @@ class StrTest extends TestCase
         $this->assertEquals('ö Wörld', Str::from($string, 'ö', true));
         $this->assertEquals('ö Wörld', Str::from($string, 'Ö', true));
         $this->assertEquals(false, Str::from($string, 'x'));
+    }
+
+    public function testKebab()
+    {
+        $string = 'KingCobra';
+        $this->assertEquals('king-cobra', Str::kebab($string));
+
+        $string = 'kingCobra';
+        $this->assertEquals('king-cobra', Str::kebab($string));
     }
 
     public function testLength()
@@ -270,27 +312,24 @@ class StrTest extends TestCase
         $this->assertEquals('apearpearle pear', Str::replace('a p', ['a', 'p'], ['apple', 'pear'], [1, 3]));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testReplaceInvalid1()
     {
+        $this->expectException('Exception');
+
         Str::replace('some string', 'string', ['array'], 1);
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testReplaceInvalid2()
     {
+        $this->expectException('Exception');
+
         Str::replace('some string', 'string', 'other string', 'some invalid string as limit');
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testReplaceInvalid3()
     {
+        $this->expectException('Exception');
+
         Str::replace('some string', ['some', 'string'], 'other string', [1, 'string']);
     }
 
@@ -335,11 +374,10 @@ class StrTest extends TestCase
         ], Str::replacements(['a', 'b'], ['c', 'd'], [2]));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testReplacementsInvalid()
     {
+        $this->expectException('Exception');
+
         Str::replacements('string', ['array'], 1);
     }
 
@@ -375,11 +413,10 @@ class StrTest extends TestCase
         // edge cases are tested in the Str::replace() unit test
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testReplaceReplacementsInvalid()
     {
+        $this->expectException('Exception');
+
         Str::replaceReplacements('some string', [
             [
                 'search'  => 'some',
@@ -463,6 +500,15 @@ class StrTest extends TestCase
 
         // Reset str defaults
         Str::$defaults['slug'] = $defaults;
+    }
+
+    public function testSnake()
+    {
+        $string = 'KingCobra';
+        $this->assertEquals('king_cobra', Str::snake($string));
+
+        $string = 'kingCobra';
+        $this->assertEquals('king_cobra', Str::snake($string));
     }
 
     public function testSplit()
@@ -572,6 +618,12 @@ class StrTest extends TestCase
         $this->assertEquals('Hello World', Str::ucwords('hello world'));
         $this->assertEquals('Hello World', Str::ucwords('Hello world'));
         $this->assertEquals('Hello World', Str::ucwords('HELLO WORLD'));
+    }
+
+    public function testUnhtml()
+    {
+        $string = 'some <em>crazy</em> stuff';
+        $this->assertEquals('some crazy stuff', Str::unhtml($string));
     }
 
     public function testUntil()

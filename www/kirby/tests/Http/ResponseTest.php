@@ -38,12 +38,11 @@ class ResponseTest extends TestCase
         ], $response->headers());
     }
 
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage The file could not be found
-     */
     public function testDownloadWithMissingFile()
     {
+        $this->expectException('Exception');
+        $this->expectExceptionMessage('The file could not be found');
+
         Response::download('does/not/exist.txt');
     }
 
@@ -100,6 +99,16 @@ class ResponseTest extends TestCase
         $response = Response::json($data, 200, true);
 
         $this->assertEquals($expected, $response->body());
+    }
+
+    public function testFile()
+    {
+        $file = __DIR__ . '/fixtures/download.txt';
+
+        $response = Response::file($file);
+
+        $this->assertEquals('text/plain', $response->type());
+        $this->assertEquals('test', $response->body());
     }
 
     public function testType()

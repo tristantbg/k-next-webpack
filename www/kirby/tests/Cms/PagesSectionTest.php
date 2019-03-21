@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class PagesSectionTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->app = new App([
             'roots' => [
@@ -109,5 +109,82 @@ class PagesSectionTest extends TestCase
 
         // non-existing covers
         $this->assertNull($data[2]['image']['url'] ?? null);
+    }
+
+    public function testTemplates()
+    {
+        // single template
+        $section = new Section('pages', [
+            'name'      => 'test',
+            'model'     => new Page(['slug' => 'test']),
+            'templates' => 'blog'
+        ]);
+
+        $this->assertEquals(['blog'], $section->templates());
+
+        // multiple templates
+        $section = new Section('pages', [
+            'name'      => 'test',
+            'model'     => new Page(['slug' => 'test']),
+            'templates' => ['blog', 'notes']
+        ]);
+
+        $this->assertEquals(['blog', 'notes'], $section->templates());
+
+        // template via alias
+        $section = new Section('pages', [
+            'name'     => 'test',
+            'model'    => new Page(['slug' => 'test']),
+            'template' => 'blog'
+        ]);
+
+        $this->assertEquals(['blog'], $section->templates());
+    }
+
+    public function testEmpty()
+    {
+        $section = new Section('pages', [
+            'name'  => 'test',
+            'model' => new Page(['slug' => 'test']),
+            'empty' => 'Test'
+        ]);
+
+        $this->assertEquals('Test', $section->empty());
+    }
+
+    public function testTranslatedEmpty()
+    {
+        $section = new Section('pages', [
+            'name'  => 'test',
+            'model' => new Page(['slug' => 'test']),
+            'empty' => ['en' => 'Test', 'de' => 'Töst']
+        ]);
+
+        $this->assertEquals('Test', $section->empty());
+    }
+
+    public function testHelp()
+    {
+
+        // single help
+        $section = new Section('pages', [
+            'name'  => 'test',
+            'model' => new Page(['slug' => 'test']),
+            'help'  => 'Test'
+        ]);
+
+        $this->assertEquals('Test', $section->help());
+
+        // translated help
+        $section = new Section('pages', [
+            'name'     => 'test',
+            'model'    => new Page(['slug' => 'test']),
+            'help' => [
+                'en' => 'Information',
+                'de' => 'Informationen'
+            ]
+        ]);
+
+        $this->assertEquals('Information', $section->help());
     }
 }

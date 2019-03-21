@@ -71,7 +71,7 @@
       <k-tabs
         v-if="user && tabs.length"
         ref="tabs"
-        :key="'user-' + user.id + '-tabs-' + new Date().getTime()"
+        :key="tabsKey"
         :parent="'users/' + user.id"
         :blueprint="user.blueprint.name"
         :tabs="tabs"
@@ -156,12 +156,18 @@ export default {
         };
       }
     },
+    tabsKey() {
+      return "user-" + this.user.id + "-tabs";
+    },
     uploadApi() {
       return config.api + "/users/" + this.user.id + "/avatar";
     }
   },
   watch: {
     language() {
+      this.fetch();
+    },
+    id() {
       this.fetch();
     }
   },
@@ -283,6 +289,7 @@ export default {
   transform: translateX(-50%);
 }
 .k-user-view-image .k-image {
+  display: block;
   width: 4rem;
   height: 4rem;
   line-height: 0;

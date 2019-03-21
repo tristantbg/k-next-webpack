@@ -19,7 +19,7 @@
 
 <script>
 import DialogMixin from "@/mixins/dialog.js";
-import slug from "@/ui/helpers/slug.js";
+import slug from "@/helpers/slug.js";
 
 export default {
   mixins: [DialogMixin],
@@ -97,7 +97,7 @@ export default {
         .then(() => {
           this.$store.dispatch("languages/load");
           this.success({
-            message: this.$t("language.created"),
+            message: ":)",
             event: "language.create"
           });
         })
