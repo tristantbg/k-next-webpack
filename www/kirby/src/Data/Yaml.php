@@ -20,10 +20,10 @@ class Yaml extends Handler
     /**
      * Converts an array to an encoded YAML string
      *
-     * @param  array  $data
+     * @param  mixed  $data
      * @return string
      */
-    public static function encode(array $data): string
+    public static function encode($data): string
     {
         // fetch the current locale setting for numbers
         $locale = setlocale(LC_NUMERIC, 0);
@@ -56,6 +56,8 @@ class Yaml extends Handler
             return $yaml;
         }
 
+        // remove bom
+        $yaml   = str_replace("\xEF\xBB\xBF", '', $yaml);
         $result = Spyc::YAMLLoadString($yaml);
 
         if (is_array($result)) {
