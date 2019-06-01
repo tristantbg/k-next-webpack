@@ -7,8 +7,6 @@ tabs:
         type: pages
         create:
           - default
-          - about
-          - contact
   settings:
     label: Settings
     icon: cog
@@ -16,25 +14,12 @@ tabs:
       infos:
         type: fields
         fields:
-          shortTitle:
-            label: Short title
-            type: text
-          tagline:
-            label: Tagline
-            type: text
-          menuPage1:
-            label: Menu Page 1
-            type: pages
-            multiple: false
-            width: 1/2
-          menuPage2:
-            label: Menu Page 2
-            type: pages
-            multiple: false
-            width: 1/2
           description:
             label: Description
             type:  textarea
+            buttons: false
+            maxlength: 158
+            width: 1/2
           keywords:
             label: Keywords
             type:  tags
@@ -54,6 +39,7 @@ tabs:
             type: files
             multiple: false
             layout: cards
+            size: tiny
             help: 1200x630px minimum
             width: 1/2
   files:
@@ -62,4 +48,4 @@ tabs:
       images:
         type: files
         layout: cards
-        template: image
+        template: file

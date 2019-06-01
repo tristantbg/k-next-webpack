@@ -1,5 +1,8 @@
 title: Video
 
+options:
+  changeName: false
+
 accept:
   mime: video/mp4, video/webm
 
@@ -10,3 +13,8 @@ fields:
   caption:
     label: Caption
     type: textarea
+    buttons:
+      - link
+      - email
+      - bold
+      - italic

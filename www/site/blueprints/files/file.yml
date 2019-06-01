@@ -1,14 +1,21 @@
-title: Image
+title: File
 
 options:
   changeName: false
 
 accept:
-  mime: image/jpeg, image/png, image/gif, image/svg+xml
-  maxwidth: 6000
-  maxheight: 6000
+  mime: image/jpeg, image/png, image/gif, image/svg+xml, application/pdf, application/zip
+  maxwidth: 9000
+  maxheight: 9000
 
 fields:
+  fileTitle:
+    label: Title
+    type: text
+  color:
+    label: Color
+    type: color
+    width: 1/2
   focus:
     label: Focus crop
     type: focus
@@ -25,11 +32,8 @@ fields:
       - email
       - bold
       - italic
+    width: 1/2
   credits:
     label: Credits
-    type: textarea
-    buttons:
-      - link
-      - email
-      - bold
-      - italic
+    type: text
+    width: 1/2

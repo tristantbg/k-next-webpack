@@ -11,6 +11,9 @@ sections:
   files:
     headline: Files
     type: files
+    layout: cards
+    template: file
+    size: tiny
   content:
     type: fields
     fields:

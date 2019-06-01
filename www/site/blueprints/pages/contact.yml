@@ -8,19 +8,4 @@ fields:
     label: Description
     type: markdown
     size: medium
-  # textFr:
-  #   label: Biography FR
-  #   type: markdown
-  #   size: medium
-  additionalInfosTitle:
-    label: Additional Infos Title
-    type: text
-  additionalInfos1:
-    label: Column 1
-    type: markdown
-    size: medium
-  additionalInfos2:
-    label: Column 2
-    type: markdown
-    size: medium
 

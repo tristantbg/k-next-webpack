@@ -35,5 +35,3 @@ Googleanalytics:
 ----
 
 Ogimage: 
-
-- download-1.jpg

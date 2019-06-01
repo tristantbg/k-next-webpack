@@ -30,37 +30,7 @@ tabs:
                 label: Featured image
                 type: files
                 multiple: false
-                # layout: cards
                 template: image
-              theme:
-                label: Theme
-                type: color-palette
-                display: duo
-                options:
-                  palette-1:
-                    background: '#ad00af'
-                    text: '#ffff99'
-                    name: 'palette-1'
-                  palette-2:
-                    background: '#ffff99'
-                    text: '#0043c9'
-                    name: 'palette-2'
-                  palette-3:
-                    background: '#db90a2'
-                    text: '#34523a'
-                    name: 'palette-3'
-                  palette-4:
-                    background: '#0043c9'
-                    text: '#ffed00'
-                    name: 'palette-4'
-                  palette-5:
-                    background: '#34523a'
-                    text: '#009de0'
-                    name: 'palette-5'
-                  palette-6:
-                    background: '#f10047'
-                    text: '#ffff99'
-                    name: 'palette-6'
   content:
     label: Content
     sections:
@@ -80,38 +50,11 @@ tabs:
                     type: files
                     template: image
                     layout: cards
-              # videoexternal:
-              #   label: Video External
-              #   snippet: blocks/video.external
-              #   fields:
-              #     thumbnail:
-              #       label: Thumbnail
-              #       type: files
-              #       multiple: false
-              #       layout: cards
-              #     mp4:
-              #       label: Video File URL (.MP4)
-              #       type: url
-              #       width: 1/2
-              #     stream:
-              #       label: Video Stream URL (.M3U8)
-              #       type: url
-              #       width: 1/2
   files:
     icon: file
     sections:
       images:
         type: files
         layout: cards
-        template: image
-      # vimeoIDs:
-      #   type: fields
-      #   fields:
-      #     vimeoIDs:
-      #       label: Add Vimeo videos by ID
-      #       type: tags
-      #       split: ,
-      # vimeoVideos:
-      #   headline: Vimeo Videos
-      #   type: files
-      #   template: vimeo
+        template: file
+        size: tiny
