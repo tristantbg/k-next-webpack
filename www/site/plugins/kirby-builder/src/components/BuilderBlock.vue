@@ -2,10 +2,10 @@
   <div :class="[
     'kBuilderBlock', 
     'kBuilderBlock--col-' + columnsCount, 
-    'kBuilderBlock--type-' + block.blockKey,
-    {'kBuilderBlock--pending': pending }, 
+    'kBuilderBlock--type-' + block._key,
     {'kBuilderBlock--previewMode': showPreview && expanded }, 
     {'kBuilderBlock--expanded': expanded },
+    {'kBuilderBlock--pending': isNew },
     {'kBuilderBlock--collapsed': !expanded },
     {'kBuilderBlock--editMode': !showPreview && expanded }
   ]">
@@ -23,12 +23,12 @@
           :class="{'kBuilderBlock__expandedIcon--expanded': expanded}"
           type="angle-down"
         />
-        {{block.label}}
+        {{fieldGroup.label}}
       </span>
       <div class="kBuilderBlock__actions">
         <k-button-group class="kBuilderBlock__actionsGroup">
           <k-button
-            v-if="fieldSets.length > 1 || block.preview"
+            v-if="fieldSets.length > 1 || fieldGroup.preview"
             v-for="fieldSet in fieldSets"
             :key="'showFierldSetButton-' + _uid + fieldSet.key"
             :icon="tabIcon(fieldSet.icon)"
@@ -38,7 +38,7 @@
             :class="{'kBuilderBlock__actionsButton--active': (activeFieldSet == fieldSet.key && expanded )}"
           >{{fieldSet.label}}</k-button>
           <k-button
-            v-if="block.preview"
+            v-if="fieldGroup.preview"
             icon="preview"
             @click="displayPreview()"
             class="kBuilderBlock__actionsButton"
@@ -49,17 +49,18 @@
           <k-dropdown class="kBuilderBlock__actionsDropDown">
             <k-button
               icon="dots"
-              @click="$refs['blockActions' + block.uniqueKey].toggle()"
+              @click="$refs['blockActions'].toggle()"
               class="kBuilderBlock__actionsButton"
             ></k-button>
             <k-dropdown-content
               class="kBuilderBlock__actionsDropDownContent"
-              :ref="'blockActions' + block.uniqueKey"
-              align="right"
+              :ref="'blockActions'"
+              align="
+              right"
             >
               <k-dropdown-item
                 icon="copy"
-                @click="$emit('clone', index)"
+                @click="$emit('clone', index, showPreview, expanded, activeFieldSet)"
               >{{ $t('builder.clone') }}</k-dropdown-item>
               <k-dropdown-item
                 icon="trash"
@@ -75,7 +76,7 @@
       v-show="expanded"
     >
       <builder-preview
-        v-if="block.preview"
+        v-if="fieldGroup.preview"
         v-show="showPreview"
         :markup="previewMarkup"
         :styles="styles"
@@ -105,6 +106,7 @@ export default {
   props: {
     endpoints: Object,
     block: Object,
+    fieldGroup: Object,
     index: Number,
     columnsCount: Number,
     pageUid: String,
@@ -118,35 +120,55 @@ export default {
     BuilderPreview
   },
   mounted() {
-    if (this.block.isNew) {
-      this.$nextTick(function() {
-        this.pending = false;
-      });
-    } else {
-      this.pending = false;
-    }
-    if (!this.block.content._uid) {
-      this.block.content._uid =
-        this.block.content._key + "_" + new Date().valueOf() + "_" + this._uid;
+    if (!this.block._uid) {
+      this.block._uid =
+        this.block._key + "_" + new Date().valueOf() + "_" + this._uid;
     }
     if (!this.activeFieldSet) {
       this.activeFieldSet = this.fieldSets[0].key;
     }
+    if (this.block.expandedInitially != null) {
+      this.expanded = this.block.expandedInitially;
+      delete this.block.expandedInitially;
+    }
+    if (this.block.showPreviewInitially) {
+      this.showPreview = this.block.showPreviewInitially;
+      delete this.block.showPreviewInitially;
+    }
+    if (this.block.activeFieldSetInitially) {
+      this.activeFieldSet = this.block.activeFieldSetInitially;
+      delete this.block.activeFieldSetInitially;
+    }
+    if (this.block.isNew) {
+      this.isNew = true;
+      window.requestAnimationFrame(() => {
+        this.isNew = false;
+        delete this.block.isNew;
+      });
+    }
     let localUiState = JSON.parse(localStorage.getItem(this.localUiStateKey));
-    if (localUiState) {
+    if (localUiState && localUiState.expanded !== null) {
       this.expanded = localUiState.expanded;
+    }
+    if (
+      this.fieldGroup.defaultView &&
+      this.fieldGroup.defaultView != "default" &&
+      !this.isNew
+    ) {
+      if (this.fieldGroup.defaultView == "preview") {
+        this.showPreview = true;
+      } else {
+        this.activeFieldSet = this.fieldGroup.defaultView;
+      }
+    } else if (localUiState) {
       this.showPreview = localUiState.showPreview;
       this.activeFieldSet = localUiState.activeFieldSet;
     } else {
       this.storeLocalUiState();
     }
-    if (this.block.preview && this.showPreview) {
-      this.displayPreview(this.block.preview);
-    } else {
-      this.displayFieldSet(this.activeFieldSet);
-    }
-    if (this.block.isNew) {
-      this.$emit("input");
+
+    if (this.fieldGroup.preview && this.showPreview && this.expanded) {
+      this.displayPreview(this.fieldGroup.preview);
     }
   },
   data() {
@@ -154,6 +176,7 @@ export default {
       pending: true,
       activeFieldSet: null,
       expanded: true,
+      isNew: false,
       previewFrameContent: null,
       previewHeight: 0,
       previewStored: false,
@@ -163,7 +186,7 @@ export default {
   },
   computed: {
     localUiStateKey() {
-      return `kBuilder.uiState.${this.block.content._uid}`;
+      return `kBuilder.uiState.${this.block._uid}`;
     },
     extendedUid() {
       return this.pageId.replace("/", "-") + "-" + this._uid;
@@ -174,7 +197,7 @@ export default {
           "kirby-builder-preview/" +
           this.extendedUid +
           "?" +
-          this.objectToGetParams(this.block.preview) +
+          this.objectToGetParams(this.fieldGroup.preview) +
           "&pageid=" +
           this.pageId
         );
@@ -183,23 +206,23 @@ export default {
       }
     },
     blockPath() {
-      return this.parentPath + "+" + this.block.blockKey;
+      return this.parentPath + "+" + this.block._key;
     },
     fieldSets() {
       let fieldSets = [];
-      if (this.block.tabs) {
-        for (const tabKey in this.block.tabs) {
-          if (this.block.tabs.hasOwnProperty(tabKey)) {
-            const tab = this.block.tabs[tabKey];
-            fieldSets.push(this.newFieldSet(tab, tabKey, this.block.content));
+      if (this.fieldGroup.tabs) {
+        for (const tabKey in this.fieldGroup.tabs) {
+          if (this.fieldGroup.tabs.hasOwnProperty(tabKey)) {
+            const tab = this.fieldGroup.tabs[tabKey];
+            fieldSets.push(this.newFieldSet(tab, tabKey, this.block));
           }
         }
-      } else if (this.block.fields) {
+      } else if (this.fieldGroup.fields) {
         fieldSets.push(
           this.newFieldSet(
-            this.block,
+            this.fieldGroup,
             "content",
-            this.block.content,
+            this.block,
             "edit",
             this.$t("edit")
           )
@@ -216,9 +239,10 @@ export default {
       this.showPreview = true;
       this.expanded = true;
       let previewData = {
-        preview: this.block.preview,
-        blockContent: this.block.content,
-        blockFields: this.block.fields,
+        preview: this.fieldGroup.preview,
+        blockContent: this.block,
+        blockFields: this.fieldGroup.fields,
+        block: this.fieldGroup,
         blockUid: this.extendedUid,
         pageid: this.pageId
       };
@@ -254,13 +278,15 @@ export default {
     },
     newFieldSet(fieldSet, key, model, icon, label) {
       Object.keys(fieldSet.fields).forEach(fieldName => {
+        const modelEndpoint = this.endpoints.model;
         fieldSet.fields[fieldName].endpoints = {
-          field: `kirby-builder/pages/${this.encodedPageId}/fields/${
-            this.blockPath
-          }+${fieldSet.fields[fieldName].name}`,
-          model: this.endpoints.model,
+          field: `kirby-builder/${modelEndpoint}/fields/${this.blockPath}+${
+            fieldSet.fields[fieldName].name
+          }`,
+          model: modelEndpoint,
           section: this.endpoints.section
         };
+
         fieldSet.fields[fieldName].parentPath = this.blockPath;
       });
       let newFieldSet = {
@@ -315,7 +341,8 @@ export default {
 
   &--pending {
     opacity: 0;
-    transform: translateY(5%);
+    transform: translateY(calc(10px + 5%));
+    transition: opacity 0s, transform 0s;
   }
 
   &__label {
@@ -408,7 +435,14 @@ export default {
   }
 }
 
-.k-sortable-ghost > .k-column-content > .kBuilderBlock, .k-sortable-ghost > .kBuilderBlock, .sortable-ghost > .k-column-content > .kBuilderBlock, .sortable-ghost > .kBuilderBlock {
+.k-sortable-ghost > .k-column-content > .kBuilderBlock, 
+.k-sortable-ghost > .kBuilderBlock, 
+.sortable-ghost > .k-column-content > .kBuilderBlock , 
+.sortable-ghost > .kBuilderBlock {
   box-shadow: 0 0 0 2px #4271ae, 0 5px 10px 2px rgba(22, 23, 26, 0.25);
+}
+
+.k-sortable-ghost > .kBuilderBlock .kBuilderPreview__frame {
+  pointer-events: none;
 }
 </style>
