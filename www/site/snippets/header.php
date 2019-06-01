@@ -79,8 +79,6 @@
   <div class="pjax">
 
   <?php snippet('partials/header-menu') ?>
-  <?php snippet('responsive-image', ['field' => $site->ogimage()]) ?>
-
 
   <div id="container">
 
