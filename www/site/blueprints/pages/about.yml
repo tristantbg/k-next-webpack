@@ -2,10 +2,14 @@ title: About
 preset: page
 pages: false
 files:
-  template: image
+  template: file
 fields:
   text:
     label: Description
     type: markdown
-    size: medium
-
+    size: large
+    buttons:
+      - link
+      - email
+      - bold
+      - italic

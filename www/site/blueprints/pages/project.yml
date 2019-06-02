@@ -21,6 +21,11 @@ tabs:
                 label: Description
                 type: markdown
                 size: medium
+                buttons:
+                  - link
+                  - email
+                  - bold
+                  - italic
       - width: 1/4
         sections:
           thumbnail:
