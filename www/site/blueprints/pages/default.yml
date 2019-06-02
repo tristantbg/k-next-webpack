@@ -1,24 +1,14 @@
 title: Default Page
-
-columns:
-  - 1/3: pages, files
-  - 2/3: content
-
-sections:
-  pages:
-    headline: Pages
-    type: pages
-  files:
-    headline: Files
-    type: files
-    layout: cards
-    template: file
-    size: tiny
-  content:
-    type: fields
-    fields:
-      text:
-        label: Text
-        type: textarea
-        size: large
-
+preset: page
+files:
+  template: file
+fields:
+  text:
+    label: Description
+    type: markdown
+    size: large
+    buttons:
+      - link
+      - email
+      - bold
+      - italic
