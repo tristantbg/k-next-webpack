@@ -3,6 +3,7 @@
 return [
     'panel'         => [
         'slug' => 'adminpanel',
+        'css' => 'assets/panel.css'
     ],
     'debug'         => false,
     'environnement' => 'prod',
