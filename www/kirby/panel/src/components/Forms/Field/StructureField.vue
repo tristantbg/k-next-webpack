@@ -244,8 +244,15 @@ export default {
       return true;
     },
     pagination() {
+      let offset = 0;
+
+      if (this.limit) {
+        offset = (this.page - 1) * this.limit;
+      }
+
       return {
         page: this.page,
+        offset: offset,
         limit: this.limit,
         total: this.items.length,
         align: "center",
@@ -257,10 +264,10 @@ export default {
         return this.items;
       }
 
-      const index = this.page - 1;
-      const offset = index * this.limit;
-
-      return this.items.slice(offset, offset + this.limit);
+      return this.items.slice(
+        this.pagination.offset,
+        this.pagination.offset + this.limit
+      );
     }
   },
   watch: {
@@ -287,6 +294,8 @@ export default {
         const field = this.fields[fieldName];
         if (field.default) {
           data[fieldName] = clone(field.default);
+        } else {
+          data[fieldName] = null;
         }
       });
 
@@ -346,7 +355,8 @@ export default {
         }
         case "date": {
           const date = dayjs(value);
-          return date.isValid() ? date.format("YYYY-MM-DD") : "";
+          const format = field.time === true ? "YYYY-MM-DD HH:mm" : "YYYY-MM-DD";
+          return date.isValid() ? date.format(format) : "";
         }
         case "tags":
           return value
@@ -369,6 +379,7 @@ export default {
             })
             .join(", ");
         }
+        case "radio":
         case "select": {
           const option = field.options.filter(item => item.value === value)[0];
           return option ? option.text : null;
@@ -414,7 +425,7 @@ export default {
       return this.currentIndex === index;
     },
     jump(index, field) {
-      this.open(index, field);
+      this.open(index + this.pagination.offset, field);
     },
     makeItems(value) {
       if (Array.isArray(value) === false) {
@@ -429,7 +440,6 @@ export default {
     open(index, field) {
       this.currentIndex = index;
       this.currentModel = clone(this.items[index]);
-
       this.createForm(field);
     },
     beforePaginate() {

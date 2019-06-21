@@ -37,7 +37,7 @@ return [
             return $info;
         },
         /**
-         * The size option controls the size of cards. By default cards are auto-sized and the cards grid will always fill the full width. With a size you can disable auto-sizing. Available sizes: tiny, small, medium, large
+         * The size option controls the size of cards. By default cards are auto-sized and the cards grid will always fill the full width. With a size you can disable auto-sizing. Available sizes: `tiny`, `small`, `medium`, `large`, `huge`
          */
         'size' => function (string $size = 'auto') {
             return $size;
@@ -49,13 +49,13 @@ return [
             return $sortable;
         },
         /**
-         * Overwrites manual sorting and sorts by the given field and sorting direction (i.e. date desc)
+         * Overwrites manual sorting and sorts by the given field and sorting direction (i.e. `date desc`)
          */
         'sortBy' => function (string $sortBy = null) {
             return $sortBy;
         },
         /**
-         * Filters pages by their status. Available status settings: draft, unlisted, listed, published, all.
+         * Filters pages by their status. Available status settings: `draft`, `unlisted`, `listed`, `published`, `all`.
          */
         'status' => function (string $status = '') {
             if ($status === 'drafts') {
@@ -188,7 +188,7 @@ return [
             }
 
             if ($this->validateMin() === false) {
-                $errors['min'] = I18n::template('error.section.pages.min.' . I18n::form($this->max), [
+                $errors['min'] = I18n::template('error.section.pages.min.' . I18n::form($this->min), [
                     'min'     => $this->min,
                     'section' => $this->headline
                 ]);
@@ -228,7 +228,7 @@ return [
             return $this->pagination();
         },
         'sortable' => function () {
-            if ($this->status !== 'listed' && $this->status !== 'all') {
+            if (in_array($this->status, ['listed', 'published', 'all']) === false) {
                 return false;
             }
 
@@ -249,9 +249,7 @@ return [
             $templates  = empty($this->create) === false ? $this->create : $this->templates;
 
             if (empty($templates) === true) {
-                foreach (glob(App::instance()->root('blueprints') . '/pages/*.yml') as $blueprint) {
-                    $templates[] = F::name($blueprint);
-                }
+                $templates = $this->kirby()->blueprints();
             }
 
             // convert every template to a usable option array
@@ -285,6 +283,8 @@ return [
                 'headline' => $this->headline,
                 'layout'   => $this->layout,
                 'link'     => $this->link,
+                'max'      => $this->max,
+                'min'      => $this->min,
                 'size'     => $this->size,
                 'sortable' => $this->sortable
             ],

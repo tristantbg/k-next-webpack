@@ -6,6 +6,7 @@ use Closure;
 use Kirby\Data\Data;
 use Kirby\Exception\Exception;
 use Kirby\Exception\NotFoundException;
+use Kirby\Http\Uri;
 use Kirby\Toolkit\A;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\Str;
@@ -246,8 +247,12 @@ class Page extends ModelWithContent
         }
 
         $blueprints      = [];
-        $templates       = $this->blueprint()->options()['changeTemplate'] ?? false;
+        $templates       = $this->blueprint()->options()['changeTemplate'] ?? [];
         $currentTemplate = $this->intendedTemplate()->name();
+
+        if (is_array($templates) === false) {
+            $templates = [];
+        }
 
         // add the current template to the array
         $templates[] = $currentTemplate;
@@ -579,8 +584,18 @@ class Page extends ModelWithContent
         // inspect the current request
         $request = $kirby->request();
 
-        // disable the pages cache for any request types but GET or HEAD or special data
-        if (in_array($request->method(), ['GET', 'HEAD']) === false || empty($request->data()) === false) {
+        // disable the pages cache for any request types but GET or HEAD
+        if (in_array($request->method(), ['GET', 'HEAD']) === false) {
+            return false;
+        }
+
+        // disable the pages cache when there's request data
+        if (empty($request->data()) === false) {
+            return false;
+        }
+
+        // disable the pages cache when there are any params
+        if ($request->params()->isNotEmpty()) {
             return false;
         }
 
@@ -875,29 +890,20 @@ class Page extends ModelWithContent
      */
     public function panelIcon(array $params = null): array
     {
+        $options = [
+            'type'  => 'page',
+            'ratio' => $params['ratio'] ?? null,
+            'back'  => $params['back'] ?? 'black',
+        ];
+
         if ($icon = $this->blueprint()->icon()) {
+            $options['type'] = $icon;
 
             // check for emojis
             if (strlen($icon) !== Str::length($icon)) {
-                $options = [
-                    'type'  => $icon,
-                    'back'  => 'black',
-                    'emoji' => true
-                ];
-            } else {
-                $options = [
-                    'type' => $icon,
-                    'back' => 'black',
-                ];
+                $options['emoji'] = true;
             }
-        } else {
-            $options = [
-                'type' => 'page',
-                'back' => 'black',
-            ];
         }
-
-        $options['ratio'] = $params['ratio'] ?? null;
 
         return $options;
     }
@@ -1062,7 +1068,10 @@ class Page extends ModelWithContent
         }
 
         if ($this->isDraft() === true) {
-            $url .= '?token=' . $this->token();
+            $uri = new Uri($url);
+            $uri->query->token = $this->token();
+
+            $url = $uri->toString();
         }
 
         return $url;

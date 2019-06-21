@@ -4,6 +4,7 @@ use Kirby\Toolkit\A;
 use Kirby\Toolkit\I18n;
 
 return [
+    'mixins' => ['min'],
     'props' => [
         /**
          * Unset inherited props
@@ -15,7 +16,7 @@ return [
         'placeholder' => null,
 
         /**
-         * Default selected page(s) when a new Page/File/User is created
+         * Default selected page(s) when a new page/file/user is created
          */
         'default' => function ($default = null) {
             return $this->toPages($default);
@@ -43,7 +44,7 @@ return [
         },
 
         /**
-         * Changes the layout of the selected files. Available layouts: list, cards
+         * Changes the layout of the selected files. Available layouts: `list`, `cards`
          */
         'layout' => function (string $layout = 'list') {
             return $layout;
@@ -64,7 +65,7 @@ return [
         },
 
         /**
-         * If false, only a single page can be selected
+         * If `false`, only a single page can be selected
          */
         'multiple' => function (bool $multiple = true) {
             return $multiple;
@@ -78,7 +79,7 @@ return [
         },
 
         /**
-         * Layout size for cards
+         * Layout size for cards: `tiny`, `small`, `medium`, `large` or `huge`
          */
         'size' => function (string $size = null) {
             return $size;

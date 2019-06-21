@@ -11,7 +11,6 @@
       </k-button-group>
     </header>
 
-
     <template v-if="error">
       <k-box theme="negative">
         <k-text size="small">
@@ -36,14 +35,23 @@
         @action="action"
       />
 
-      <k-empty
-        v-else
-        :layout="options.layout"
-        icon="page"
-        @click="if (add) action(null, 'create')"
-      >
-        {{ options.empty || $t('pages.empty') }}
-      </k-empty>
+      <template v-else>
+        <k-empty
+          :layout="options.layout"
+          icon="page"
+          @click="if (add) action(null, 'create')"
+        >
+          {{ options.empty || $t('pages.empty') }}
+        </k-empty>
+        <footer class="k-collection-footer">
+          <k-text
+            v-if="help"
+            theme="help"
+            class="k-collection-help"
+            v-html="help"
+          />
+        </footer>
+      </template>
 
       <k-page-create-dialog ref="create" />
       <k-page-rename-dialog ref="rename" @success="update" />
@@ -118,6 +126,17 @@ export default {
           break;
         }
         case "remove": {
+          if (this.data.length <= this.options.min) {
+            const number = this.options.min > 1 ? "plural" : "singular";
+            this.$store.dispatch("notification/error", {
+              message: this.$t("error.section.pages.min." + number, {
+                section: this.options.headline || this.name,
+                min: this.options.min
+              })
+            });
+            break;
+          }
+
           this.$refs.remove.open(page.id);
           break;
         }

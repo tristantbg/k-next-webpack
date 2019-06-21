@@ -1,0 +1,24 @@
+{
+    "name": "tristantbg/vimeoembed",
+    "description": "",
+    "version": "1.0.0",
+    "type": "kirby-plugin",
+    "license": "MIT",
+    "autoload": {
+        "files": ["config.php"],
+        "psr-4": {
+            "Starterkit\\Demo\\Fields\\": "fields/",
+            "Starterkit\\Demo\\Tags\\": "tags/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Tristan Bagot",
+            "email": "hello@tristanbagot.com"
+        }
+    ],
+    "require": {
+        "composer/installers": "~1.0",
+        "vimeo/vimeo-api": "^2.0"
+    }
+}

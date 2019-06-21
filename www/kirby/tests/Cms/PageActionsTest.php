@@ -45,6 +45,58 @@ class PageActionsTest extends TestCase
         ];
     }
 
+    public function testChangeNum()
+    {
+        $phpunit = $this;
+
+        $app = new App([
+            'roots' => [
+                'index' => '/dev/null'
+            ],
+            'hooks' => [
+                'page.changeNum:before' => function ($page, $num) use ($phpunit) {
+                    $phpunit->assertEquals(2, $num);
+                },
+                'page.changeNum:after' => function ($newPage, $oldPage) use ($phpunit) {
+                    $phpunit->assertEquals(1, $oldPage->num());
+                    $phpunit->assertEquals(2, $newPage->num());
+                }
+            ]
+        ]);
+
+        $page = new Page([
+            'slug' => 'test',
+            'num'  => 1
+        ]);
+
+        $updatedPage = $page->changeNum(2);
+
+        $this->assertNotEquals($page, $updatedPage);
+        $this->assertEquals(2, $updatedPage->num());
+    }
+
+    public function testChangeNumWhenNumStaysTheSame()
+    {
+        $app = new App([
+            'roots' => [
+                'index' => '/dev/null'
+            ],
+            'hooks' => [
+                'page.changeNum:before' => function () {
+                    throw new \Exception("This should not be called");
+                }
+            ]
+        ]);
+
+        $page = new Page([
+            'slug' => 'test',
+            'num'  => 1
+        ]);
+
+        // the result page should stay the same
+        $this->assertEquals($page, $page->changeNum(1));
+    }
+
     /**
      * @dataProvider slugProvider
      */
@@ -252,5 +304,94 @@ class PageActionsTest extends TestCase
 
         // also check in a freshly found page object
         $this->assertEquals('Test', $this->app->page('test')->headline()->value());
+    }
+
+    public function testUpdateMergeMultilang()
+    {
+        $app = $this->app->clone([
+            'languages' => [
+                [
+                    'code'    => 'en',
+                    'name'    => 'English',
+                    'default' => true
+                ],
+                [
+                    'code' => 'de',
+                    'name' => 'Deutsch'
+                ]
+            ]
+        ]);
+
+        $app->impersonate('kirby');
+
+        $page = Page::create([
+            'slug' => 'test'
+        ]);
+
+        // add some content in both languages
+        $page = $page->update([
+            'a' => 'A (en)',
+            'b' => 'B (en)'
+        ], 'en');
+
+        $page = $page->update([
+            'a' => 'A (de)',
+            'b' => 'B (de)'
+        ], 'de');
+
+        $this->assertEquals('A (en)', $page->content('en')->a());
+        $this->assertEquals('B (en)', $page->content('en')->b());
+        $this->assertEquals('A (de)', $page->content('de')->a());
+        $this->assertEquals('B (de)', $page->content('de')->b());
+
+        // update a single field in the primary language
+        $page = $page->update([
+            'b' => 'B modified (en)'
+        ], 'en');
+
+        $this->assertEquals('A (en)', $page->content('en')->a());
+        $this->assertEquals('B modified (en)', $page->content('en')->b());
+
+        // update a single field in the secondary language
+        $page = $page->update([
+            'b' => 'B modified (de)'
+        ], 'de');
+
+        $this->assertEquals('A (de)', $page->content('de')->a());
+        $this->assertEquals('B modified (de)', $page->content('de')->b());
+    }
+
+
+    public function testChangeStatusHooks()
+    {
+        $phpunit = $this;
+        $before  = 0;
+        $after   = 0;
+
+        $app = $this->app->clone([
+            'hooks' => [
+                'page.changeStatus:before' => function (Page $page, $status, $position) use (&$before, $phpunit) {
+                    $phpunit->assertEquals('listed', $status);
+                    $phpunit->assertEquals($before + 1, $position);
+                    $before++;
+                },
+                'page.changeStatus:after' => function (Page $newPage, Page $oldPage) use (&$after, $phpunit) {
+                    $phpunit->assertEquals('draft', $oldPage->status());
+                    $phpunit->assertEquals('listed', $newPage->status());
+                    $after++;
+                }
+            ]
+        ]);
+
+        $app->impersonate('kirby');
+
+        $pageA = Page::create(['slug' => 'test-a', 'num'  => null]);
+        $pageB = Page::create(['slug' => 'test-b', 'num'  => null]);
+
+        $pageA->changeStatus('listed');
+        $pageB->changeStatus('listed');
+
+        $this->assertEquals(2, $before);
+        $this->assertEquals(2, $after);
     }
 }

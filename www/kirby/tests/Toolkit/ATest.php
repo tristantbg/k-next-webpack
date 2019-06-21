@@ -19,6 +19,9 @@ class ATest extends TestCase
     {
         $array = $this->_array();
 
+        // non-array
+        $this->assertEquals('test', A::get('test', 'test'));
+
         // single key
         $this->assertEquals('miao', A::get($array, 'cat'));
 
@@ -34,10 +37,12 @@ class ATest extends TestCase
         // fallback value
         $this->assertEquals(null, A::get($array, 'elephant'));
         $this->assertEquals('toot', A::get($array, 'elephant', 'toot'));
+
         $this->assertEquals([
             'cat' => 'miao',
             'elephant'  => null,
         ], A::get($array, ['cat', 'elephant']));
+
         $this->assertEquals([
             'cat' => 'miao',
             'elephant'  => 'toot',
@@ -47,19 +52,23 @@ class ATest extends TestCase
     public function testGetWithDotNotation()
     {
         $data = [
-            'grandma' => $grandma = [
+            'grand.ma' => $grandma = [
                 'mother' => $mother = [
-                    'child' => $child = 'test'
+                    'child' => $child = 'a',
+                    'another.child' => $anotherChild = 'b',
                 ]
-            ]
+            ],
         ];
 
-        $this->assertEquals($grandma, A::get($data, 'grandma'));
-        $this->assertEquals($mother, A::get($data, 'grandma.mother'));
-        $this->assertEquals($child, A::get($data, 'grandma.mother.child'));
+        $this->assertEquals($grandma, A::get($data, 'grand.ma'));
+        $this->assertEquals($mother, A::get($data, 'grand.ma.mother'));
+        $this->assertEquals($child, A::get($data, 'grand.ma.mother.child'));
+        $this->assertEquals($anotherChild, A::get($data, 'grand.ma.mother.another.child'));
 
         // with default
-        $this->assertEquals('default', A::get($data, 'grandma.mother.sister', 'default'));
+        $this->assertEquals('default', A::get($data, 'grand', 'default'));
+        $this->assertEquals('default', A::get($data, 'grand.ma.mother.sister', 'default'));
+        $this->assertEquals('default', A::get($data, 'grand.ma.mother.child.grandchild', 'default'));
     }
 
     public function testMerge()

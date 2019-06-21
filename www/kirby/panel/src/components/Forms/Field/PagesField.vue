@@ -1,7 +1,7 @@
 <template>
   <k-field v-bind="$props" class="k-pages-field">
     <k-button
-      v-if="more"
+      v-if="more && !disabled"
       slot="options"
       icon="add"
       @click="open"
@@ -20,14 +20,19 @@
           v-for="(page, index) in selected"
           :is="elements.item"
           :key="page.id"
-          :sortable="selected.length > 1"
+          :sortable="!disabled && selected.length > 1"
           :text="page.text"
           :info="page.info"
           :link="page.link"
           :icon="page.icon"
           :image="page.image"
         >
-          <k-button slot="options" icon="remove" @click="remove(index)" />
+          <k-button
+            v-if="!disabled"
+            slot="options"
+            icon="remove"
+            @click="remove(index)"
+          />
         </component>
       </k-draggable>
     </template>
@@ -35,7 +40,7 @@
       v-else
       :layout="layout"
       icon="page"
-      @click="open"
+      v-on="{ click: !disabled ? open : null }"
     >
       {{ empty || $t('field.pages.empty') }}
     </k-empty>
@@ -44,62 +49,11 @@
 </template>
 
 <script>
-import Field from "../Field.vue";
+import picker from "@/mixins/picker.js";
 import clone from "@/helpers/clone.js";
 
 export default {
-  inheritAttrs: false,
-  props: {
-    ...Field.props,
-    empty: String,
-    layout: String,
-    max: Number,
-    multiple: Boolean,
-    size: String,
-    value: {
-      type: Array,
-      default() {
-        return [];
-      }
-    }
-  },
-  data() {
-    return {
-      selected: this.value
-    };
-  },
-  computed: {
-    elements() {
-      const layouts = {
-        cards: {
-          list: "k-cards",
-          item: "k-card"
-        },
-        list: {
-          list: "k-list",
-          item: "k-list-item"
-        }
-      };
-
-      if (layouts[this.layout]) {
-        return layouts[this.layout];
-      }
-
-      return layouts["list"];
-    },
-    more() {
-      if (!this.max) {
-        return true;
-      }
-
-      return this.max > this.selected.length;
-    }
-  },
-  watch: {
-    value(value) {
-      this.selected = value;
-    }
-  },
+  mixins: [picker],
   methods: {
     open() {
       this.$refs.selector.open({
@@ -108,19 +62,13 @@ export default {
         multiple: this.multiple,
         selected: clone(this.selected)
       });
-    },
-    remove(index) {
-      this.selected.splice(index, 1);
-      this.onInput();
-    },
-    focus() {},
-    onInput() {
-      this.$emit("input", this.selected);
-    },
-    select(files) {
-      this.selected = files;
-      this.onInput();
     }
   }
 };
 </script>
+
+<style lang="scss">
+.k-pages-field[data-disabled] * {
+  pointer-events: all !important;
+}
+</style>

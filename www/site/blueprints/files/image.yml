@@ -1,17 +1,35 @@
 title: Image
 
+options:
+  changeName: false
+
 accept:
   mime: image/jpeg, image/png, image/gif, image/svg+xml
+  maxwidth: 6000
+  maxheight: 6000
 
 fields:
+  focus:
+    label: Focus crop
+    type: focus
+    width: 1/2
   alt:
     label: Alt Text
     type: text
-    width: 3/4
-  color:
-    label: Color
-    type: color
-    width: 1/4
+    width: 1/2
   caption:
     label: Caption
-    type: text
+    type: textarea
+    buttons:
+      - link
+      - email
+      - bold
+      - italic
+  credits:
+    label: Credits
+    type: textarea
+    buttons:
+      - link
+      - email
+      - bold
+      - italic

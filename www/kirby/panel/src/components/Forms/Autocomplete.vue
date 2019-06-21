@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import "@/helpers/regex.js";
+
 export default {
   props: {
     limit: 10,
@@ -53,12 +55,8 @@ export default {
         return;
       }
 
-      if (this.skip.indexOf(query) !== -1) {
-        return;
-      }
-
       // Filter options by query to retrieve items (no more than this.limit)
-      const regex = new RegExp(query, "ig");
+      const regex = new RegExp(RegExp.escape(query), "ig");
 
       this.matches = this.options
         .filter(option => {
@@ -69,7 +67,7 @@ export default {
           }
 
           // skip all options in the skip array
-          if (this.skip.indexOf(option.text) !== -1) {
+          if (this.skip.indexOf(option.value) !== -1) {
             return false;
           }
 

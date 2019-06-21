@@ -2,7 +2,7 @@ import App from "../index";
 import Hls from "hls.js";
 import Plyr from "plyr";
 import isInViewport from "./isinviewport";
-import throttle from "lodash.throttle";
+import throttle from "lodash/throttle";
 const Players = {
   options: {
     hidePoster: false,

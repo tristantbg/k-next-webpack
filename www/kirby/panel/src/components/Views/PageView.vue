@@ -61,7 +61,7 @@
     />
 
     <k-page-rename-dialog ref="rename" @success="update" />
-    <k-page-url-dialog ref="url" @success="$emit('model.update')" />
+    <k-page-url-dialog ref="url" />
     <k-page-status-dialog ref="status" @success="update" />
     <k-page-template-dialog ref="template" @success="update" />
     <k-page-remove-dialog ref="remove" />
@@ -131,6 +131,12 @@ export default {
     tabsKey() {
       return "page-" + this.page.id + "-tabs";
     }
+  },
+  created() {
+    this.$events.$on("page.changeSlug", this.update);
+  },
+  destroyed() {
+    this.$events.$off("page.changeSlug", this.update);
   },
   watch: {
     language() {

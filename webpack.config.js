@@ -1,21 +1,19 @@
-const stylusLoder = require('stylus-loader');
-const nib = require('nib');
-const rupture = require('rupture');
-const webpack = require('webpack');
-const jeet = require('jeet');
+const stylusLoder = require("stylus-loader");
+const nib = require("nib");
+const rupture = require("rupture");
+const webpack = require("webpack");
+const jeet = require("jeet");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const path = require('path');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const path = require("path");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-const ModernizrWebpackPlugin = require('modernizr-webpack-plugin');
-const SvgStore = require('webpack-svgstore-plugin');
+const ModernizrWebpackPlugin = require("modernizr-webpack-plugin");
+const SvgStore = require("webpack-svgstore-plugin");
 
 const modernizrConfig = {
-  filename: 'vendor/modernizr-bundle.js',
-  'options': [
-    'setClasses'
-  ],
-  'feature-detects': [
+  filename: "vendor/modernizr-bundle.js",
+  options: ["setClasses"],
+  "feature-detects": [
     // "emoji",
     // "history",
     "touchevents",
@@ -32,7 +30,7 @@ const modernizrConfig = {
     // "css/scrollbars",
     "css/transforms",
     "css/transforms3d",
-    "css/transitions",
+    "css/transitions"
     // "css/vhunit",
     // "css/vwunit",
     // "img/srcset",
@@ -46,7 +44,7 @@ const modernizrConfig = {
       beautify: false
     }
   }
-}
+};
 
 const extract = new MiniCssExtractPlugin({
   filename: "index.css",
@@ -56,6 +54,7 @@ const extract = new MiniCssExtractPlugin({
 module.exports = {
   devServer: {
     compress: true,
+    public: "localhost:8080"
   },
   plugins: [
     extract,
@@ -64,17 +63,15 @@ module.exports = {
       stylus: {
         default: {
           use: [jeet(), rupture(), nib()],
-          import: ['~nib/lib/nib/index.styl']
+          import: ["~nib/lib/nib/index.styl"]
         }
       }
     }),
     new SvgStore({
       svgoOptions: {
-        plugins: [
-          { removeTitle: true }
-        ]
+        plugins: [{ removeTitle: true }]
       },
-      prefix: ''
+      prefix: ""
     }),
     new ModernizrWebpackPlugin(modernizrConfig)
   ],
@@ -87,15 +84,15 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader']
+        use: [MiniCssExtractPlugin.loader, "css-loader"]
       },
       {
         test: /\.scss$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
+        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"]
       },
       {
         test: /\.styl(us)?$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'stylus-loader']
+        use: [MiniCssExtractPlugin.loader, "css-loader", "stylus-loader"]
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/,
@@ -103,14 +100,11 @@ module.exports = {
       },
       {
         test: /\.(jpe?g|png|gif|svg)$/i,
-        use: [
-          'url-loader?limit=10000',
-          'img-loader'
-        ]
+        use: ["url-loader?limit=10000", "img-loader"]
       }
     ]
   },
-  entry: './index.js',
+  entry: ["webpack-dev-server/client?http://localhost:8080/", "./index.js"],
   output: {
     path: path.resolve(__dirname, "www/assets/build"),
     publicPath: "/assets/",
@@ -125,8 +119,8 @@ module.exports = {
         sourceMap: true,
         uglifyOptions: {
           output: {
-            comments: false,
-          },
+            comments: false
+          }
         }
       }),
       new OptimizeCSSAssetsPlugin({})

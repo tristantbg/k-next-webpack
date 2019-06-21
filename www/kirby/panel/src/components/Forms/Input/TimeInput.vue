@@ -46,8 +46,11 @@
 </template>
 
 <script>
-import dayjs from "dayjs";
 import padZero from "@/helpers/padZero.js";
+
+import dayjs from "dayjs";
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+dayjs.extend(customParseFormat);
 
 export default {
   inheritAttrs: false,
@@ -69,7 +72,6 @@ export default {
     },
   },
   data() {
-
     const date = this.toObject(this.value);
 
     return {
@@ -95,13 +97,11 @@ export default {
       this.time = value;
     },
     time(time) {
-
       const date = this.toObject(time);
 
       this.hour     = date.hour;
       this.minute   = date.minute;
       this.meridiem = date.meridiem;
-
     },
   },
   methods: {
@@ -109,7 +109,6 @@ export default {
       this.$refs.hour.focus();
     },
     setHour(hour) {
-
       if (hour && !this.minute) {
         this.minute = 0;
       }
@@ -121,7 +120,6 @@ export default {
       this.onInput();
     },
     setMinute(minute) {
-
       if (minute && !this.hour) {
         this.hour = 0;
       }
@@ -133,7 +131,6 @@ export default {
       this.onInput();
     },
     onInput() {
-
       if (this.hour === null || this.minute === null) {
         this.$emit("input", "");
         return;
@@ -141,13 +138,13 @@ export default {
 
       const h = padZero(this.hour || 0);
       const m = padZero(this.minute || 0);
-      const a = this.meridiem || "AM";
+      const a = String(this.meridiem).toUpperCase() || "AM";
 
-      const time = this.notation === 24 ? `${h}:${m}:00` : `${h}:${m}:00 ${a}`;
-      const date = dayjs("2000-01-01 " + time);
+      const time   = this.notation === 24 ? `${h}:${m}:00` : `${h}:${m}:00 ${a}`;
+      const format = this.notation === 24 ? `HH:mm:ss` : `hh:mm:ss A`
+      const date = dayjs("2000-01-01 " + time, "YYYY-MM-DD " + format);
 
       this.$emit("input", date.format("HH:mm"));
-
     },
     onInvalid($invalid, $v) {
       this.$emit("invalid", $invalid, $v);
@@ -174,9 +171,9 @@ export default {
     },
     toObject(time) {
 
-      const date = dayjs("2001-01-01 " + time + ":00");
+      const date = dayjs("2001-01-01 " + time + ":00", "YYYY-MM-DD HH:mm:ss");
 
-      if (date.isValid() === false) {
+      if (!time || date.isValid() === false) {
         return {
           hour: null,
           minute: null,

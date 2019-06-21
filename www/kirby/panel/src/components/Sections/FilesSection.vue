@@ -34,14 +34,23 @@
           @paginate="paginate"
           @action="action"
         />
-        <k-empty
-          v-else
-          :layout="options.layout"
-          icon="image"
-          @click="if (add) upload()"
-        >
-          {{ options.empty || $t('files.empty') }}
-        </k-empty>
+        <template v-else>
+          <k-empty
+            :layout="options.layout"
+            icon="image"
+            @click="if (add) upload()"
+          >
+            {{ options.empty || $t('files.empty') }}
+          </k-empty>
+          <footer class="k-collection-footer">
+            <k-text
+              v-if="help"
+              theme="help"
+              class="k-collection-help"
+              v-html="help"
+            />
+          </footer>
+        </template>
       </k-dropzone>
 
       <k-file-rename-dialog ref="rename" @success="update" />
@@ -91,6 +100,17 @@ export default {
           this.replace(file);
           break;
         case "remove":
+          if (this.data.length <= this.options.min) {
+            const number = this.options.min > 1 ? "plural" : "singular";
+            this.$store.dispatch("notification/error", {
+              message: this.$t("error.section.files.min." + number, {
+                section: this.options.headline || this.name,
+                min: this.options.min
+              })
+            });
+            break;
+          }
+
           this.$refs.remove.open(file.parent, file.filename);
           break;
       }
@@ -138,7 +158,10 @@ export default {
       });
 
       this.$api
-        .patch(this.parent + "/files/sort", { files: items })
+        .patch(this.parent + "/files/sort", {
+          files: items,
+          index: this.pagination.offset
+        })
         .then(() => {
           this.$store.dispatch("notification/success", ":)");
         })

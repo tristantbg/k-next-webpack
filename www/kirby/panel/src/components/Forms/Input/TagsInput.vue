@@ -43,10 +43,10 @@
           @input="type($event.target.value)"
           @blur="blurInput"
           @keydown.meta.s="blurInput"
-          @keydown.left="leaveInput"
-          @keydown.enter="enter"
-          @keydown.tab="tab"
-          @keydown.backspace="leaveInput"
+          @keydown.left.exact="leaveInput"
+          @keydown.enter.exact="enter"
+          @keydown.tab.exact="tab"
+          @keydown.backspace.exact="leaveInput"
         >
       </k-autocomplete>
     </span>
@@ -115,7 +115,7 @@ export default {
       return this.tags.length > 1;
     },
     skip() {
-      return this.tags.map(tag => tag.text);
+      return this.tags.map(tag => tag.value);
     }
   },
   watch: {
@@ -138,9 +138,32 @@ export default {
       }
 
       string = string.trim();
-      if (string.length === 0) return;
 
-      this.addTag({ text: string, value: string });
+      if (string.includes(this.separator)) {
+        string.split(this.separator).forEach(tag => {
+          this.addString(tag);
+        });
+
+        return;
+      }
+
+      if (string.length === 0) {
+        return;
+      }
+
+      if (this.accept === "options") {
+        const option = this.options.filter(
+          option => option.text === string
+        )[0];
+
+        if (!option) {
+          return;
+        }
+
+        this.addTag(option);
+      } else {
+        this.addTag({ text: string, value: string });
+      }
     },
     addTag(tag) {
       this.addTagToIndex(tag);

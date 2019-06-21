@@ -10,7 +10,7 @@ import Links from './components/links';
 // import Sliders from './components/sliders';
 // import Idle from './components/idle';
 // import Pjax from './components/pjax';
-import debounce from 'lodash.debounce'
+import debounce from 'lodash/debounce'
 
 const App = {
   root: window.location.hostname == 'localhost' ? '/kairos/www' : '',

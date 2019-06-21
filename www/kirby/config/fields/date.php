@@ -3,11 +3,19 @@
 return [
     'props' => [
         /**
-         * Default date when a new Page/File/User gets created
+         * Default date when a new page/file/user gets created
          */
         'default' => function ($default = null) {
             return $default;
         },
+
+        /**
+         * Defines a custom format that is used when the field is saved
+         */
+        'format' => function (string $format = null) {
+            return $format;
+        },
+
         /**
          * Changes the calendar icon to something custom
          */
@@ -31,7 +39,7 @@ return [
          */
         'placeholder' => null,
         /**
-         * Pass true or an array of time field options to show the time selector.
+         * Pass `true` or an array of time field options to show the time selector.
          */
         'time' => function ($time = false) {
             return $time;

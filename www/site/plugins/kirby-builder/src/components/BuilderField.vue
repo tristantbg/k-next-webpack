@@ -9,10 +9,9 @@
       @update="onBlockMoved"
       @add="onBlockAdded"
       @remove="onBlockRemoved"
-      @start="onStartDrag"
       @end="onDragEnd"
-      :list="value"
       :move="onMove"
+      :list="value"
       :options="draggableOptions"
     >
       <k-column
@@ -32,7 +31,8 @@
           :page-uid="pageUid"
           :encoded-page-id="encodedPageId"
           :endpoints="endpoints"
-          :block="newBlock(blockValue, blockValue._uid)"
+          :block="blockValue"
+          :fieldGroup="fieldsets[blockValue._key]"
           :index="index"
           :columns-count="columnsCount"
           :styles="cssContents[blockValue._key]"
@@ -146,19 +146,6 @@ export default {
     };
   },
   computed: {
-    val() {
-      return this.blocks.map(block => block.content);
-    },
-    blocks() {
-      let blocks = [];
-      if (this.value) {
-        this.value.forEach((block, index) => {
-          blocks.push(this.newBlock(block, index));
-        });
-        this.lastUniqueKey = this.value.length;
-      }
-      return blocks;
-    },
     classObject() {
       let classObject = {};
       classObject["kBuilder--col-" + this.columnsCount] = true;
@@ -177,7 +164,7 @@ export default {
     draggableOptions() {
       return {
         group: this._uid,
-        clone: true,
+        // clone: true,
         handle: ".kBuilder__dragDropHandle",
         forceFallback: true,
         fallbackClass: "sortable-fallback",
@@ -186,7 +173,7 @@ export default {
       };
     },
     blockCount() {
-      return this.blocks.length;
+      return this.value.length;
     },
     fieldsetCount() {
       return Object.keys(this.fieldsets).length;
@@ -259,6 +246,7 @@ export default {
         this.targetPosition == null ? this.value.length : this.targetPosition;
       const fieldSet = this.fieldsets[key];
       this.value.splice(position, 0, this.getBlankContent(key, fieldSet));
+      this.value[position].isNew = true;
       this.$emit("input", this.value);
       this.$nextTick(function() {
         this.$emit("input", this.value);
@@ -267,6 +255,27 @@ export default {
       if (this.dialogOpen) {
         this.$refs.dialog.close();
       }
+    },
+    cloneBlock(index, showPreview, expanded, activeFieldSet) {
+      let clone = JSON.parse(JSON.stringify(this.value[index]));
+      this.deepRemoveProperty(clone, "_uid");
+      this.value.splice(index + 1, 0, clone);
+      let cloneValue = this.value[index + 1];
+      cloneValue.uniqueKey = this.lastUniqueKey++;
+      if (showPreview != null) {
+        cloneValue.showPreviewInitially = showPreview;
+      }
+      if (expanded != null) {
+        cloneValue.expandedInitially = expanded;
+      }
+      if (activeFieldSet) {
+        cloneValue.activeFieldSetInitially = activeFieldSet;
+      }
+      cloneValue.isNew = true;
+      this.$emit("input", this.value);
+      this.$nextTick(function() {
+        this.$emit("input", this.value);
+      });
     },
     getBlankContent(key, fieldSet) {
       let content = { _key: key };
@@ -292,26 +301,16 @@ export default {
       }
       return content;
     },
-    cloneBlock(index) {
-      let clone = JSON.parse(JSON.stringify(this.value[index]));
-      this.deepRemoveProperty(clone, "_uid");
-      this.value.splice(index + 1, 0, clone);
-      this.value[index + 1].uniqueKey = this.lastUniqueKey++;
-      this.$emit("input", this.value);
-      this.$nextTick(function() {
-        this.$emit("input", this.value);
-      });
-    },
     deleteBlock(index) {
-      this.clearLocalUiStates(this.blocks[index]);
-      this.blocks.splice(index, 1);
-      this.$emit("input", this.val);
+      this.clearLocalUiStates(this.value[index]);
+      this.value.splice(index, 1);
+      this.$emit("input", this.value);
     },
     deepRemoveProperty(obj, property) {
       Object.keys(obj).forEach(prop => {
         if (prop === property) {
           delete obj[prop];
-        } else if (typeof obj[prop] === "object") {
+        } else if (obj[prop] && typeof obj[prop] === "object") {
           this.deepRemoveProperty(obj[prop], property);
         }
       });
@@ -327,20 +326,6 @@ export default {
           }
         }
       }
-    },
-    newBlock(content, uniqueKey) {
-      const key = content._key;
-      const fieldSet = this.fieldsets[key];
-      return {
-        fields: fieldSet.fields ? fieldSet.fields : null,
-        tabs: fieldSet.tabs ? fieldSet.tabs : null,
-        blockKey: key,
-        content: content,
-        label: fieldSet.label,
-        uniqueKey: uniqueKey,
-        preview: fieldSet.preview,
-        showPreview: false
-      };
     }
   }
 };

@@ -105,8 +105,10 @@ export default {
         model.id = context.getters.id(model.id);
       }
 
-      // remove title from model content
-      delete model.content.title;
+      if (model.id.startsWith("pages/") || model.id.startsWith("site")) {
+        // remove title from model content
+        delete model.content.title;
+      }
 
       context.commit("CREATE", model);
       context.commit("CURRENT", model.id);
@@ -130,6 +132,12 @@ export default {
 
       // fetch from api
       return Api.get(model.api, { select: "content" }).then(response => {
+
+        if (id.startsWith("pages/") || id.startsWith("site")) {
+          // remove title from response content
+          delete response.content.title;
+        }
+
         context.commit("SET_ORIGINALS", [id, response.content]);
         context.commit("SET_VALUES", [id, response.content]);
         context.commit("DELETE_CHANGES", id);

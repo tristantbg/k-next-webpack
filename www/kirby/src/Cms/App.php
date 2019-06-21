@@ -160,6 +160,10 @@ class App
      */
     public function api(): Api
     {
+        if ($this->api !== null) {
+            return $this->api;
+        }
+
         $root       = static::$root . '/config/api';
         $extensions = $this->extensions['api'] ?? [];
         $routes     = (include $root . '/routes.php')($this);
@@ -174,7 +178,7 @@ class App
             'kirby'          => $this,
         ];
 
-        return $this->api = $this->api ?? new Api($api);
+        return $this->api = new Api($api);
     }
 
     /**
@@ -229,6 +233,33 @@ class App
     }
 
     /**
+     * Returns all available blueprints for this installation
+     *
+     * @param string $type
+     * @return array
+     */
+    public function blueprints(string $type = 'pages')
+    {
+        $blueprints = [];
+
+        foreach ($this->extensions('blueprints') as $name => $blueprint) {
+            if (dirname($name) === $type) {
+                $name = basename($name);
+                $blueprints[$name] = $name;
+            }
+        }
+
+        foreach (glob($this->root('blueprints') . '/' . $type . '/*.yml') as $blueprint) {
+            $name = F::name($blueprint);
+            $blueprints[$name] = $name;
+        }
+
+        ksort($blueprints);
+
+        return array_values($blueprints);
+    }
+
+    /**
      * Calls any Kirby route
      *
      * @return mixed
@@ -254,7 +285,7 @@ class App
      * automatically injected
      *
      * @param string $name
-     * @return void
+     * @return Kirby\Cms\Collection|null
      */
     public function collection(string $name)
     {
@@ -402,7 +433,7 @@ class App
         $visitor   = $this->visitor();
 
         foreach ($visitor->acceptedLanguages() as $lang) {
-            if ($language = $languages->findBy('locale', $lang->locale())) {
+            if ($language = $languages->findBy('locale', $lang->locale(LC_ALL))) {
                 return $language;
             }
         }
@@ -619,6 +650,11 @@ class App
         $text = $this->apply('kirbytext:before', $text);
         $text = $this->kirbytags($text, $data);
         $text = $this->markdown($text, $inline);
+
+        if ($this->option('smartypants', false) !== false) {
+            $text = $this->smartypants($text);
+        }
+
         $text = $this->apply('kirbytext:after', $text);
 
         return $text;
@@ -669,7 +705,11 @@ class App
      */
     public function languages(): Languages
     {
-        return $this->languages = $this->languages ?? Languages::load();
+        if ($this->languages !== null) {
+            return clone $this->languages;
+        }
+
+        return $this->languages = Languages::load();
     }
 
     /**
@@ -682,7 +722,7 @@ class App
      */
     public function markdown(string $text = null, bool $inline = false): string
     {
-        return $this->extensions['components']['markdown']($this, $text, $this->options['markdown'] ?? [], $inline);
+        return $this->component('markdown')($this, $text, $this->options['markdown'] ?? [], $inline);
     }
 
     /**
@@ -1091,7 +1131,13 @@ class App
      */
     public function smartypants(string $text = null): string
     {
-        return $this->extensions['components']['smartypants']($this, $text, $this->options['smartypants'] ?? []);
+        $options = $this->option('smartypants', []);
+
+        if ($options === true) {
+            $options = [];
+        }
+
+        return $this->component('smartypants')($this, $text, $options);
     }
 
     /**
@@ -1103,7 +1149,7 @@ class App
      */
     public function snippet(string $name, array $data = []): ?string
     {
-        return $this->extensions['components']['snippet']($this, $name, array_merge($this->data, $data));
+        return $this->component('snippet')($this, $name, array_merge($this->data, $data));
     }
 
     /**
@@ -1125,7 +1171,7 @@ class App
      */
     public function template(string $name, string $type = 'html', string $defaultType = 'html'): Template
     {
-        return $this->extensions['components']['template']($this, $name, $type, $defaultType);
+        return $this->component('template')($this, $name, $type, $defaultType);
     }
 
     /**
@@ -1134,11 +1180,11 @@ class App
      * @param string $src
      * @param string $dst
      * @param array $options
-     * @return null
+     * @return string
      */
-    public function thumb(string $src, string $dst, array $options = [])
+    public function thumb(string $src, string $dst, array $options = []): string
     {
-        return $this->extensions['components']['thumb']($this, $src, $dst, $options);
+        return $this->component('thumb')($this, $src, $dst, $options);
     }
 
     /**
@@ -1152,9 +1198,11 @@ class App
     public function trigger(string $name, ...$arguments)
     {
         if ($functions = $this->extension('hooks', $name)) {
+            static $level = 0;
             static $triggered = [];
+            $level++;
 
-            foreach ($functions as $function) {
+            foreach ($functions as $index => $function) {
                 if (in_array($function, $triggered[$name] ?? []) === true) {
                     continue;
                 }
@@ -1164,6 +1212,12 @@ class App
 
                 // bind the App object to the hook
                 $function->call($this, ...$arguments);
+            }
+
+            $level--;
+
+            if ($level === 0) {
+                $triggered = [];
             }
         }
     }
@@ -1198,6 +1252,16 @@ class App
     public static function version()
     {
         return static::$version = static::$version ?? Data::read(static::$root . '/composer.json')['version'] ?? null;
+    }
+
+    /**
+     * Creates a hash of the version number
+     *
+     * @return string
+     */
+    public static function versionHash(): string
+    {
+        return md5(static::version());
     }
 
     /**

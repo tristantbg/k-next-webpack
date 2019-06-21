@@ -31,6 +31,12 @@ class HelpersTest extends TestCase
         Dir::remove($this->fixtures . '/site');
     }
 
+    public function testAsset()
+    {
+        $asset = asset('something.jpg');
+        $this->assertInstanceOf(Asset::class, $asset);
+    }
+
     public function testCollectionHelper()
     {
         $app = $this->kirby->clone([
@@ -169,6 +175,9 @@ class HelpersTest extends TestCase
         // get the first image of the current page
         $app->site()->visit('test');
         $image = image();
+        $this->assertInstanceOf(File::class, $image);
+
+        $image = image('pagefile.jpg');
         $this->assertInstanceOf(File::class, $image);
     }
 
@@ -505,6 +514,23 @@ class HelpersTest extends TestCase
     public function testSmartypants()
     {
         $text     = smartypants('"Test"');
+        $expected = '&#8220;Test&#8221;';
+
+        $this->assertEquals($expected, $text);
+    }
+
+    public function testSmartypantsWithKirbytext()
+    {
+        new App([
+            'roots' => [
+                'index' => '/dev/null'
+            ],
+            'options' => [
+                'smartypants' => true
+            ]
+        ]);
+
+        $text     = kirbytextinline('"Test"');
         $expected = '&#8220;Test&#8221;';
 
         $this->assertEquals($expected, $text);

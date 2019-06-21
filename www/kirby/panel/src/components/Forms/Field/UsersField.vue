@@ -1,7 +1,7 @@
 <template>
   <k-field v-bind="$props" class="k-users-field">
     <k-button
-      v-if="more"
+      v-if="more && !disabled"
       slot="options"
       icon="add"
       @click="open"
@@ -19,7 +19,7 @@
           v-for="(user, index) in selected"
           :is="elements.item"
           :key="user.email"
-          :sortable="true"
+          :sortable="!disabled && selected.length > 1"
           :text="user.username"
           :link="$api.users.link(user.id)"
           :image="
@@ -37,11 +37,20 @@
             back: 'black'
           }"
         >
-          <k-button slot="options" icon="remove" @click="remove(index)" />
+          <k-button
+            v-if="!disabled"
+            slot="options"
+            icon="remove"
+            @click="remove(index)"
+          />
         </component>
       </k-draggable>
     </template>
-    <k-empty v-else icon="users" @click="open">
+    <k-empty
+      v-else
+      icon="users"
+      v-on="{ click: !disabled ? open : null }"
+    >
       {{ empty || $t('field.users.empty') }}
     </k-empty>
     <k-users-dialog ref="selector" @submit="select" />
@@ -49,48 +58,10 @@
 </template>
 
 <script>
-import Field from "../Field.vue";
+import picker from "@/mixins/picker.js";
 
 export default {
-  inheritAttrs: false,
-  props: {
-    ...Field.props,
-    empty: String,
-    max: Number,
-    multiple: Boolean,
-    value: {
-      type: Array,
-      default() {
-        return [];
-      }
-    }
-  },
-  data() {
-    return {
-      layout: "list",
-      selected: this.value
-    };
-  },
-  computed: {
-    elements() {
-      return {
-        list: "k-list",
-        item: "k-list-item"
-      };
-    },
-    more() {
-      if (!this.max) {
-        return true;
-      }
-
-      return this.max > this.selected.length;
-    }
-  },
-  watch: {
-    value(value) {
-      this.selected = value;
-    }
-  },
+  mixins: [picker],
   methods: {
     open() {
       this.$refs.selector.open({
@@ -98,19 +69,13 @@ export default {
         multiple: this.multiple,
         selected: this.selected.map(user => user.email)
       });
-    },
-    remove(index) {
-      this.selected.splice(index, 1);
-      this.onInput();
-    },
-    focus() {},
-    onInput() {
-      this.$emit("input", this.selected);
-    },
-    select(files) {
-      this.selected = files;
-      this.onInput();
     }
   }
 };
 </script>
+
+<style lang="scss">
+.k-users-field[data-disabled] * {
+  pointer-events: all !important;
+}
+</style>
