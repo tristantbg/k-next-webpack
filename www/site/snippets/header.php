@@ -70,7 +70,7 @@
 
 </head>
 
-<body<?php e($page->isHomepage(), ' class="with-intro"') ?> page-type="<?= $page->intendedTemplate() ?>">
+<body page-type="<?= $page->intendedTemplate() ?>">
 
 <div id="loader"></div>
 
