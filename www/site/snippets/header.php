@@ -74,7 +74,7 @@
 
 <div id="loader"></div>
 
-<div id="main">
+<main>
 
   <div class="pjax">
 
