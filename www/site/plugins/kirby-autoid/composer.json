@@ -1,0 +1,38 @@
+{
+    "name": "bnomei/kirby3-autoid",
+    "type": "kirby-plugin",
+    "version": "1.4.0",
+    "description": "Automatic unique ID for Pages, StructureObjects and Files including performant helpers to retrieve them. Bonus: Cache for collections and Tiny-URL.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bruno Meilick",
+            "email": "b@bnomei.com"
+        }
+    ],
+    "keywords": [
+        "kirby3",
+        "kirby3-cms",
+        "kirby3-plugin",
+        "autoid",
+        "collection",
+        "cache",
+        "reference",
+        "persistent",
+        "structure-id",
+        "tiny-url"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Bnomei\\": "classes/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "require": {
+        "php": ">=7.1.0",
+        "getkirby/composer-installer": "^1.1"
+    }
+}
