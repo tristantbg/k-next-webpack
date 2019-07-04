@@ -5,7 +5,7 @@ const webpack = require("webpack");
 const jeet = require("jeet");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const ModernizrWebpackPlugin = require("modernizr-webpack-plugin");
 const SvgStore = require("webpack-svgstore-plugin");
@@ -113,11 +113,11 @@ module.exports = {
   optimization: {
     minimize: true,
     minimizer: [
-      new UglifyJsPlugin({
+      new TerserPlugin({
         cache: true,
         parallel: true,
         sourceMap: true,
-        uglifyOptions: {
+        terserOptions: {
           output: {
             comments: false
           }
