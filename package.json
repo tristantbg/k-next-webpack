@@ -52,13 +52,12 @@
     "webpack": "^4.32.2",
     "webpack-cli": "^3.3.2",
     "webpack-dev-server": "^3.5.0",
+    "node-sass": "^4.12.0",
+    "sass-loader": "^7.1.0",
     "webpack-svgstore-plugin": "^4.1.0"
   },
   "dependencies": {
-    "@glidejs/glide": "^3.3.0",
     "flickity": "^2.2.0",
-    "node-sass": "^4.12.0",
-    "sass-loader": "^7.1.0",
     "viewport-units-buggyfill": "^0.6.2"
   }
 }
