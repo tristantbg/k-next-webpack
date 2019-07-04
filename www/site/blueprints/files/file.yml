@@ -4,7 +4,7 @@ options:
   changeName: false
 
 accept:
-  mime: image/jpeg, image/png, image/gif, image/svg+xml, application/pdf, application/zip
+  mime: application/rtf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/x-rar-compressed, application/pdf, application/zip
   maxwidth: 9000
   maxheight: 9000
 

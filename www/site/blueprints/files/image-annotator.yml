@@ -1,0 +1,73 @@
+title: Image
+
+options:
+  changeName: false
+
+accept:
+  mime: image/jpeg, image/png, image/gif, image/svg+xml
+  maxwidth: 6000
+  maxheight: 6000
+
+columns:
+  - width: 1/2
+    sections:
+      annotator:
+        type: annotator
+        buttons:
+          - pin
+        colors:
+          - blue
+        theme: light
+        debug: false
+        max: false
+        storage:
+          markers: markers
+  - width: 1/2
+    sections:
+      fields:
+        type: fields
+        fields:
+          markers:
+            type: structure
+            fields:
+              shopifyID:
+                label: Product
+                type: multiselect
+                min: 1
+                max: 1
+                options: query
+                query:
+                  fetch: site.index.template('shopify.product')
+                  text: "{{ page.title }}"
+                  value: "{{ page.shopifyID }}"
+              x:
+                label: 'x'
+                type: text
+                disable: true
+              y:
+                label: 'y'
+                type: text
+                disable: true
+          alt:
+            label: Alt Text
+            type: text
+          caption:
+            label: Caption
+            type: textarea
+            buttons:
+              - link
+              - email
+              - bold
+              - italic
+          credits:
+            label: Credits
+            type: textarea
+            buttons:
+              - link
+              - email
+              - bold
+              - italic
+          focus:
+            label: Focus crop
+            type: focus
+            width: 1/3

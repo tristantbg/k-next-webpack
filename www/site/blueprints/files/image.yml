@@ -23,13 +23,11 @@ fields:
     buttons:
       - link
       - email
-      - bold
       - italic
   credits:
-    label: Credits
+    label: Copyright
     type: textarea
     buttons:
       - link
       - email
-      - bold
       - italic

@@ -37,6 +37,8 @@ tabs:
           ogimage:
             label: Facebook OpenGraph image
             type: files
+            template: image
+            uploads: image
             multiple: false
             layout: cards
             size: tiny
@@ -48,4 +50,5 @@ tabs:
       images:
         type: files
         layout: cards
-        template: file
+        template: image
+

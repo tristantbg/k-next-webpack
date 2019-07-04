@@ -3,6 +3,5 @@ preset: page
 pages: false
 files: false
 fields:
-  title:
-    label: Title
-    type: title
+  hidden:
+    type: hidden
