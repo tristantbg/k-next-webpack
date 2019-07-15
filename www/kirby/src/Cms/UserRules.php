@@ -11,6 +11,12 @@ use Kirby\Toolkit\V;
 
 /**
  * Validators for all user actions
+ *
+ * @package   Kirby Cms
+ * @author    Bastian Allgeier <bastian@getkirby.com>
+ * @link      https://getkirby.com
+ * @copyright Bastian Allgeier GmbH
+ * @license   https://getkirby.com/license
  */
 class UserRules
 {
@@ -64,6 +70,13 @@ class UserRules
 
     public static function changeRole(User $user, string $role): bool
     {
+        if ($user->kirby()->user()->isAdmin() === false) {
+            throw new PermissionException([
+                'key'  => 'user.changeRole.permission',
+                'data' => ['name' => $user->username()]
+            ]);
+        }
+
         static::validRole($user, $role);
 
         if ($role !== 'admin' && $user->isLastAdmin() === true) {
@@ -88,6 +101,18 @@ class UserRules
         static::validId($user, $user->id());
         static::validEmail($user, $user->email(), true);
         static::validLanguage($user, $user->language());
+
+        // only admins are allowed to add admins
+        $role = $props['role'] ?? null;
+
+        // get the current user if it exists
+        $currentUser = $user->kirby()->user();
+
+        if ($role === 'admin' && $currentUser && $currentUser->isAdmin() === false) {
+            throw new PermissionException([
+                'key' => 'user.create.permission'
+            ]);
+        }
 
         if (empty($props['password']) === false) {
             static::validPassword($user, $props['password']);
@@ -164,7 +189,7 @@ class UserRules
 
     public static function validId(User $user, string $id): bool
     {
-        if ($duplicate = $user->kirby()->users()->find($id)) {
+        if ($user->kirby()->users()->find($id)) {
             throw new DuplicateException('A user with this id exists');
         }
 
