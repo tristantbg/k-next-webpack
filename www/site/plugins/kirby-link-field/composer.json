@@ -1,0 +1,19 @@
+{
+  "name": "oblik/kirby-link-field",
+  "description": "Kirby 3 field for all types of links.",
+  "type": "kirby-plugin",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Hristiyan Dodov",
+      "email": "h.dodov@gmail.com",
+      "homepage": "https://dodov.me/"
+    }
+  ],
+  "require": {
+    "getkirby/composer-installer": "^1.1"
+  },
+  "extra": {
+    "installer-name": "link-field"
+  }
+}
