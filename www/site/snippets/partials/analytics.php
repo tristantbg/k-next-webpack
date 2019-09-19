@@ -1,11 +1,10 @@
 <?php if($site->googleanalytics()->isNotEmpty()): ?>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=<?= $site->googleanalytics() ?>"></script>
   <script>
-  window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-  ga('create', '<?= $site->googleanalytics() ?>', 'auto');
-  ga('require', 'autotrack');
-  ga('send', 'pageview');
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', '<?= $site->googleanalytics() ?>');
   </script>
-  <script async src='https://www.google-analytics.com/analytics.js'></script>
-  <script async src='
-  https://cdnjs.cloudflare.com/ajax/libs/autotrack/2.4.1/autotrack.js'></script>
 <?php endif ?>
