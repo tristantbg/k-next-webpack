@@ -52,10 +52,6 @@ const extract = new MiniCssExtractPlugin({
 });
 
 module.exports = {
-  devServer: {
-    compress: true,
-    public: "localhost:8080"
-  },
   plugins: [
     extract,
     new webpack.LoaderOptionsPlugin({
@@ -104,7 +100,7 @@ module.exports = {
       }
     ]
   },
-  entry: ["webpack-dev-server/client?http://localhost:8080/", "./index.js"],
+  entry: ["./index.js"],
   output: {
     path: path.resolve(__dirname, "www/assets/build"),
     publicPath: "/assets/",

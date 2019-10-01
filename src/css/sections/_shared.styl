@@ -1,0 +1,30 @@
+section.section
+	span(1)
+	padding-left $padding-x
+	padding-right $padding-x
+	+below($md)
+		padding-left $padding-mobile-x
+		padding-right $padding-mobile-x
+	section.section
+		padding-right 0
+		+below($md)
+			padding-left 0
+		&:not(.offset-x)
+			padding-left 0
+	&.animate-offset
+		+above($md + 1)
+			padding-left ($padding-x*2)
+			// transform 'translateX(%s) translateZ(0)' % (-1*$padding-x)
+			// transition transform 500ms ease
+		+below($md)
+			.section-title
+				// padding-left $padding-x
+	h2.section-title
+		hideselect()
+		fs-large()
+		margin-bottom ($content-space/2)
+
+// body.animate
+// 	section.section
+// 		&.animate-offset
+// 			transform none

@@ -1,6 +1,6 @@
 @import 'nib'
-@import '../../node_modules/jeet/jeet.styl'
-@import '_mixins.styl'
+@import 'jeet'
+@import '_mixins'
 
 // Media queries
 $xxl = 1900px
@@ -17,14 +17,16 @@ $gray ?= #424242
 
 // Metrics
 $padding = 1rem
-$padding-y = 0.5rem
-$content-space = 0.7rem
+$padding-x = 1rem
+$padding-y = 1rem
+$content-space = 1rem
 $kinetic = cubic-bezier(0.77, 0, 0.175, 1)
 $kinetic-smooth = cubic-bezier(0.7, 0, 0.3, 1)
 
 //font size
-$normal = 1rem
-$medium = 1.2rem
+$fs-normal = 1rem
+$fs-small = 0.5rem
+$fs-large = 2rem
 
 // CSS Reset
 global-reset()

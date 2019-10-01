@@ -1,0 +1,23 @@
+[g-component="Accordion"],
+[g-component="AccordionList"]
+	[g-ref=toggle]
+		cursor pointer
+		&::after
+			content ''
+			width 0.6em
+			height 0.6em
+			background url('../svg/arrow-down.svg')
+			background-position center
+			background-repeat no-repeat
+			display inline-block
+			vertical-align middle
+			margin-left 0.4em
+	[g-ref=content]
+		overflow hidden
+		height 0
+	&.opened
+		[g-ref=toggle]
+			&::after
+				transform rotate(-180deg)
+		[g-ref=content]
+			height auto

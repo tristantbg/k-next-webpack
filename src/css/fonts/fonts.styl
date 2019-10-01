@@ -6,29 +6,59 @@ text()
 	.italic, em, i
 		font-family URI, sans-serif
 
+italic()
+	font-family URI, sans-serif
+
+fs-large()
+	font-size $fs-large
+	// margin-left -.05em
+	+below($md)
+		font-size ($fs-large/1.5)
+
+fs-small()
+	font-size $fs-small
+	margin-left -.05em
+	// +above($md + 1)
+
+lh-text()
+	line-height 1.25
+
+sans-serif()
+	font-family UR, sans-serif
+	.italic, em, i
+		font-family URI, sans-serif
+
+reading-text()
+	lh-text()
+	sans-serif()
+
 // Main font styles
 
 ::selection
-	background alpha($secondary, 0.5)
+	background alpha($secondary, 0.1)
 
 ::-moz-selection
-	background alpha($secondary, 0.5)
+	background alpha($secondary, 0.1)
 
 body,html
 	-webkit-text-size-adjust 100%
 
 html
-	font-size 12px
+	font-size 1.3vw
 	+above($xxl + 1)
-		font-size 0.8vw
+		font-size 0.9vw
+	+below($xxl)
+		font-size 1.2vw
 	+below($md)
-		font-size 12px
+		font-size 14px
 
 body
 	text()
-	font-size $normal
+	font-size $fs-normal
 	line-height 1
 	font-smoothing()
+	+below($md)
+		font-size $fs-normal+0.3
 
 p
 	line-height inherit
@@ -40,3 +70,33 @@ p
 
 .text-center
 	text-align center
+
+.text-right
+	text-align right
+
+.italic
+	italic()
+
+.fs-large
+	fs-large()
+
+.fs-small
+	fs-small()
+
+.lh-text
+	lh-text()
+
+.sans-serif
+	sans-serif()
+
+.reading-text
+	reading-text()
+
+.db
+	display block
+
+.mt1
+	margin-top 1em
+
+.mb1
+	margin-bottom 1em

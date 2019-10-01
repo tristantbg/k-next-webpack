@@ -1,0 +1,27 @@
+[g-component="Embed"]
+	overflow hidden
+	[g-ref=media]
+		position relative
+		.cover
+			cursor pointer
+		.play
+			play-button()
+			position absolute
+			z-index 1
+		.iframe
+			display none
+			position absolute
+			top 0
+			left 0
+			width 100%
+			height 100%
+			iframe
+				width 100%
+				height 100%
+		&[data-played="true"]
+			.cover
+				visibility hidden
+				pointer-events none
+			.iframe
+				display block
+

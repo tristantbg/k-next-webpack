@@ -1,0 +1,49 @@
+[g-component="MainSearch"]
+	// .overlay
+	// 	position fixed
+	// 	top $header-height
+	// 	left 0
+	// 	width 100%
+	// 	height 100%
+	// 	background alpha($primary, 0)
+	// 	transition background 300ms ease
+	// 	cursor pointer
+	// 	z-index -1
+	// 	+below($md)
+	// 		top 6.4rem
+	.search-results
+		visibility hidden
+		position fixed
+		top $header-height
+		left 0
+		width 100%
+		max-height 'calc(100vh - %s)' % ($padding-x*2)
+		background $primary
+		border-bottom 1px solid $secondary
+		z-index 2
+		overflow-y scroll
+		-webkit-overflow-scrolling touch
+		+below($md)
+			top 6.4rem
+			max-height 'calc(100vh - %s)' % (10rem)
+		.inner
+			padding $content-space $padding-x $padding-x $padding-x
+			+below($md)
+				padding $content-space 0 $padding-mobile-x
+	// &.opened, &.focus
+	// 	.overlay
+	// 		background alpha($secondary, 0.6)
+	&.searching
+		.title.navigation
+			cursor pointer
+			&::before
+				content ''
+				width 0.6em
+				height 0.6em
+				background url('../svg/cross.svg')
+				background-position center
+				background-repeat no-repeat
+				display inline-block
+				vertical-align middle
+				margin-right 0.4em
+				margin-bottom 0.1em

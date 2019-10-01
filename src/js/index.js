@@ -1,43 +1,62 @@
-import LazySizes from './components/lazysizes';
-import Loader from './components/loader';
-import Links from './components/links';
-// import Menu from './components/menu';
-// import Footer from './components/footer';
-// import Expandables from './components/expandables';
-// import Embeds from './components/embeds';
-// import Players from './components/players';
-// import Projects from './components/projects';
-// import Sliders from './components/sliders';
-// import Idle from './components/idle';
-// import Pjax from './components/pjax';
+import LazySizes from './components/LazySizes';
+import Loader from './components/Loader';
+import Links from './components/Links';
+// import Shop from './components/Shop';
+// import GridFit from './components/GridFit';
+// import ReadMore from './components/ReadMore';
+// import RangeTime from './components/RangeTime';
+// import Pagination from './components/Pagination';
+import PageLoader from './components/PageLoader';
+import GiaComponents from './components/GiaComponents';
 import debounce from 'lodash/debounce'
-
 const App = {
-  root: window.location.hostname == 'localhost' ? '/kairos/www' : '',
-  init: async _ => {
-    App.pageType = document.body.getAttribute('page-type')
-    await Loader.init();
-    await App.sizeSet();
-    await App.interact();
-    // await Pjax.init();
-    window.addEventListener('resize', debounce(App.sizeSet, 300), false)
-    await Loader.loaded();
-  },
-  sizeSet: () => {
-    App.width = (window.innerWidth || document.documentElement.clientWidth)
-    App.height = (window.innerHeight || document.documentElement.clientHeight)
-    App.isMobile = App.width <= 767
-  },
-  interact: async _ => {
-    await Links.init();
-    // await Menu.init();
-    // await Footer.init();
-    // await Expandables.init();
-    // await Players.init();
-    // await Projects.init();
-    // await Sliders.init();
-    // await Idle.init();
-  }
+    root: window.location.hostname == 'localhost' ? '/???/www' : '',
+    init: async _ => {
+        App.pageType = document.body.getAttribute('page-type')
+        await Loader.init();
+        await App.sizeSet();
+        await App.interact();
+        await GiaComponents.init();
+        await PageLoader.init();
+        window.addEventListener('resize', debounce(App.sizeSet, 300), false)
+        await Loader.loaded();
+        // await App.animate()
+    },
+    sizeSet: () => {
+        App.width = (window.innerWidth || document.documentElement.clientWidth)
+        App.height = (window.innerHeight || document.documentElement.clientHeight)
+        App.isMobile = App.width <= 1023
+    },
+    addListener: (target, eventType, func = () => {}) => {
+        const targets = document.querySelectorAll('[event-target="' + target + '"]');
+        [...targets].forEach(elem => {
+            elem.addEventListener(eventType, func)
+        })
+    },
+    eventTargets: _ => {
+        App.addListener("back", "click", e => {
+            if (history && history.length > 0) {
+                e.preventDefault();
+                history.go(-1);
+            }
+        });
+    },
+    interact: async _ => {
+        await Links.init();
+        // await Shop.init();
+    },
+    animate: _ => {
+        document.body.classList.add('animate')
+    },
+    simulateClick(elem) {
+        // Create our event (with options)
+        var evt = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        });
+        // If cancelled, don't dispatch our event
+        var canceled = !elem.dispatchEvent(evt);
+    }
 };
-
 export default App;

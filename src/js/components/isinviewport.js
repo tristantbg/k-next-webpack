@@ -1,11 +1,11 @@
 import App from '../index'
+import Menu from './Menu'
 
-const isInViewport = (elem, options = {
-  center: false
-}) => {
+const isInViewport = (elem, options = { center: false }) => {
+  const menuHeight = Menu.element.offsetHeight
   const bounding = elem.getBoundingClientRect()
-  const topInView = bounding.top <= App.height && bounding.top >= 0
-  const bottomInView = bounding.bottom <= App.height && bounding.bottom >= 0
+  const topInView = bounding.top <= App.height && bounding.top >= menuHeight
+  const bottomInView = bounding.bottom <= App.height && bounding.bottom >= menuHeight
   const middleInView = bounding.top - bounding.height / 2 <= App.height / 2 && bounding.top + bounding.height / 2 >= 0
   if (options.center) {
     return bounding.top >= 0 && topInView ||
@@ -14,7 +14,7 @@ const isInViewport = (elem, options = {
       bounding.top < 0 && bottomInView && middleInView
   } else {
     return (
-      bounding.top >= 0 && topInView ||
+      topInView ||
       bottomInView && topInView ||
       bounding.top < 0 && bounding.bottom > App.height ||
       bounding.top < 0 && bottomInView
