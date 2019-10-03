@@ -5,7 +5,10 @@ body, html
 	min-height 100vh
 
 *
-	box-sizing(border-box)
+	box-sizing border-box
+  -webkit-tap-highlight-color rgba(0,0,0,0)
+  -webkit-tap-highlight-color transparent
+  touch-action manipulation
 	&:not(input)
 		hideselect()
 
