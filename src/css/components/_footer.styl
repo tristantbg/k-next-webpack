@@ -1,0 +1,33 @@
+footer
+	span(1)
+	margin-top $padding-x*2
+	margin-bottom $padding-y
+	+below($md)
+		margin-bottom $padding-x
+	&::before
+		content ''
+		display block
+		width 'calc(100% - %s)' % ($padding-x*2)
+		height 1px
+		float left
+		// margin 0 $padding-x $padding-x*2
+		background transparent
+
+[page-type=news],
+[page-type=exhibitions]
+	footer
+		margin-top $padding-x
+		&::before
+			// display none
+			margin-bottom 0
+		.section--locations
+			display none
+		.section--footer-infos
+			margin-top $padding-y
+
+[page-type=artists],
+[page-type=artwork],
+[page-type="artwork.exhibition"],
+[page-type="search"]
+	footer
+		display none

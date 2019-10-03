@@ -1,0 +1,133 @@
+$grid-gutter = ($content-space/2)
+$grid-padding = $content-space
+
+.grid-items
+	float left
+	width 100%
+	display flex
+	justify-content flex-start
+	align-items flex-start
+	flex-wrap wrap
+	overflow hidden
+	.row
+		span(1)
+		&:not(:last-child)
+			margin-bottom $grid-padding
+	&.by-1
+		.grid-item
+			display block
+			width 100%
+			padding ($grid-padding / 2) 0
+		&.by-blocks
+			.block
+				display block
+				width 100%
+				padding ($grid-padding / 2) 0
+	&.by-2
+		.grid-item
+			display block
+			width 'calc((100% - %s * 1 ) / 2 - 1px)' % $grid-gutter
+			flex '0 0 calc((100% - %s * 1) / 2 - 1px)' % $grid-gutter
+			margin-top $grid-padding
+			+above($sm + 1)
+				&:not(:nth-child(2n))
+					margin-right $grid-gutter
+				&:nth-child(-n+2)
+					margin-top 0
+			+below($sm)
+				flex 1 1 100%
+				&:first-child
+					margin-top 0
+		&.by-blocks
+			.block
+				display block
+				width 'calc((100% - %s * 1 ) / 2 - 1px)' % $grid-gutter
+				flex '0 0 calc((100% - %s * 1) / 2 - 1px)' % $grid-gutter
+				margin-top $grid-padding
+				+above($sm + 1)
+					&:not(:nth-child(2n))
+						margin-right $grid-gutter
+					&:nth-child(-n+2)
+						margin-top 0
+				+below($sm)
+					flex 1 1 100%
+					&:first-child
+						margin-top 0
+	&.by-3
+		.grid-item
+			display block
+			width 'calc((100% - %s * 2 ) / 3 - 1px)' % $grid-gutter
+			flex '0 0 calc((100% - %s * 2) / 3 - 1px)' % $grid-gutter
+			margin-top $grid-padding
+			+above($sm + 1)
+				&:not(:nth-child(3n))
+					margin-right $grid-gutter
+				&:nth-child(-n+3)
+					margin-top 0
+			+below($sm)
+				width 'calc((100% - %s * 1 ) / 2 - 1px)' % $grid-gutter
+				flex '0 0 calc((100% - %s * 1) / 2 - 1px)' % $grid-gutter
+				&:not(:nth-child(2n))
+					margin-right $grid-gutter
+				&:nth-child(-n+2)
+					margin-top 0
+		&.by-blocks
+			.block
+				display block
+				width 'calc((100% - %s * 2 ) / 3 - 1px)' % $grid-gutter
+				flex '0 0 calc((100% - %s * 2) / 3 - 1px)' % $grid-gutter
+				margin-top $grid-padding
+				+above($sm + 1)
+					&:not(:nth-child(3n))
+						margin-right $grid-gutter
+					&:nth-child(-n+3)
+						margin-top 0
+				+below($sm)
+					flex 1 1 100%
+					&:first-child
+						margin-top 0
+	&.by-4
+		.grid-item
+			display block
+			width 'calc((100% - %s * 3 ) / 4 - 1px)' % $grid-gutter
+			flex '0 0 calc((100% - %s * 3) / 4 - 1px)' % $grid-gutter
+			margin-top $grid-padding
+			+above($sm + 1)
+				&:not(:nth-child(4n))
+					margin-right $grid-gutter
+				&:nth-child(-n+4)
+					margin-top 0
+			+below($sm)
+				width 'calc((100% - %s * 1 ) / 2 - 1px)' % $grid-gutter
+				flex '0 0 calc((100% - %s * 1) / 2 - 1px)' % $grid-gutter
+				&:not(:nth-child(2n))
+					margin-right $grid-gutter
+				&:nth-child(-n+2)
+					margin-top 0
+		&.by-blocks
+			.block
+				display block
+				width 'calc((100% - %s * 3 ) / 4 - 1px)' % $grid-gutter
+				flex '0 0 calc((100% - %s * 3) / 4 - 1px)' % $grid-gutter
+				margin-top $grid-padding
+				+above($sm + 1)
+					&:not(:nth-child(4n))
+						margin-right $grid-gutter
+					&:nth-child(-n+4)
+						margin-top 0
+				+below($sm)
+					flex 1 1 100%
+					&:first-child
+						margin-top 0
+
+.grid
+	span(1)
+	.gutter
+		width ($content-space/2)
+	.row
+		span(1)
+		display flex
+	.block
+		display block
+		float left
+		margin-right ($content-space/2)

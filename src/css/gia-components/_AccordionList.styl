@@ -1,0 +1,58 @@
+[g-component="AccordionList"]
+	hideselect()
+	div.options
+		& > *
+			white-space nowrap
+			overflow hidden
+			text-overflow ellipsis
+			&:not(:last-child)
+				padding-right ($content-space/2)
+			&:not(.active)
+				color $gray
+	[g-ref="toggle"]
+		opacity 0.3
+	&.opened
+		[g-ref="toggle"]
+			opacity 1
+	[g-ref="search"]
+		float left
+		appearance none
+		border 0
+		border-bottom 1px solid $lightgray
+		padding 0
+		margin 0
+		margin-top 1em
+		margin-bottom 1em
+		outline 0 !important
+		box-shadow 0 !important
+		border-radius 0
+		line-height inherit
+		color inherit
+		opacity 1
+		background transparent
+		font-size inherit
+		font-family inherit
+		width 11.5rem
+		max-width 100%
+		&::placeholder
+			opacity 0.6
+		&:focus
+			&::placeholder
+				opacity 0
+	[g-ref="clear"]
+		cursor pointer
+		&::before
+			content ''
+			width 0.6em
+			height 0.6em
+			background url('../svg/cross.svg')
+			background-position center
+			background-repeat no-repeat
+			display inline-block
+			vertical-align middle
+			margin-right 0.4em
+			margin-bottom 0.1em
+	[g-ref="content"]
+		.grid-item
+			margin-top 0
+			margin-bottom 0

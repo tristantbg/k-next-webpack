@@ -11,6 +11,20 @@ section.block
 	&.w_100
 		span(1)
 
+.block.grid-item
+	&[target="_blank"]
+		&:hover
+			.responsive-image::after
+				content attr(data-origin) "	\002197"
+				fs-small()
+				reading-text()
+				position absolute
+				bottom 0
+				right 0
+				z-index 1
+				background $primary
+				padding 0.2em 0.4em
+
 .spaced
 	& > section.block
 		.w_50
@@ -46,22 +60,5 @@ section.block
 	position relative
 
 .block--caption
-	text-transform uppercase
-	padding $text-padding 0
-	padding-left $padding
-
-.checkerboard
-	position absolute
-	top 0
-	left 0
-	right 0
-	bottom 0
-	background-size 16px
-	image-rendering -moz-pixelated
-	image-rendering -o-pixelated
-	image-rendering -webkit-optimize-contrast
-	image-rendering pixelated
-	background-position center
-	background-image url('../images/checkerboard_64.png')
-	pointer-events none
-	z-index 10
+	reading-text()
+	margin-top $text-padding
