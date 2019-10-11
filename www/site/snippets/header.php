@@ -76,8 +76,6 @@
 
 <main>
 
-  <div class="pjax">
-
   <?php snippet('partials/header-menu') ?>
 
   <div id="container">

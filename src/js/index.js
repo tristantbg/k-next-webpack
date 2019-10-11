@@ -19,6 +19,7 @@ const App = {
         await GiaComponents.init();
         await PageLoader.init();
         window.addEventListener('resize', debounce(App.sizeSet, 300), false)
+        await LazySizes.init();
         await Loader.loaded();
         // await App.animate()
     },
