@@ -41,7 +41,6 @@
       if (isset($ratio)) {
         $thumb = $image->crop($bp[1], floor($bp[1]/$ratio));
         if (option('kirby-cloudinary') === true) {
-          // $placeholder = $image->cl_crop($bp[0], floor($bp[1]/$ratio), ['quality' => 90, 'effect' => 'blur:300']);
           $src = $image->cl_crop(1000, floor(1000/$ratio));
           $srcset = '';
           foreach ($bp as $value) {
@@ -49,7 +48,6 @@
           }
         }
         elseif (option('kirby-imgx') === true) {
-          // $placeholder = $ghostPlaceholder ? 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' : $image->imgxUrl(['w' => 50, 'h' => floor(50/$ratio), 'q' => 70, 'blur' => '50']);
           $src = $image->imgxUrl(['w' => $bp[1], 'h' => floor($bp[1]/$ratio)]);
           $srcset = '';
           foreach ($bp as $value) {
@@ -57,7 +55,6 @@
           }
         }
         else {
-          // $placeholder = $ghostPlaceholder ? 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' : $image->crop(50, floor(50/$ratio), ['quality' => 90, 'blur' => null])->dataURI();
           $src = $image->crop($bp[1], floor($bp[1]/$ratio))->url();
           $srcset = '';
           foreach ($bp as $value) {
@@ -67,7 +64,6 @@
       } else {
         $thumb = $image->resize($bp[1]);
         if (option('kirby-cloudinary') === true) {
-          // $placeholder = $image->cl_thumb(['width' => $bp[1], 'quality' => 90, 'effect' => 'blur:300']);
           $src = $image->cl_resize(1000);
           $srcset = '';
           foreach ($bp as $value) {
@@ -75,8 +71,6 @@
           }
         }
         elseif (option('kirby-imgx') === true) {
-          // $placeholder = $ghostPlaceholder ? 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' : $image->imgxUrl(['w' => 800, 'q' => 70, 'blur' => '50']);
-          // $placeholder = $ghostPlaceholder ? 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' : $image->thumb(['width' => 50, 'quality' => 90, 'blur' => false])->dataURI();
           $src = $image->imgxUrl(['w' => 1024]);
           $srcset = '';
           foreach ($bp as $value) {
@@ -84,7 +78,6 @@
           }
         }
         else {
-          // $placeholder = $ghostPlaceholder ? 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' : $image->thumb(['width' => 50, 'quality' => 90, 'blur' => null])->dataURI();
           $src = $image->resize($bp[1])->url();
           $srcset = '';
           foreach ($bp as $value) {
@@ -95,6 +88,7 @@
     ?>
     <img
     class="lazy<?= r(isset($noFade) && $noFade, ' no-fade', '') ?><?= r(isset($noLazyload) && $noLazyload, '', ' lazyload') ?><?php if(isset($preload)) echo ' lazypreload' ?>"
+    src="<?= 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '. $thumb->width() .' '. $thumb->height() .'"%3E%3C/svg%3E' ?>"
     data-src="<?= $src ?>"
     data-srcset="<?= $srcset ?>"
     data-sizes="auto"

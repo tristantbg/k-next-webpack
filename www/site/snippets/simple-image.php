@@ -29,7 +29,6 @@
 
     <?php
       if (isset($ratio)) {
-        $placeholder = $image->crop(200, floor(200/$ratio));
         $thumb = $image->crop($width, floor($width/$ratio));
         if (option('kirby-cloudinary') === true) {
           $src = $image->cl_crop(1000, floor(1000/$ratio));
@@ -41,7 +40,6 @@
           $src = $image->crop($width, floor($width/$ratio))->url();
         }
       } else {
-        $placeholder = $image->resize(200);
         $thumb = $image->resize($width);
         if (option('kirby-cloudinary') === true) {
           $src = $image->cl_resize(1000);
@@ -61,8 +59,8 @@
     <?php endif ?>
     >
       <img
-      class="<?= r(isset($noLazyload) && $noLazyload, '', ' lazyload') ?><?php if(isset($preload)) echo ' lazypreload' ?>"
-      src="<?= $placeholder->url() ?>"
+      class="lazy<?= r(isset($noLazyload) && $noLazyload, '', ' lazyload') ?><?php if(isset($preload)) echo ' lazypreload' ?>"
+      src="<?= 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '. $thumb->width() .' '. $thumb->height() .'"%3E%3C/svg%3E' ?>"
       data-src="<?= $src ?>"
       data-width="<?= $thumb->width() ?>"
       data-height="<?= $thumb->height() ?>"
