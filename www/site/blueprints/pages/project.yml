@@ -15,7 +15,7 @@ tabs:
                 width: 3/4
               date:
                 label: Year
-                type: number
+                type: date
                 min: '1990-01-01'
                 width: 1/4
               text:
