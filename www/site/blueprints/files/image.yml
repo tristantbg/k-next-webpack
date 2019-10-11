@@ -7,6 +7,7 @@ accept:
   mime: image/jpeg, image/png, image/gif, image/svg+xml
   maxwidth: 6000
   maxheight: 6000
+  maxsize: 15000000
 
 fields:
   focus:

@@ -1,0 +1,45 @@
+type: fields
+fields:
+  blocks:
+    label: Page Content
+    type: builder
+    columns: 1
+    fieldsets:
+      images:
+        label: Images
+        snippet: blocks/images
+        fields:
+          files:
+            type: files
+            query: page.files.template('image')
+            uploads: image
+            layout: cards
+            size: tiny
+      embed:
+        label: Embed
+        snippet: blocks/embed
+        fields:
+          oembed:
+            label: Embed
+            type: embed
+            width: 1/2
+          text:
+            label: Caption
+            type: textarea
+            size: medium
+            width: 1/2
+            buttons:
+              - link
+              - email
+              - italic
+      text:
+        label: Text
+        snippet: blocks/text
+        fields:
+          text:
+            type: textarea
+            size: medium
+            buttons:
+              - link
+              - email
+              - italic

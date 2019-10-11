@@ -37,7 +37,7 @@ tabs:
           ogimage:
             label: Facebook OpenGraph image
             type: files
-            template: image
+            query: page.files.template('image')
             uploads: image
             multiple: false
             layout: cards
@@ -51,4 +51,3 @@ tabs:
         type: files
         layout: cards
         template: image
-

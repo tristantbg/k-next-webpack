@@ -18,7 +18,6 @@ export default class Embed extends Component {
         console.log(this.ref.media)
     }
     playEmbed() {
-      console.log('ok')
         this.ref.media.dataset.played = true
         this.ref.iframe.src = this.ref.iframe.dataset.src + '&autoplay=1'
         this.played = true

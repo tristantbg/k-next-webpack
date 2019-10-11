@@ -16,7 +16,7 @@ tabs:
               date:
                 label: Year
                 type: number
-                min: 1900
+                min: '1990-01-01'
                 width: 1/4
               text:
                 label: Description
@@ -37,91 +37,10 @@ tabs:
                 label: Featured image
                 type: files
                 multiple: false
-                template: image
+                query: page.files.template('image')
                 uploads: image
-              category:
-                label: Category
-                type: radio
-                options: query
-                query: page.parent.categories.toStructure
   content:
-    label: Content
-    sections:
-      content:
-        type: fields
-        fields:
-          sections:
-            label: Page Content
-            type: builder
-            columns: 1
-            fieldsets:
-              image:
-                label: Image
-                snippet: blocks/image
-                fields:
-                  file:
-                    type: files
-                    multiple: false
-                    template: image
-                    uploads: image
-                    layout: cards
-              images:
-                label: Images
-                snippet: blocks/images
-                fields:
-                  files:
-                    type: files
-                    multiple: true
-                    layout: cards
-                    size: tiny
-                    template: image
-                    uploads: image
-              # vimeo:
-              #   label: Vimeo
-              #   snippet: blocks/vimeo
-              #   fields:
-              #     page:
-              #       type: pages
-              #       multiple: false
-              #       layout: cards
-              #       query: site.find('vimeo').children
-              #       image:
-              #         cover: false
-              #         ratio: 3/2
-              #         back: black
-              #         query: page.cover.toFile
-              #     muted:
-              #       label: Muted
-              #       type: toggle
-              #       default: true
-              #       text:
-              #         - 'No'
-              #         - 'Yes'
-              #       width: 1/3
-              #     autoplay:
-              #       label: Autoplay
-              #       type: toggle
-              #       default: false
-              #       text:
-              #         - 'No'
-              #         - 'Yes'
-              #       width: 1/3
-              #     loop:
-              #       label: Loop
-              #       type: toggle
-              #       default: false
-              #       text:
-              #         - 'No'
-              #         - 'Yes'
-              #       width: 1/3
-              #     controls:
-              #       label: Controls
-              #       type: toggle
-              #       default: false
-              #       text:
-              #         - 'No'
-              #         - 'Yes'
-              #       width: 1/3
+    extends: sections/blocks
   files:
     icon: file
     sections:
