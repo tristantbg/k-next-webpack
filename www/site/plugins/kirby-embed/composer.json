@@ -1,0 +1,20 @@
+{
+    "name": "sylvainjule/embed",
+    "description": "Embed field for Kirby 3",
+    "type": "kirby-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sylvain Julé",
+            "email": "contact@sylvain-jule.fr"
+        }
+    ],
+    "require": {
+        "getkirby/composer-installer": "^1.1",
+        "embed/embed": "^3.4"
+    },
+    "extra": {
+        "installer-name": "imageradio"
+    },
+    "minimum-stability": "beta"
+}
