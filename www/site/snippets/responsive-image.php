@@ -39,7 +39,7 @@
     <?php
       if(!isset($maxWidth)) $maxWidth = 3000;
       if (isset($ratio)) {
-        $thumb = $image->crop($bp[1], floor($bp[1]/$ratio));
+        $thumb = array('width' => 1000, 'height' => floor(1000/$ratio));
         if (option('kirby-cloudinary') === true) {
           $src = $image->cl_crop(1000, floor(1000/$ratio));
           $srcset = '';
@@ -47,11 +47,11 @@
             if($value <= $maxWidth) $srcset .= $image->cl_crop($value, floor($value/$ratio)) . ' ' . $value . 'w,';
           }
         }
-        elseif (option('kirby-imgx') === true) {
-          $src = $image->imgxUrl(['w' => $bp[1], 'h' => floor($bp[1]/$ratio)]);
+        elseif (option('kirby-imgix') === true) {
+          $src = $image->imgixUrl(['w' => $bp[1], 'h' => floor($bp[1]/$ratio)]);
           $srcset = '';
           foreach ($bp as $value) {
-            if($value <= $maxWidth) $srcset .= $image->imgxUrl(['w' => $value, 'h' => floor($value/$ratio)]) . ' ' . $value . 'w,';
+            if($value <= $maxWidth) $srcset .= $image->imgixUrl(['w' => $value, 'h' => floor($value/$ratio)]) . ' ' . $value . 'w,';
           }
         }
         else {
@@ -62,7 +62,7 @@
           }
         }
       } else {
-        $thumb = $image->resize($bp[1]);
+        $thumb = array('width' => 1000, 'height' => floor(1000/$image->ratio()));
         if (option('kirby-cloudinary') === true) {
           $src = $image->cl_resize(1000);
           $srcset = '';
@@ -70,11 +70,11 @@
             if($value <= $maxWidth) $srcset .= $image->cl_resize($value) . ' ' . $value . 'w,';
           }
         }
-        elseif (option('kirby-imgx') === true) {
-          $src = $image->imgxUrl(['w' => 1024]);
+        elseif (option('kirby-imgix') === true) {
+          $src = $image->imgixUrl(['w' => 1024]);
           $srcset = '';
           foreach ($bp as $value) {
-            if($value <= $maxWidth) $srcset .= $image->imgxUrl(['w' => $value]) . ' ' . $value . 'w,';
+            if($value <= $maxWidth) $srcset .= $image->imgixUrl(['w' => $value]) . ' ' . $value . 'w,';
           }
         }
         else {
@@ -88,13 +88,13 @@
     ?>
     <img
     class="lazy<?= r(isset($noFade) && $noFade, ' no-fade', '') ?><?= r(isset($noLazyload) && $noLazyload, '', ' lazyload') ?><?php if(isset($preload)) echo ' lazypreload' ?>"
-    src="<?= 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '. $thumb->width() .' '. $thumb->height() .'"%3E%3C/svg%3E' ?>"
+    src='<?= 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '. $thumb['width'] .' '. $thumb['height'] .'"%3E%3C/svg%3E' ?>'
     data-src="<?= $src ?>"
     data-srcset="<?= $srcset ?>"
     data-sizes="auto"
     data-optimumx="1.5"
-    data-width="<?= $thumb->width() ?>"
-    data-height="<?= $thumb->height() ?>"
+    data-width="<?= $thumb['width'] ?>"
+    data-height="<?= $thumb['height'] ?>"
     g-ref="image"
     alt="<?= $alt ?>"
     width="100%" height="auto"

@@ -6,6 +6,14 @@ use PHPUnit\Framework\TestCase;
 
 class StrTest extends TestCase
 {
+    public function testAscii()
+    {
+        $this->assertEquals('aouss', Str::ascii('äöüß'));
+        $this->assertEquals('Istanbul', Str::ascii('İstanbul'));
+        $this->assertEquals('istanbul', Str::ascii('i̇stanbul'));
+        $this->assertEquals('Nashata istorija', Str::ascii('Нашата история'));
+    }
+
     public function testAfter()
     {
         $string = 'Hellö Wörld';
@@ -241,17 +249,17 @@ class StrTest extends TestCase
         // choose a high length for a high probability of occurrence of a character of any type
         $length = 200;
 
-        $this->assertRegexp("/^[[:alnum:]]+$/", Str::random());
+        $this->assertRegexp('/^[[:alnum:]]+$/', Str::random());
         $this->assertInternalType('string', Str::random());
         $this->assertEquals($length, strlen(Str::random($length)));
 
-        $this->assertRegexp("/^[[:alpha:]]+$/", Str::random($length, 'alpha'));
+        $this->assertRegexp('/^[[:alpha:]]+$/', Str::random($length, 'alpha'));
 
-        $this->assertRegexp("/^[[:upper:]]+$/", Str::random($length, 'alphaUpper'));
+        $this->assertRegexp('/^[[:upper:]]+$/', Str::random($length, 'alphaUpper'));
 
-        $this->assertRegexp("/^[[:lower:]]+$/", Str::random($length, 'alphaLower'));
+        $this->assertRegexp('/^[[:lower:]]+$/', Str::random($length, 'alphaLower'));
 
-        $this->assertRegexp("/^[[:digit:]]+$/", Str::random($length, 'num'));
+        $this->assertRegexp('/^[[:digit:]]+$/', Str::random($length, 'num'));
 
         $this->assertFalse(Str::random($length, 'something invalid'));
     }
@@ -611,6 +619,26 @@ EOT;
         ]);
 
         $this->assertEquals('homer says: hi', $template);
+    }
+
+    public function testToBytes()
+    {
+        $this->assertEquals(0, Str::toBytes(0));
+        $this->assertEquals(0, Str::toBytes(''));
+        $this->assertEquals(0, Str::toBytes(null));
+        $this->assertEquals(0, Str::toBytes(false));
+        $this->assertEquals(0, Str::toBytes('x'));
+        $this->assertEquals(0, Str::toBytes('K'));
+        $this->assertEquals(0, Str::toBytes('M'));
+        $this->assertEquals(0, Str::toBytes('G'));
+        $this->assertEquals(2, Str::toBytes(2));
+        $this->assertEquals(2, Str::toBytes('2'));
+        $this->assertEquals(2 * 1024, Str::toBytes('2K'));
+        $this->assertEquals(2 * 1024, Str::toBytes('2k'));
+        $this->assertEquals(2 * 1024 * 1024, Str::toBytes('2M'));
+        $this->assertEquals(2 * 1024 * 1024, Str::toBytes('2m'));
+        $this->assertEquals(2 * 1024 * 1024 * 1024, Str::toBytes('2G'));
+        $this->assertEquals(2 * 1024 * 1024 * 1024, Str::toBytes('2g'));
     }
 
     public function testToType()
