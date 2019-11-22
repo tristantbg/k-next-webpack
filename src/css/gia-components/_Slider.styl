@@ -1,0 +1,90 @@
+[g-component="Slider"]
+	top 0
+	left 0
+	width 100%
+	height 100vh
+	padding 0
+	z-index 0
+	&.flickity-enabled
+		position fixed
+		display block
+		hideselect()
+		width 100%
+		.flickity-viewport
+			// pointer-events none
+			height 100%
+			width 100%
+		.flickity-slider
+			transform none !important
+		section
+			height 100%
+			width 100%
+			padding 13rem
+			left 0 !important
+			visibility hidden
+			+below($md)
+				padding 1rem
+			.block--content, .player-container
+				width 100%
+				height 100%
+			.responsive-image
+				width 100%
+				height 100%
+			img, video
+				width 100%
+				height 100%
+				object-fit contain
+				object-position center
+				font-family 'object-fit: contain'
+		section.is-selected
+			visibility visible
+			z-index 1
+		.flickity-prev-next-button
+			cursor none !important
+			top 0
+			height 100%
+			width 50%
+			margin-top 0
+			background transparent
+			padding 0
+			transform none
+			border none
+			border-radius 0
+			z-index 10
+			font-size inherit
+			font-family inherit
+			font-style inherit
+			color inherit
+			overflow hidden
+			text-transform uppercase
+			fs-small()
+			+below($md)
+				display none
+			svg
+				display none
+			.text
+				align()
+				opacity 0
+				pointer-events none
+			&.previous
+				left 0
+				.text::after
+					content 'Prev'
+			&.next
+				right 0
+				.text::after
+					content 'Next'
+			&[disabled], &.disabled
+				display none
+			&.previous
+				left 0
+			&.next
+				right 0
+			&:active
+				opacity 1
+			&:focus
+				outline 0
+				box-shadow none
+			&:hover
+				.text
+					opacity 1

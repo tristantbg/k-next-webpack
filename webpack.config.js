@@ -52,10 +52,6 @@ const extract = new MiniCssExtractPlugin({
 });
 
 module.exports = {
-  devServer: {
-    compress: true,
-    public: "localhost:8080"
-  },
   plugins: [
     extract,
     new webpack.LoaderOptionsPlugin({
@@ -84,15 +80,19 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader"]
+        use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"]
       },
       {
         test: /\.scss$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"]
+        use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader", "sass-loader"]
       },
       {
         test: /\.styl(us)?$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader", "stylus-loader"]
+        use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader", "stylus-loader"]
+      },
+      {
+        test: /\.less?$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader", "less-loader"]
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/,
@@ -100,11 +100,11 @@ module.exports = {
       },
       {
         test: /\.(jpe?g|png|gif|svg)$/i,
-        use: ["url-loader?limit=10000", "img-loader"]
+        use: ["url-loader", "img-loader"]
       }
     ]
   },
-  entry: ["webpack-dev-server/client?http://localhost:8080/", "./index.js"],
+  entry: ["./index.js"],
   output: {
     path: path.resolve(__dirname, "www/assets/build"),
     publicPath: "/assets/",
@@ -121,6 +121,7 @@ module.exports = {
           output: {
             comments: false
           },
+          warnings: false,
           compress: {
             drop_console: true,
           }

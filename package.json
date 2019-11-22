@@ -57,10 +57,12 @@
   "dependencies": {
     "@swup/js-plugin": "^1.0.4",
     "@swup/preload-plugin": "^1.0.3",
+    "autoprefixer": "^9.7.2",
     "custom-event-polyfill": "^1.0.7",
     "element-closest-polyfill": "^1.0.0",
     "gia": "^1.0.1",
     "jump.js": "https://github.com/tristantbg/jump.js.git",
+    "postcss-loader": "^3.0.0",
     "swup": "^2.0.5",
     "viewport-units-buggyfill": "^0.6.2"
   }
