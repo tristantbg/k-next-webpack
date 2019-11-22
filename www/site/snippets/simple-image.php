@@ -30,7 +30,7 @@
 
     <?php
       if (isset($ratio)) {
-        $thumb = array('width' => 1000, 'height' => floor(1000/$ratio));
+        $thumb = array('width' => 1000, 'height' => floor(1000/$ratio), 'ratio' => $ratio);
         if (option('kirby-cloudinary') === true) {
           $src = $image->cl_crop(1000, floor(1000/$ratio));
         }
@@ -41,7 +41,7 @@
           $src = $image->crop($width, floor($width/$ratio))->url();
         }
       } else {
-        $thumb = array('width' => 1000, 'height' => floor(1000/$image->ratio()));
+        $thumb = array('width' => 1000, 'height' => floor(1000/$image->ratio()), 'ratio' => $image->ratio());
         if (option('kirby-cloudinary') === true) {
           $src = $image->cl_resize(1000);
         }
@@ -66,6 +66,7 @@
       src='<?= 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '. $thumb['height'] .' '. $thumb['width'] .'"%3E%3C/svg%3E' ?>'
       data-src="<?= $src ?>"
       data-flickity-lazyload="<?= $src ?>"
+      data-aspectratio="<?= $thumb['ratio'] ?>"
       data-width="<?= $thumb['width'] ?>"
       data-height="<?= $thumb['height'] ?>"
       g-ref="image"

@@ -31,7 +31,7 @@
   ?>
 
   <div
-  class="responsive-image"
+  class="responsive-image<?php if(isset($withPlaceholder)) echo ' with-placeholder' ?>"
   <?php if ($ghostPlaceholder): ?>
   g-component="LazyLoad"
   <?php endif ?>
@@ -39,7 +39,7 @@
     <?php
       if(!isset($maxWidth)) $maxWidth = 3000;
       if (isset($ratio)) {
-        $thumb = array('width' => 1000, 'height' => floor(1000/$ratio));
+        $thumb = array('width' => 1000, 'height' => floor(1000/$ratio), 'ratio' => $ratio);
         if (option('kirby-cloudinary') === true) {
           $src = $image->cl_crop(1000, floor(1000/$ratio));
           $srcset = '';
@@ -62,7 +62,7 @@
           }
         }
       } else {
-        $thumb = array('width' => 1000, 'height' => floor(1000/$image->ratio()));
+        $thumb = array('width' => 1000, 'height' => floor(1000/$image->ratio()), 'ratio' => $image->ratio());
         if (option('kirby-cloudinary') === true) {
           $src = $image->cl_resize(1000);
           $srcset = '';
@@ -93,12 +93,14 @@
     data-srcset="<?= $srcset ?>"
     data-sizes="auto"
     data-optimumx="1.5"
+    data-aspectratio="<?= $thumb['ratio'] ?>"
     data-width="<?= $thumb['width'] ?>"
     data-height="<?= $thumb['height'] ?>"
     g-ref="image"
     alt="<?= $alt ?>"
     width="100%" height="auto"
     />
+    <div class="placeholder"></div>
     <noscript>
       <img src="<?= $src ?>"
       alt="<?= $alt ?>"
