@@ -1,0 +1,37 @@
+title: AutoID Test
+
+pages:
+  template: autoidtest
+
+sections:
+  # -----------------------------
+  images:
+    extends: sections/autoidimages
+    template: autoidimage
+
+  # -----------------------------
+  content:
+    type: fields
+    fields:
+      text:
+        label: Text
+        type: textarea
+        size: large
+      autoid:
+        type: autoid
+      level1:
+        type: structure
+        translate: false
+        fields:
+          text:
+            type: text
+          autoid:
+            type: hidden
+          level2:
+            type: structure
+            translate: false
+            fields:
+              text:
+                type: text
+              autoid:
+                type: hidden
