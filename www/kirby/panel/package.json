@@ -17,7 +17,7 @@
   "dependencies": {
     "autosize": "^4.0.2",
     "dayjs": "^1.8.12",
-    "npm": "^6.9.0",
+    "npm": "^6.13.4",
     "vue": "^2.6.10",
     "vue-router": "^3.0.2",
     "vuedraggable": "^2.20.0",
