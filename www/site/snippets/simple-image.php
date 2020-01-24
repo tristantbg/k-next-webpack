@@ -63,7 +63,7 @@
     <?php endif ?>
       <img
       class="lazy<?= r(isset($noLazyload) && $noLazyload, '', ' lazyload') ?><?php if(isset($preload)) echo ' lazypreload' ?>"
-      src='<?= 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '. $thumb['height'] .' '. $thumb['width'] .'"%3E%3C/svg%3E' ?>'
+      src='<?= 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '. $thumb['width'] .' '. $thumb['height'] .'"%3E%3C/svg%3E' ?>'
       data-src="<?= $src ?>"
       data-flickity-lazyload="<?= $src ?>"
       data-aspectratio="<?= $thumb['ratio'] ?>"
